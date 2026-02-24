@@ -12,6 +12,8 @@ npm run lint
 npm run build
 ```
 
+Trigger pipeline test
+
 ## CI/CD Setup Required
 
 This repository does **not** contain its own workflow definitions.  
