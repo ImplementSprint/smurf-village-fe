@@ -1,10 +1,10 @@
 export function roleToPath(roleName?: string) {
   switch (roleName) {
     case "System Admin":
-      return "/system-admin";
+      return "/system-admin"; //set hr users if recruiter etc
     case "Admin":
       return "/admin";
-    case "HR Manager":
+    case "HR Officer":
     case "HR Recruiter":
     case "HR Interviewer":
       return "/hr";
@@ -12,6 +12,8 @@ export function roleToPath(roleName?: string) {
       return "/employee";
     case "Applicant":
       return "/applicant";
+    case "Manager":
+      return "/manager";
     default:
       return "/login";
   }
