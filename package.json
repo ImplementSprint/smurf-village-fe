@@ -1,5 +1,5 @@
 {
-  "name": "cicd-fe-single",
+  "name": "blues-clues-hr",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -9,7 +9,8 @@
     "lint": "eslint",
     "test": "vitest run --coverage",
     "test:watch": "vitest",
-    "test:e2e": "node tests/e2e/runner.mjs"
+    "test:e2e": "node --experimental-strip-types tests/e2e/selenium-e2e.ts",
+    "test:k6": "k6 run tests/performance/k6-global.ts"
   },
   "dependencies": {
     "next": "16.1.6",
