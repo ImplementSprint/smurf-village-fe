@@ -134,16 +134,20 @@ async function runSmoke() {
   }
 }
 
-const appProcess = await ensureLocalAppServer();
+async function main() {
+  const appProcess = await ensureLocalAppServer();
 
-try {
-  await runSmoke();
-} catch (error) {
-  console.error('❌ Selenium smoke failed');
-  console.error(error);
-  process.exit(1);
-} finally {
-  if (appProcess) {
-    appProcess.kill();
+  try {
+    await runSmoke();
+  } catch (error) {
+    console.error('❌ Selenium smoke failed');
+    console.error(error);
+    process.exit(1);
+  } finally {
+    if (appProcess) {
+      appProcess.kill();
+    }
   }
 }
+
+main();

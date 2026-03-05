@@ -10,7 +10,8 @@
     "test": "node scripts/run-vitest.mjs",
     "test:coverage": "vitest run --coverage",
     "test:watch": "vitest",
-    "test:e2e": "node --experimental-strip-types tests/e2e/selenium-e2e.ts",
+    "test:e2e": "tsx tests/e2e/selenium-e2e.ts",
+    "test:e2e:firefox": "tsx tests/e2e/selenium-e2e.ts --browser=firefox",
     "test:k6": "k6 run tests/performance/k6-global.ts"
   },
   "dependencies": {
@@ -28,6 +29,7 @@
     "eslint-config-next": "16.1.6",
     "selenium-webdriver": "^4.41.0",
     "tailwindcss": "^4",
+    "tsx": "^4.21.0",
     "typescript": "^5",
     "vitest": "^4.0.18"
   },
