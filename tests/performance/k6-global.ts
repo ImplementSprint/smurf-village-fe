@@ -1,5 +1,3 @@
-/// <reference path="./k6-global.d.ts" />
-
 import http from 'k6/http';
 import { check, sleep } from 'k6';
 
