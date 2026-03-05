@@ -47,7 +47,7 @@ function smoke() {
       },
     });
 
-    const checks: Record<string, (result: SmokeResponse) => boolean> = {
+    const checks = {
       [`${path} status is ${expectedStatus}`]: (result: SmokeResponse) => result.status === expectedStatus,
       [`${path} response time < ${maxDurationMs}ms`]:
         (result: SmokeResponse) => result.timings.duration < maxDurationMs,
