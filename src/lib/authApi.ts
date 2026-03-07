@@ -48,12 +48,16 @@ export async function refreshApi() {
 
 export async function logoutApi() {
   const refresh_token = getRefreshToken();
+  const access_token = getAccessToken();
 
-  // best-effort logout
+  // best-effort logout — sends both tokens so server can blacklist the access token
   if (refresh_token) {
     await fetch(`${API_BASE_URL}/logout`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        ...(access_token ? { Authorization: `Bearer ${access_token}` } : {}),
+      },
       body: JSON.stringify({ refresh_token }),
     }).catch(() => {});
   }
