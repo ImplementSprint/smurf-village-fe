@@ -3,11 +3,14 @@
 import { useEffect, useState } from "react";
 import { parseJwt, getAccessToken } from "@/lib/authStorage";
 import { useWelcomeToast } from "@/lib/useWelcomeToast";
+import { authFetch } from "@/lib/authApi";
+import { API_BASE_URL } from "@/lib/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users, Settings, LayoutDashboard } from "lucide-react";
 
 export default function AdminDashboardPage() {
   const [adminName, setAdminName] = useState("Admin");
+  const [totalUsers, setTotalUsers] = useState<number | null>(null);
 
   useEffect(() => {
     const token = getAccessToken();
@@ -17,6 +20,11 @@ export default function AdminDashboardPage() {
     const last  = decoded?.last_name  || "";
     const full  = (first + " " + last).trim();
     setAdminName(full || decoded?.username || decoded?.email || "Admin");
+
+    authFetch(`${API_BASE_URL}/users/stats`)
+      .then(r => r.json())
+      .then(data => setTotalUsers(data?.total ?? null))
+      .catch(() => {});
   }, []);
 
   useWelcomeToast(adminName, "Admin Portal");
@@ -54,7 +62,10 @@ export default function AdminDashboardPage() {
               <CardTitle className="text-base font-bold text-gray-900">Users</CardTitle>
             </div>
           </CardHeader>
-          <CardContent><p className="text-sm text-gray-500">User management coming soon.</p></CardContent>
+          <CardContent>
+            <p className="text-2xl font-bold text-gray-900">{totalUsers !== null ? totalUsers : "—"}</p>
+            <p className="text-sm text-gray-500">Total users in your company</p>
+          </CardContent>
         </Card>
 
         <Card className="border-gray-100 shadow-sm rounded-xl">
