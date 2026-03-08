@@ -1,41 +1,59 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import {
   Users, Clock, CheckCircle, MoreHorizontal, Search,
   Filter, Download, ChevronLeft, ChevronRight
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
 import { useWelcomeToast } from "@/lib/useWelcomeToast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { getUserInfo } from "@/lib/authStorage";
+import { authFetch } from "@/lib/authApi";
+import { API_BASE_URL } from "@/lib/api";
+
+type Employee = {
+  user_id: string;
+  first_name: string | null;
+  last_name: string | null;
+  email: string;
+  role_id: number;
+};
 
 export default function ManagerDashboardPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [employees, setEmployees] = useState<Employee[]>([]);
+  const [totalCount, setTotalCount] = useState<number | null>(null);
+  const [loading, setLoading] = useState(true);
   const itemsPerPage = 5;
 
   const user = getUserInfo();
   const userName = user?.name || "Manager";
-
   useWelcomeToast(userName, "Management Portal");
 
-  const teamMembers = [
-    { name: "Alex Johnson",  email: "a.johnson@company.com", role: "Senior Developer",   status: "Online", performance: 95  },
-    { name: "Maria Garcia",  email: "m.garcia@company.com",  role: "Product Designer",   status: "Online", performance: 88  },
-    { name: "James Wilson",  email: "j.wilson@company.com",  role: "QA Engineer",        status: "Online", performance: 100 },
-    { name: "Sarah Lee",     email: "s.lee@company.com",     role: "Frontend Developer", status: "Online", performance: 40  },
-    { name: "Michael Brown", email: "m.brown@company.com",   role: "Backend Engineer",   status: "Away",   performance: 75  },
-    { name: "Kevin Adams",   email: "k.adams@company.com",   role: "UI Intern",          status: "Online", performance: 20  },
-  ];
+  useEffect(() => {
+    Promise.all([
+      authFetch(`${API_BASE_URL}/users`).then(r => r.json()),
+      authFetch(`${API_BASE_URL}/users/stats`).then(r => r.json()),
+    ])
+      .then(([emps, stats]) => {
+        setEmployees(Array.isArray(emps) ? emps : []);
+        setTotalCount(stats?.total ?? null);
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
 
   const filteredData = useMemo(() => {
     const q = searchTerm.toLowerCase();
-    return teamMembers.filter(m => m.name.toLowerCase().includes(q) || m.role.toLowerCase().includes(q));
-  }, [searchTerm]);
+    return employees.filter(e => {
+      const name = `${e.first_name ?? ""} ${e.last_name ?? ""}`.toLowerCase();
+      return name.includes(q) || e.email.toLowerCase().includes(q);
+    });
+  }, [searchTerm, employees]);
 
   const totalPages = Math.ceil(filteredData.length / itemsPerPage);
   const currentTableData = filteredData.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
@@ -44,16 +62,16 @@ export default function ManagerDashboardPage() {
     <div className="space-y-6 animate-in fade-in duration-500">
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <MetricCard icon={Users}       label="My Team Size"        value="12" sub="Direct Reports"     trend="Stable"   />
-        <MetricCard icon={Clock}       label="Pending Requests"    value="05" sub="Time-off approvals" trend="3 Urgent" isAlert />
-        <MetricCard icon={CheckCircle} label="Approvals Needed"    value="02" sub="Performance reviews" trend="Pending" />
+        <MetricCard icon={Users}       label="My Team Size"        value={totalCount !== null ? String(totalCount) : "—"} sub="Company Members" trend={totalCount !== null ? `${totalCount} total` : "Loading..."} />
+        <MetricCard icon={Clock}       label="Pending Requests"    value="—" sub="Time-off approvals" trend="Coming soon" isAlert />
+        <MetricCard icon={CheckCircle} label="Approvals Needed"    value="—" sub="Performance reviews" trend="Coming soon" />
       </div>
 
       <Card className="border-border overflow-hidden">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 p-6 bg-muted/20">
           <div>
             <CardTitle className="text-lg font-bold">Direct Reports</CardTitle>
-            <p className="text-xs text-muted-foreground">Monitor team status, availability, and performance</p>
+            <p className="text-xs text-muted-foreground">Team members in your company</p>
           </div>
           <div className="flex items-center gap-2">
             <div className="relative">
@@ -75,55 +93,53 @@ export default function ManagerDashboardPage() {
             <thead className="text-[10px] font-bold text-muted-foreground bg-muted/30 border-y border-border uppercase tracking-widest">
               <tr>
                 <th className="px-6 py-4">Employee</th>
-                <th className="px-6 py-4">Role</th>
-                <th className="px-6 py-4">Status & Performance</th>
+                <th className="px-6 py-4">Email</th>
+                <th className="px-6 py-4">Status</th>
                 <th className="px-6 py-4 text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
-              {currentTableData.map((row, i) => (
-                <tr key={i} className="hover:bg-muted/30 transition-colors group">
-                  <td className="px-6 py-4 flex items-center gap-3">
-                    <div className="h-9 w-9 bg-primary/10 text-primary rounded-full flex items-center justify-center font-bold text-xs border border-primary/5">
-                      {row.name.charAt(0)}
-                    </div>
-                    <div>
-                      <p className="font-semibold text-foreground">{row.name}</p>
-                      <p className="text-[10px] text-muted-foreground uppercase font-medium">{row.email}</p>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 text-foreground font-medium">{row.role}</td>
-                  <td className="px-6 py-4">
-                    <div className="flex flex-col gap-1.5 w-32">
-                      <div className="flex justify-between items-center">
-                        <Badge variant={row.status === "Online" ? "default" : "secondary"} className="text-[9px]">
-                          {row.status}
-                        </Badge>
-                        <span className="text-[10px] font-medium text-muted-foreground">{row.performance}%</span>
+              {loading ? (
+                <tr><td colSpan={4} className="px-6 py-8 text-center text-muted-foreground text-sm">Loading team...</td></tr>
+              ) : currentTableData.length === 0 ? (
+                <tr><td colSpan={4} className="px-6 py-8 text-center text-muted-foreground text-sm">No team members found.</td></tr>
+              ) : currentTableData.map((row) => {
+                const name = [row.first_name, row.last_name].filter(Boolean).join(" ") || row.email;
+                return (
+                  <tr key={row.user_id} className="hover:bg-muted/30 transition-colors group">
+                    <td className="px-6 py-4 flex items-center gap-3">
+                      <div className="h-9 w-9 bg-primary/10 text-primary rounded-full flex items-center justify-center font-bold text-xs border border-primary/5">
+                        {name.charAt(0).toUpperCase()}
                       </div>
-                      <Progress value={row.performance} className="h-1.5" />
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 text-right">
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-primary">
-                      <MoreHorizontal className="h-4 w-4" />
-                    </Button>
-                  </td>
-                </tr>
-              ))}
+                      <p className="font-semibold text-foreground">{name}</p>
+                    </td>
+                    <td className="px-6 py-4 text-muted-foreground">{row.email}</td>
+                    <td className="px-6 py-4">
+                      <Badge variant="default" className="text-[9px]">Active</Badge>
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-primary">
+                        <MoreHorizontal className="h-4 w-4" />
+                      </Button>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
 
         <div className="p-4 bg-muted/10 border-t border-border flex items-center justify-between">
           <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
-            Showing {(currentPage - 1) * itemsPerPage + 1} to {Math.min(currentPage * itemsPerPage, filteredData.length)} of {filteredData.length}
+            {filteredData.length > 0
+              ? `Showing ${(currentPage - 1) * itemsPerPage + 1} to ${Math.min(currentPage * itemsPerPage, filteredData.length)} of ${filteredData.length}`
+              : "No results"}
           </p>
           <div className="flex gap-2">
-            <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => p - 1)} disabled={currentPage === 1} className="h-8 gap-1">
+            <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => p - 1)} disabled={currentPage === 1 || totalPages === 0} className="h-8 gap-1">
               <ChevronLeft className="h-4 w-4" /> Prev
             </Button>
-            <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => p + 1)} disabled={currentPage === totalPages} className="h-8 gap-1">
+            <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => p + 1)} disabled={currentPage === totalPages || totalPages === 0} className="h-8 gap-1">
               Next <ChevronRight className="h-4 w-4" />
             </Button>
           </div>

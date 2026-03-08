@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useLayoutEffect } from "react";
+import { useState, useLayoutEffect, useCallback } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { getRefreshToken, clearAuthStorage, saveUserInfo, getAccessToken, parseJwt } from "@/lib/authStorage";
-import { authFetch } from "@/lib/authApi";
+import { authFetch, logoutApi } from "@/lib/authApi";
+import { useIdleTimeout } from "@/lib/useIdleTimeout";
 import { API_BASE_URL } from "@/lib/api";
 import { roleToPath } from "@/lib/roleMap";
 import { Sidebar } from "@/components/layout/Sidebar";
@@ -20,6 +21,13 @@ export default function SharedDashboardLayout({
   const pathname = usePathname();
   const [role, setRole] = useState<UserRole | null>(null);
   const [isAuthorized, setIsAuthorized] = useState(false);
+
+  const handleIdle = useCallback(async () => {
+    await logoutApi();
+    router.replace("/login");
+  }, [router]);
+
+  useIdleTimeout(handleIdle, role === "system-admin");
 
   useLayoutEffect(() => {
     const refreshToken = getRefreshToken();
