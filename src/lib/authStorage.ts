@@ -60,7 +60,7 @@ export function writeAccessToken(access_token: string) {
   else sessionStorage.setItem(ACCESS_KEY, access_token);
 }
 
-export function saveUserInfo(info: StoredUser) {
+export function saveUserInfo(info: StoredUser) {// stores as "user_info" in storage
   if (typeof window === "undefined") return;
   const storage = getStorage() ?? sessionStorage;
   storage.setItem(USER_KEY, JSON.stringify(info));
