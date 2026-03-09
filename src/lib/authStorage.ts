@@ -1,5 +1,6 @@
 // src/lib/authStorage.ts
 export const USER_KEY = "user_info";
+const REMEMBER_KEY = "rm";
 
 export interface StoredUser {
   name: string;
@@ -10,11 +11,25 @@ export interface StoredUser {
 // Access token lives ONLY in memory — never written to sessionStorage or localStorage.
 // It is re-fetched via the HttpOnly refresh_token cookie whenever the page reloads.
 let _accessToken: string | null = null;
-let _rememberMe = false; // track preference for user_info persistence
+
+// Restored from localStorage so it survives page reloads.
+let _rememberMe =
+  typeof window !== "undefined" && localStorage.getItem(REMEMBER_KEY) === "1";
 
 export function setTokens(params: { access_token: string; rememberMe: boolean }) {
   _accessToken = params.access_token;
   _rememberMe = params.rememberMe;
+  if (typeof window !== "undefined") {
+    if (params.rememberMe) {
+      localStorage.setItem(REMEMBER_KEY, "1");
+    } else {
+      localStorage.removeItem(REMEMBER_KEY);
+    }
+  }
+}
+
+export function getRememberMe(): boolean {
+  return _rememberMe;
 }
 
 export function getAccessToken(): string | null {
@@ -29,6 +44,7 @@ export function clearAuthStorage() {
   _accessToken = null;
   _rememberMe = false;
   if (typeof window === "undefined") return;
+  localStorage.removeItem(REMEMBER_KEY);
   // Clean up any legacy tokens that may have been stored in old versions
   localStorage.removeItem("access_token");
   localStorage.removeItem("refresh_token");

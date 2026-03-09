@@ -3,8 +3,8 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { loginApi, authFetch } from "@/lib/authApi";
-import { setTokens, saveUserInfo, parseJwt, getAccessToken, getUserInfo } from "@/lib/authStorage";
+import { loginApi, authFetch, refreshApi } from "@/lib/authApi";
+import { setTokens, saveUserInfo, parseJwt, clearAuthStorage, getRememberMe, getUserInfo } from "@/lib/authStorage";
 import { API_BASE_URL } from "@/lib/api";
 import { roleToPath } from "@/lib/roleMap";
 import { Button } from "@/components/ui/button";
@@ -27,11 +27,13 @@ export default function EmployeeLoginPage() {
   const router = useRouter();
 
   useEffect(() => {
-    const token = getAccessToken();
+    if (!getRememberMe()) return;
     const userInfo = getUserInfo();
-    if (token && userInfo && userInfo.role !== "applicant") {
-      router.replace(`/${userInfo.role}`);
-    }
+    if (!userInfo || userInfo.role === "applicant") return;
+
+    refreshApi()
+      .then(() => router.replace(`/${userInfo.role}`))
+      .catch(() => clearAuthStorage()); // cookie expired — stay on login
   }, [router]);
 
   const [identifier, setIdentifier] = useState("");

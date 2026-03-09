@@ -30,11 +30,6 @@ export default function SharedDashboardLayout({
   useIdleTimeout(handleIdle, role === "system-admin");
 
   useLayoutEffect(() => {
-    if (!getAccessToken()) {
-      router.replace("/login");
-      return;
-    }
-
     const verify = async () => {
       const res = await authFetch(`${API_BASE_URL}/me`);
       if (!res.ok) {
