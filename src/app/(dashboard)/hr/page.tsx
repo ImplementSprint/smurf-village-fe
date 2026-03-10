@@ -13,12 +13,15 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
+// GET /users → Employee[]
+// TODO: backend to add `status` field ("active" | "inactive" | "pending") to this response
 type Employee = {
   user_id: string;
   first_name: string | null;
   last_name: string | null;
   email: string;
   role_id: number;
+  status?: string;
 };
 
 export default function HRDashboardPage() {
@@ -27,6 +30,7 @@ export default function HRDashboardPage() {
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [totalCount, setTotalCount] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState(false);
   const itemsPerPage = 5;
 
   const user = getUserInfo();
@@ -42,7 +46,7 @@ export default function HRDashboardPage() {
         setEmployees(Array.isArray(emps) ? emps : []);
         setTotalCount(stats?.total ?? null);
       })
-      .catch(() => {})
+      .catch(() => setFetchError(true))
       .finally(() => setLoading(false));
   }, []);
 
@@ -62,8 +66,9 @@ export default function HRDashboardPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <MetricCard icon={Users}    label="Total Headcount"       value={totalCount !== null ? String(totalCount) : "—"} sub="Active Employees" trend={totalCount !== null ? `${totalCount} total` : "Loading..."} />
-        <MetricCard icon={FileText} label="Pending Verifications" value="—"  sub="Action Required"  trend="Coming soon" isAlert />
-        <MetricCard icon={UserPlus} label="New Hires"             value="—"  sub="Onboarding"       trend="Coming soon" />
+        {/* TODO: wire to dedicated endpoint when available */}
+        <MetricCard icon={FileText} label="Pending Verifications" value="—" sub="Action Required"  trend="Coming soon" isAlert />
+        <MetricCard icon={UserPlus} label="New Hires"             value="—" sub="Onboarding"       trend="Coming soon" />
       </div>
 
       <Card className="border-border overflow-hidden">
@@ -100,11 +105,15 @@ export default function HRDashboardPage() {
             <tbody className="divide-y divide-border">
               {loading ? (
                 <tr><td colSpan={4} className="px-6 py-8 text-center text-muted-foreground text-sm">Loading employees...</td></tr>
+              ) : fetchError ? (
+                <tr><td colSpan={4} className="px-6 py-8 text-center text-destructive text-sm">Failed to load employees. Please refresh or contact support.</td></tr>
               ) : currentTableData.length === 0 ? (
                 <tr><td colSpan={4} className="px-6 py-8 text-center text-muted-foreground text-sm">No employees found.</td></tr>
               ) : currentTableData.map((row) => {
                 const name = [row.first_name, row.last_name].filter(Boolean).join(" ") || row.email;
                 const initial = name.charAt(0).toUpperCase();
+                // status defaults to "active" until backend adds the field
+                const status = row.status ?? "active";
                 return (
                   <tr key={row.user_id} className="hover:bg-muted/30 transition-colors group">
                     <td className="px-6 py-4 flex items-center gap-3">
@@ -115,7 +124,12 @@ export default function HRDashboardPage() {
                     </td>
                     <td className="px-6 py-4 text-muted-foreground">{row.email}</td>
                     <td className="px-6 py-4">
-                      <Badge variant="default" className="text-[9px]">Active</Badge>
+                      <Badge
+                        variant={status === "active" ? "default" : "secondary"}
+                        className="text-[9px] capitalize"
+                      >
+                        {status}
+                      </Badge>
                     </td>
                     <td className="px-6 py-4 text-right">
                       <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-primary">
