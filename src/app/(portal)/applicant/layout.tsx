@@ -14,11 +14,11 @@ export default function PortalLayout({
 }) {
   const pathname = usePathname();
   const router = useRouter();
-  const isLoginPage = pathname.includes("/login");
+  const isPublicPage = pathname.includes("/login") || pathname.includes("/verify-email");
   const [ready, setReady] = useState(false);
 
   useLayoutEffect(() => {
-    if (isLoginPage) {
+    if (isPublicPage) {
       setReady(true);
       return;
     }
@@ -33,9 +33,9 @@ export default function PortalLayout({
     refreshApi()
       .then(() => setReady(true))
       .catch(() => router.replace("/applicant/login"));
-  }, [isLoginPage, router]);
+  }, [isPublicPage, router]);
 
-  if (isLoginPage) {
+  if (isPublicPage) {
     return <div className="min-h-screen">{children}</div>;
   }
 

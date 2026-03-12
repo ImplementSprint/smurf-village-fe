@@ -27,6 +27,19 @@ export async function loginApi(body: {
   return data as { access_token: string };
 }
 
+export async function applicantLoginApi(body: { email: string; password: string }) {
+  const res = await fetch(`${API_BASE_URL}/applicants/login`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data?.message || "Login failed");
+
+  return data as { access_token: string };
+}
+
 // TODO (Sprint 2 - Backend): implement Google OAuth endpoint
 // Expected endpoint: POST /api/tribeX/auth/v1/auth/google
 //

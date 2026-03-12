@@ -3,10 +3,8 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { loginApi, authFetch } from "@/lib/authApi";
+import { applicantLoginApi } from "@/lib/authApi";
 import { setTokens, saveUserInfo, parseJwt, getAccessToken, getUserInfo } from "@/lib/authStorage";
-import { API_BASE_URL } from "@/lib/api";
-import { roleToPath } from "@/lib/roleMap";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
@@ -39,36 +37,21 @@ export default function ApplicantPortalAuth() {
     setIsLoading(true);
 
     try {
-      const { access_token } = await loginApi({
-        identifier: email,
-        password,
-        rememberMe: false,
-      });
+      const { access_token } = await applicantLoginApi({ email, password });
 
       setTokens({ access_token, rememberMe: false });
 
       const payload = parseJwt(access_token);
       if (!payload) throw new Error("Invalid token received from server.");
 
-      const role = roleToPath(payload.role_name).replace("/", "");
+      const name = [payload.first_name ?? "", payload.last_name ?? ""]
+        .filter(Boolean)
+        .join(" ") || email;
 
-      if (role !== "applicant") {
-        setError("Staff accounts must use the Internal Login portal.");
-        setIsLoading(false);
-        return;
-      }
+      saveUserInfo({ name, email, role: "applicant" });
 
-      const meRes = await authFetch(`${API_BASE_URL}/me`);
-      const me = await meRes.json().catch(() => ({}));
-
-      const firstName = payload.first_name ?? "";
-      const lastName = payload.last_name ?? "";
-      const name = [firstName, lastName].filter(Boolean).join(" ") || me.username || email;
-
-      saveUserInfo({ name, email: me.email ?? email, role: "applicant" });
-
-      // Hard redirect to refresh layout and show Sidebar
-      window.location.href = "/applicant/dashboard";
+      // Soft navigation — keeps in-memory access token alive (no refresh cookie for applicants)
+      router.push("/applicant/dashboard");
     } catch (err: any) {
       setError(err?.message || "Invalid credentials. Please try again.");
       setIsLoading(false);
