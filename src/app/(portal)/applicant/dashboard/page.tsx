@@ -199,7 +199,7 @@ export default function ApplicantDashboardPage() {
                   </CardTitle>
                   <p className="text-sm text-muted-foreground mt-1 flex items-center gap-1.5">
                     <Clock className="h-3.5 w-3.5" />
-                    {statusLabel(primaryApplication.status)} • Applied {formatDate(primaryApplication.applied_at)}
+                    {statusLabel(primaryApplication.status)}  -  Applied {formatDate(primaryApplication.applied_at)}
                   </p>
                 </>
               ) : (
