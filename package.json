@@ -7,9 +7,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "node scripts/run-vitest.mjs",
-    "test:coverage": "vitest run --coverage",
-    "test:watch": "vitest",
+    "test": "jest --coverage",
+    "test:coverage": "jest --coverage",
+    "test:watch": "jest --watch",
     "test:e2e": "tsx tests/e2e/selenium-e2e.ts",
     "test:e2e:firefox": "tsx tests/e2e/selenium-e2e.ts --browser=firefox",
     "test:k6": "k6 run tests/performance/k6-global.ts"
@@ -20,20 +20,19 @@
     "react-dom": "19.2.3"
   },
   "devDependencies": {
+    "@testing-library/jest-dom": "^6.8.0",
     "@tailwindcss/postcss": "^4",
+    "@types/jest": "^30.0.0",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "@vitest/coverage-v8": "^4.0.18",
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
+    "jest": "^30.2.0",
+    "jest-environment-jsdom": "^30.2.0",
     "selenium-webdriver": "^4.41.0",
-    "tailwindcss": "^4",
     "tsx": "^4.21.0",
-    "typescript": "^5",
-    "vitest": "^4.0.18"
-  },
-  "overrides": {
-    "minimatch": "^10.2.1"
+    "tailwindcss": "^4",
+    "typescript": "^5"
   }
 }
