@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import {
   Search, MapPin, Clock, Building2, Briefcase,
   DollarSign, SlidersHorizontal, Bookmark, CheckCircle,
-  Loader2, Calendar, CalendarX2, X,
+  Loader2, Calendar, CalendarX2, X, Sparkles, TrendingUp, FileText,
 } from "lucide-react";
 import {
   getApplicantJobs, applyToJob, getMyApplications, getJobQuestions,
@@ -131,7 +131,7 @@ function ApplicationForm({
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-5 border-b border-border shrink-0">
           <div>
-            <h3 className="font-bold text-lg">Apply — {job.title}</h3>
+            <h3 className="font-bold text-lg">Apply - {job.title}</h3>
             <p className="text-xs text-muted-foreground mt-0.5">Complete the form below to submit your application</p>
           </div>
           <button onClick={onClose} className="p-1.5 rounded-md hover:bg-muted/50">
@@ -317,42 +317,54 @@ export default function ApplicantJobsPage() {
   };
 
   const isApplied = displayedJob ? appliedJobIds.has(displayedJob.job_posting_id) : false;
+  const totalApplied = appliedJobIds.size;
+  const totalSaved = bookmarked.size;
+  const trendLabel = jobs.length > 0 ? `${Math.min(jobs.length, 12)} fresh openings` : "No openings yet";
 
   return (
     <div className="space-y-5 max-w-6xl mx-auto animate-in fade-in duration-500">
       {/* Header */}
-      <Card className="border-border shadow-sm overflow-hidden bg-card">
-        <CardHeader className="bg-muted/20 border-b border-border py-5">
-          <p className="text-[10px] font-bold text-primary uppercase tracking-widest mb-1">Open Positions</p>
-          <CardTitle className="text-2xl font-bold tracking-tight">Find Your Next Opportunity</CardTitle>
-          <p className="text-sm text-muted-foreground mt-1">
-            {loading ? "Loading positions…" : `${jobs.length} open position${jobs.length !== 1 ? "s" : ""}`}
+      <Card className="relative overflow-hidden rounded-[28px] border border-slate-200 bg-[linear-gradient(135deg,#0f172a_0%,#172554_52%,#134e4a_100%)] text-white shadow-sm">
+        <div className="absolute inset-y-0 right-0 w-80 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.18),transparent_58%)]" />
+        <CardHeader className="relative z-10 border-b border-white/15 py-6">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-white/70 mb-1">Open Positions</p>
+          <CardTitle className="text-2xl font-bold tracking-tight text-white">Find Your Next Opportunity</CardTitle>
+          <p className="text-sm text-white/75 mt-1">
+            {loading ? "Loading positions..." : `${jobs.length} open position${jobs.length !== 1 ? "s" : ""}`}
           </p>
         </CardHeader>
-        <CardContent className="pt-4 pb-5">
+        <CardContent className="relative z-10 pt-4 pb-5 space-y-4">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/65" />
             <Input
               type="text"
-              placeholder="Search jobs by title or keywords…"
+              placeholder="Search jobs by title or keywords..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="pl-9 h-11 bg-card border-border text-sm"
+              className="pl-9 h-11 border-white/20 bg-white/10 text-sm text-white placeholder:text-white/60"
             />
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <HeroStat icon={<Briefcase className="h-4 w-4" />} label="Open Jobs" value={loading ? "..." : jobs.length} />
+            <HeroStat icon={<FileText className="h-4 w-4" />} label="Applications" value={loading ? "..." : totalApplied} />
+            <HeroStat icon={<TrendingUp className="h-4 w-4" />} label="Market Pulse" value={loading ? "..." : trendLabel} />
           </div>
         </CardContent>
       </Card>
 
       {/* Three-column layout */}
-      <div className="flex gap-5 items-start">
+      <div className="flex flex-col xl:flex-row gap-5 items-start">
         {/* Filters */}
-        <div className="w-52 shrink-0 space-y-4">
+        <div className="w-full xl:w-56 shrink-0 space-y-4">
           <Card className="border-border shadow-sm bg-card">
             <CardHeader className="pb-3 pt-5 px-5">
               <div className="flex items-center gap-2">
                 <SlidersHorizontal className="h-4 w-4 text-muted-foreground" />
                 <CardTitle className="text-base font-bold tracking-tight">Filters</CardTitle>
               </div>
+              <p className="text-xs text-muted-foreground">
+                {totalSaved} saved role{totalSaved !== 1 ? "s" : ""}
+              </p>
             </CardHeader>
             <CardContent className="px-5 pb-5 space-y-5">
               <div className="space-y-2">
@@ -381,7 +393,7 @@ export default function ApplicantJobsPage() {
         </div>
 
         {/* Job list */}
-        <div className="w-72 shrink-0 space-y-2">
+        <div className="w-full xl:w-80 shrink-0 space-y-2">
           {loading ? (
             <div className="flex items-center justify-center py-20">
               <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
@@ -405,7 +417,7 @@ export default function ApplicantJobsPage() {
                     tabIndex={0}
                     onClick={() => selectJob(job)}
                     onKeyDown={(e) => e.key === "Enter" && selectJob(job)}
-                    className={`w-full text-left rounded-xl border p-4 transition-all group cursor-pointer ${isSelected ? "border-primary bg-primary/5 shadow-sm" : "border-border bg-card hover:border-primary/30 hover:bg-muted/20"}`}
+                    className={`w-full text-left rounded-xl border p-4 transition-all group cursor-pointer ${isSelected ? "border-primary bg-[linear-gradient(150deg,rgba(23,37,84,0.10),rgba(15,118,110,0.08))] shadow-sm" : "border-border bg-card hover:border-primary/30 hover:bg-muted/20"}`}
                   >
                     <div className="flex items-start gap-3">
                       <div className={`h-10 w-10 rounded-lg border flex items-center justify-center shrink-0 transition-colors ${isSelected ? "border-primary/30 bg-primary/10" : "border-border bg-muted/30 group-hover:bg-primary/5"}`}>
@@ -453,7 +465,7 @@ export default function ApplicantJobsPage() {
             {displayedJob && (
               <Card className="border-border shadow-sm bg-card overflow-hidden">
                 {/* Job header */}
-                <div className="border-b border-border p-6 space-y-4">
+                <div className="border-b border-border p-6 space-y-4 bg-[linear-gradient(145deg,rgba(23,37,84,0.07),rgba(15,118,110,0.05))]">
                   <div className="flex items-start gap-4">
                     <div className="h-14 w-14 rounded-xl border border-border bg-muted/30 flex items-center justify-center shrink-0">
                       <Building2 className="h-7 w-7 text-muted-foreground" />
@@ -500,7 +512,7 @@ export default function ApplicantJobsPage() {
                       </Button>
                     ) : (
                       <Button onClick={() => setApplyingJob(displayedJob)} className="bg-primary hover:bg-primary/90 text-primary-foreground">
-                        Apply Now
+                        <Sparkles className="mr-2 h-4 w-4" /> Apply Now
                       </Button>
                     )}
                   </div>
@@ -550,6 +562,26 @@ export default function ApplicantJobsPage() {
           }}
         />
       )}
+    </div>
+  );
+}
+
+function HeroStat({
+  icon,
+  label,
+  value,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: React.ReactNode;
+}) {
+  return (
+    <div className="rounded-2xl border border-white/20 bg-white/10 px-4 py-3 backdrop-blur">
+      <div className="flex items-center justify-between">
+        <p className="text-[10px] font-bold uppercase tracking-widest text-white/70">{label}</p>
+        <span className="text-white/80">{icon}</span>
+      </div>
+      <p className="mt-1 text-sm font-semibold text-white">{value}</p>
     </div>
   );
 }
