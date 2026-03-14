@@ -95,8 +95,8 @@ function ApplicantPortalAuthInner() {
 
   // TODO (Sprint 2 - Frontend): wire credentialResponse.credential to googleLoginApi()
   // once backend endpoint POST /api/tribeX/auth/v1/auth/google is ready.
-  const handleGoogleSignIn = (credentialResponse: any) => {
-    // TODO: googleLoginApi(credentialResponse.credential)
+  const handleGoogleSignIn = (_credentialResponse: any) => {
+    setError("Google sign-in is not enabled yet in this environment.");
   };
 
   return (
@@ -155,7 +155,7 @@ function ApplicantPortalAuthInner() {
               width="368"
             />
           </div> */}
-          <GoogleSignInButton disabled={isLoading} onClick={() => {}} />
+          <GoogleSignInButton disabled={isLoading} onClick={() => setError("Google sign-in is not enabled yet in this environment.")} />
 
           {/* Divider */}
           <div className="flex items-center gap-3">

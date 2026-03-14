@@ -91,8 +91,8 @@ export default function EmployeeLoginPage() {
   // credentialResponse.credential is the Google ID token — pass it directly to googleLoginApi().
   // On success, follow same post-login flow as handleLogin():
   // setTokens() → parseJwt() → saveUserInfo() → router.push()
-  const handleGoogleSignIn = (credentialResponse: any) => {
-    // TODO: googleLoginApi(credentialResponse.credential)
+  const handleGoogleSignIn = (_credentialResponse: any) => {
+    setError("Google sign-in is not enabled yet in this environment.");
   };
 
   return (
@@ -133,7 +133,7 @@ export default function EmployeeLoginPage() {
               width="368"
             />
           </div> */}
-          <GoogleSignInButton disabled={isLoading} onClick={() => {}} />
+          <GoogleSignInButton disabled={isLoading} onClick={() => setError("Google sign-in is not enabled yet in this environment.")} />
 
           {/* Divider */}
           <div className="flex items-center gap-3">
