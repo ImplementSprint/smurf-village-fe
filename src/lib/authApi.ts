@@ -82,6 +82,10 @@ export async function refreshApi() {
   return data as { access_token: string };
 }
 
+export async function applicantLogoutApi() {
+  clearAuthStorage();
+}
+
 export async function logoutApi() {
   const access_token = getAccessToken();
 
