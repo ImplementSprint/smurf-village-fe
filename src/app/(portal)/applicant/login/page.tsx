@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { applicantLoginApi } from "@/lib/authApi";
+import { applicantLoginApi, applicantRegisterApi } from "@/lib/authApi";
 import { setTokens, saveUserInfo, parseJwt, getAccessToken, getUserInfo } from "@/lib/authStorage";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,10 +12,11 @@ import { GoogleSignInButton } from "@/components/ui/google-sign-in-button";
 // TODO (Sprint 2): swap GoogleSignInButton for GoogleLogin once Client ID is available
 // import { GoogleLogin } from "@react-oauth/google";
 import { Card, CardContent } from "@/components/ui/card";
-import { Search, Briefcase, TrendingUp, AlertCircle, Loader2 } from "lucide-react";
+import { Search, Briefcase, TrendingUp, AlertCircle, Loader2, Mail } from "lucide-react";
 
 export default function ApplicantPortalAuth() {
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   useEffect(() => {
     const token = getAccessToken();
@@ -26,17 +27,38 @@ export default function ApplicantPortalAuth() {
   }, [router]);
 
   const [isSignUp, setIsSignUp] = useState(false);
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [resentEmail, setResentEmail] = useState<string | null>(null);
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    setResentEmail(null);
     setIsLoading(true);
 
     try {
+      if (isSignUp) {
+        const companyId = searchParams.get("company") ?? undefined;
+        await applicantRegisterApi(
+          {
+            first_name: firstName.trim(),
+            last_name: lastName.trim(),
+            email,
+            password,
+            ...(phoneNumber.trim() ? { phone_number: phoneNumber.trim() } : {}),
+          },
+          companyId,
+        );
+        router.push(`/applicant/verify-email?email=${encodeURIComponent(email)}`);
+        return;
+      }
+
       const { access_token } = await applicantLoginApi({ email, password });
 
       setTokens({ access_token, rememberMe: false });
@@ -53,7 +75,12 @@ export default function ApplicantPortalAuth() {
       // Soft navigation — keeps in-memory access token alive (no refresh cookie for applicants)
       router.push("/applicant/dashboard");
     } catch (err: any) {
-      setError(err?.message || "Invalid credentials. Please try again.");
+      const msg: string = err?.message || "";
+      if (msg.startsWith("UNVERIFIED_RESENT:")) {
+        setResentEmail(email);
+      } else {
+        setError(msg || (isSignUp ? "Registration failed. Please try again." : "Invalid credentials. Please try again."));
+      }
       setIsLoading(false);
     }
   };
@@ -67,21 +94,52 @@ export default function ApplicantPortalAuth() {
   return (
     <div className="flex min-h-screen bg-muted/10 animate-in fade-in duration-500">
       {/* Left panel */}
-      <div className="hidden lg:flex flex-col w-1/2 bg-primary/5 p-16 border-r border-border relative">
+      <div className="hidden lg:flex flex-col w-1/2 relative overflow-hidden p-16"
+        style={{ background: "linear-gradient(135deg, #0f172a 0%, #172554 52%, #134e4a 100%)" }}
+      >
+        {/* Decorative circles */}
+        <div className="absolute -top-32 -left-32 h-96 w-96 rounded-full bg-white/5 blur-3xl" />
+        <div className="absolute bottom-0 right-0 h-80 w-80 rounded-full bg-emerald-500/10 blur-3xl" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[500px] w-[500px] rounded-full border border-white/5" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[700px] w-[700px] rounded-full border border-white/[0.03]" />
+
         <div className="mb-auto relative z-10">
-          <h1 className="text-5xl font-bold mb-6 tracking-tighter leading-tight">Join our<br />growing team.</h1>
-          <p className="text-muted-foreground mb-12 max-w-sm text-lg leading-relaxed">
-            Discover opportunities that match your skills and take the next step in your professional journey.
+          {/* Brand mark */}
+          <div className="flex items-center gap-3 mb-14">
+            <div className="h-10 w-10 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center">
+              <Briefcase className="h-5 w-5 text-white" />
+            </div>
+            <div>
+              <p className="text-white font-bold text-sm leading-none">Blue&apos;s Clues HRIS</p>
+              <p className="text-white/50 text-[10px] uppercase tracking-widest mt-0.5">Applicant Portal</p>
+            </div>
+          </div>
+
+          <h1 className="text-4xl font-bold text-white mb-4 tracking-tight leading-snug">
+            Find your next<br />
+            <span className="text-emerald-400">opportunity.</span>
+          </h1>
+          <p className="text-white/60 mb-14 max-w-sm text-base leading-relaxed">
+            Discover roles that match your skills and take the next step in your professional journey.
           </p>
-          <div className="space-y-10">
-            <FeatureItem icon={Search}    title="Explore Roles"      desc="Find the perfect fit for your expertise in our open positions." />
-            <FeatureItem icon={Briefcase} title="Track Application"  desc="Get real-time updates and notifications on your status." />
-            <FeatureItem icon={TrendingUp} title="Grow With Us"      desc="Develop your career in a dynamic, forward-thinking environment." />
+          <div className="space-y-6">
+            <FeatureItem icon={Search}     title="Explore Roles"     desc="Browse open positions tailored to your background." />
+            <FeatureItem icon={Briefcase}  title="Track Applications" desc="Real-time updates on every submission you make." />
+            <FeatureItem icon={TrendingUp} title="Grow With Us"       desc="Join a company that invests in your development." />
           </div>
         </div>
-        <p className="text-[10px] font-bold text-muted-foreground/40 uppercase tracking-widest relative z-10">
-          © 2026 HR Information Systems Portal
-        </p>
+
+        {/* Footer */}
+        <div className="relative z-10 flex items-center justify-between mt-12">
+          <p className="text-[10px] font-bold text-white/30 uppercase tracking-widest">
+            © 2026 HR Information Systems Portal
+          </p>
+          <div className="flex gap-1.5">
+            <span className="h-1.5 w-6 rounded-full bg-white/30" />
+            <span className="h-1.5 w-1.5 rounded-full bg-white/15" />
+            <span className="h-1.5 w-1.5 rounded-full bg-white/15" />
+          </div>
+        </div>
       </div>
 
       {/* Right panel */}
@@ -93,6 +151,26 @@ export default function ApplicantPortalAuth() {
               {isSignUp ? "Create your candidate profile" : "Welcome back, please sign in"}
             </p>
           </div>
+
+          {resentEmail && (
+            <div className="bg-blue-50 border border-blue-200 text-blue-800 text-xs font-medium p-4 rounded-xl space-y-2">
+              <div className="flex items-center gap-3">
+                <Mail className="h-4 w-4 shrink-0 text-blue-600" />
+                <span>
+                  <strong>Verification email resent</strong> to <strong>{resentEmail}</strong>.
+                  This email is registered but was never verified.
+                </span>
+              </div>
+              <div className="pl-7">
+                <Link
+                  href={`/applicant/verify-email?email=${encodeURIComponent(resentEmail)}`}
+                  className="text-blue-700 font-bold underline underline-offset-2 hover:text-blue-900"
+                >
+                  Go to verification page →
+                </Link>
+              </div>
+            </div>
+          )}
 
           {error && (
             <div className="bg-destructive/10 border border-destructive/20 text-destructive text-xs font-medium p-4 rounded-xl flex items-center gap-3">
@@ -145,10 +223,44 @@ export default function ApplicantPortalAuth() {
 
           <form onSubmit={handleAuth} className="space-y-5">
             {isSignUp && (
-              <div className="space-y-2">
-                <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground ml-1">Full Name</label>
-                <Input type="text" placeholder="John Doe" className="h-11 bg-background" required />
-              </div>
+              <>
+                <div className="flex gap-3">
+                  <div className="space-y-2 flex-1">
+                    <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground ml-1">First Name</label>
+                    <Input
+                      type="text"
+                      placeholder="John"
+                      className="h-11 bg-background"
+                      value={firstName}
+                      onChange={(e) => setFirstName(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2 flex-1">
+                    <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground ml-1">Last Name</label>
+                    <Input
+                      type="text"
+                      placeholder="Doe"
+                      className="h-11 bg-background"
+                      value={lastName}
+                      onChange={(e) => setLastName(e.target.value)}
+                      required
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground ml-1">
+                    Phone Number <span className="normal-case font-normal text-muted-foreground/60">(optional)</span>
+                  </label>
+                  <Input
+                    type="tel"
+                    placeholder="+63 917 123 4567"
+                    className="h-11 bg-background"
+                    value={phoneNumber}
+                    onChange={(e) => setPhoneNumber(e.target.value)}
+                  />
+                </div>
+              </>
             )}
 
             <div className="space-y-2">
@@ -202,13 +314,13 @@ export default function ApplicantPortalAuth() {
 
 function FeatureItem({ icon: Icon, title, desc }: any) {
   return (
-    <div className="flex gap-5 group">
-      <div className="bg-primary/10 p-3.5 rounded-2xl h-fit border border-primary/5 transition-transform group-hover:scale-110">
-        <Icon className="h-6 w-6 text-primary" />
+    <div className="flex gap-4 group">
+      <div className="bg-white/10 border border-white/10 p-2.5 rounded-xl h-fit shrink-0 transition-transform group-hover:scale-110">
+        <Icon className="h-5 w-5 text-emerald-400" />
       </div>
-      <div className="space-y-1">
-        <h3 className="font-bold text-foreground leading-none">{title}</h3>
-        <p className="text-sm text-muted-foreground leading-relaxed max-w-xs">{desc}</p>
+      <div className="space-y-0.5">
+        <h3 className="font-bold text-white text-sm leading-none">{title}</h3>
+        <p className="text-sm text-white/50 leading-relaxed max-w-xs">{desc}</p>
       </div>
     </div>
   );

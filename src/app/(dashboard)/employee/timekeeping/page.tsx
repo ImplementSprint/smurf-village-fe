@@ -208,7 +208,7 @@ export default function EmployeeTimekeepingPage() {
     }
   }
 
-  const canTimeIn  = !status || status.current_status === null || status.current_status === "time-out";
+  const canTimeIn  = !status?.time_in;
   const canTimeOut = status?.current_status === "time-in";
 
   const dateMap  = useMemo(() => buildDateMap(timesheet), [timesheet]);
@@ -242,61 +242,56 @@ export default function EmployeeTimekeepingPage() {
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
 
-      {/* Header */}
-      <div className="flex items-center gap-3">
-        <div className="p-2.5 bg-primary/10 text-primary rounded-lg">
-          <Clock className="h-5 w-5" />
-        </div>
-        <div>
-          <h1 className="text-xl font-bold">Timekeeping</h1>
-          <p className="text-xs text-muted-foreground mt-0.5">Track your attendance and work hours</p>
-        </div>
-      </div>
-
       {/* Clock In/Out Card */}
-      <Card className="bg-primary text-primary-foreground border-0 overflow-hidden shadow-lg">
+      <Card className="border-0 overflow-hidden shadow-lg text-white bg-[linear-gradient(135deg,#0f172a_0%,#172554_52%,#134e4a_100%)]">
         <CardContent className="p-8">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
             <div>
-              <p className="text-sm font-medium text-primary-foreground/70 mb-1 flex items-center gap-2">
+              <p className="text-sm font-medium text-white/70 mb-1 flex items-center gap-2">
                 <Clock className="h-4 w-4" /> Current Time
               </p>
               <p className="text-5xl font-bold tracking-tight tabular-nums">{formatLiveTime(now)}</p>
-              <p className="text-sm text-primary-foreground/70 mt-1">{formatLiveDate(now)}</p>
+              <p className="text-sm text-white/70 mt-1">{formatLiveDate(now)}</p>
             </div>
 
             <div className="flex flex-col gap-4">
               <div className="flex items-center gap-2 text-sm">
                 <MapPin className="h-4 w-4" />
                 {location ? (
-                  <span className="text-primary-foreground/90">
+                  <span className="text-white/90">
                     {location.latitude.toFixed(4)}, {location.longitude.toFixed(4)}
                   </span>
                 ) : (
-                  <span className="text-primary-foreground/50">
+                  <span className="text-white/50">
                     {locationError ?? "Acquiring location..."}
                   </span>
                 )}
               </div>
-              <div className="flex gap-3">
-                <Button
-                  onClick={() => handlePunch("time-in")}
-                  disabled={!canTimeIn || actionLoading}
-                  className="bg-white text-primary hover:bg-white/90 font-bold gap-2 flex-1"
-                >
-                  <LogIn className="h-4 w-4" />
-                  {actionLoading && canTimeIn ? "Clocking In..." : "Time In"}
-                </Button>
-                <Button
-                  onClick={() => handlePunch("time-out")}
-                  disabled={!canTimeOut || actionLoading}
-                  variant="outline"
-                  className="border-white/40 text-white hover:bg-white/10 font-bold gap-2 flex-1"
-                >
-                  <LogOut className="h-4 w-4" />
-                  {actionLoading && canTimeOut ? "Clocking Out..." : "Time Out"}
-                </Button>
-              </div>
+              {status?.time_in && status?.time_out ? (
+                <div className="flex items-center gap-2 rounded-lg bg-white/10 border border-white/20 px-4 py-3 text-sm font-semibold text-white/90">
+                  <LogOut className="h-4 w-4 shrink-0" />
+                  Shift complete — attendance recorded for today.
+                </div>
+              ) : (
+                <div className="flex gap-3">
+                  <Button
+                    onClick={() => handlePunch("time-in")}
+                    disabled={!canTimeIn || actionLoading}
+                    className="bg-white text-slate-900 hover:bg-white/90 font-bold gap-2 flex-1"
+                  >
+                    <LogIn className="h-4 w-4" />
+                    {actionLoading && canTimeIn ? "Clocking In..." : "Time In"}
+                  </Button>
+                  <Button
+                    onClick={() => handlePunch("time-out")}
+                    disabled={!canTimeOut || actionLoading}
+                    className="bg-white/10 border border-white/40 text-white hover:bg-white/20 font-bold gap-2 flex-1"
+                  >
+                    <LogOut className="h-4 w-4" />
+                    {actionLoading && canTimeOut ? "Clocking Out..." : "Time Out"}
+                  </Button>
+                </div>
+              )}
               {actionError && <p className="text-sm text-red-300 font-medium">{actionError}</p>}
             </div>
           </div>

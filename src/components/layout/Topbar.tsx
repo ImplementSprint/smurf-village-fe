@@ -1,27 +1,49 @@
 "use client"
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { Search, Bell, ChevronDown, Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { getUserInfo, type StoredUser } from "@/lib/authStorage";
 
-type PersonaType = "applicant" | "employee" | "hr" | "manager" | "admin";
+type PersonaType = "applicant" | "employee" | "hr" | "manager" | "admin" | "system-admin";
 
 const TOPBAR_CONFIG: Record<PersonaType, { search: string; role: string }> = {
   hr: { search: "Search employees...", role: "HR Administration" },
   employee: { search: "Search...", role: "Internal Staff" },
   applicant: { search: "Search jobs...", role: "Job Applicant" },
   manager: { search: "Search team members...", role: "Manager" },
-  admin: { search: "Search...", role: "System Admin" },
+  admin: { search: "Search...", role: "Admin" },
+  "system-admin": { search: "Search...", role: "System Admin" },
 };
 
 export function Topbar({ persona = "applicant" }: { persona?: PersonaType }) {
   const [user, setUser] = useState<StoredUser | null>(null);
+  const [searchValue, setSearchValue] = useState("");
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const debounceRef = useRef<ReturnType<typeof setTimeout>>();
   const config = TOPBAR_CONFIG[persona];
 
   useEffect(() => {
     setUser(getUserInfo());
   }, []);
+
+  // Sync topbar input with URL ?q= when URL changes (e.g. page navigation)
+  useEffect(() => {
+    setSearchValue(searchParams.get("q") ?? "");
+  }, [searchParams]);
+
+  const handleSearch = (value: string) => {
+    setSearchValue(value);
+    clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      const params = new URLSearchParams(searchParams.toString());
+      if (value) params.set("q", value); else params.delete("q");
+      router.replace(`${pathname}?${params.toString()}`, { scroll: false } as any);
+    }, 300);
+  };
 
   const initial = user?.name?.charAt(0) || persona.charAt(0).toUpperCase();
 
@@ -34,6 +56,8 @@ export function Topbar({ persona = "applicant" }: { persona?: PersonaType }) {
         <Input
           type="text"
           placeholder={config.search}
+          value={searchValue}
+          onChange={(e) => handleSearch(e.target.value)}
           className="pl-9 bg-muted/30 border-border focus-visible:ring-primary/20"
         />
       </div>

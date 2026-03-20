@@ -30,16 +30,16 @@ export default function EmployeeDashboardPage() {
   return (
     <div className="space-y-6 max-w-6xl mx-auto animate-in fade-in duration-500">
 
-      <div className="relative bg-primary overflow-hidden rounded-2xl p-8 text-white shadow-lg h-52 flex flex-col justify-center border border-white/10">
-        <div className="absolute top-0 right-10 w-64 h-64 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/4 blur-3xl" />
-        <div className="absolute bottom-0 right-32 w-40 h-40 bg-white/10 rounded-full translate-y-1/2 translate-x-1/4 blur-2xl" />
-        <div className="relative z-10 max-w-2xl">
-          <h1 className="text-3xl font-bold mb-3">Welcome, {session?.name || "Employee"}!</h1>
-          <p className="text-white/80 text-base leading-relaxed max-w-lg">
-            We're excited to have you on board. Here's a quick overview of your profile and onboarding progress.
+      <section className="relative overflow-hidden rounded-[26px] border border-slate-200 bg-[linear-gradient(135deg,#0f172a_0%,#172554_52%,#134e4a_100%)] px-6 py-7 text-white shadow-sm md:px-7 md:py-8">
+        <div className="absolute inset-y-0 right-0 w-72 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.20),transparent_60%)]" />
+        <div className="relative z-10">
+          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/70">Employee Portal</p>
+          <h1 className="mt-2 text-2xl font-bold tracking-tight md:text-3xl">Welcome, {session?.name || "Employee"}!</h1>
+          <p className="mt-2 max-w-2xl text-sm text-white/75">
+            Here&apos;s a quick overview of your profile and onboarding progress. Complete your checklist to get started.
           </p>
         </div>
-      </div>
+      </section>
 
       <div className="grid md:grid-cols-[1fr_1.5fr] gap-6 items-start">
 

@@ -2,26 +2,40 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { CheckCircle2, XCircle, Loader2 } from "lucide-react";
+import { CheckCircle2, XCircle, Loader2, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { API_BASE_URL } from "@/lib/api";
+import { applicantResendVerificationApi } from "@/lib/authApi";
 
-type VerifyState = "loading" | "success" | "error";
+type VerifyState = "pending" | "loading" | "success" | "error";
+type ResendState = "idle" | "loading" | "sent" | "error";
 
 export default function VerifyEmailPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const token = searchParams.get("token");
+  const email = searchParams.get("email");
 
-  const [state, setState] = useState<VerifyState>("loading");
+  const [state, setState] = useState<VerifyState>(token ? "loading" : "pending");
   const [errorMessage, setErrorMessage] = useState<string>("");
+  const [resendState, setResendState] = useState<ResendState>("idle");
+  const [resendError, setResendError] = useState<string>("");
+
+  const handleResend = async () => {
+    if (!email) return;
+    setResendState("loading");
+    setResendError("");
+    try {
+      await applicantResendVerificationApi(email);
+      setResendState("sent");
+    } catch (err: any) {
+      setResendError(err?.message || "Failed to resend. Please try again.");
+      setResendState("error");
+    }
+  };
 
   useEffect(() => {
-    if (!token) {
-      setErrorMessage("No verification token found in the link.");
-      setState("error");
-      return;
-    }
+    if (!token) return;
 
     fetch(`${API_BASE_URL}/applicants/verify-email?token=${encodeURIComponent(token)}`)
       .then(async (res) => {
@@ -52,6 +66,33 @@ export default function VerifyEmailPage() {
 
         {/* Card */}
         <div className="bg-card border border-border rounded-2xl shadow-sm p-8 text-center space-y-6">
+          {state === "pending" && (
+            <>
+              <div className="flex justify-center">
+                <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center">
+                  <Mail className="h-9 w-9 text-primary" />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <h1 className="text-xl font-semibold text-foreground">
+                  Check your email
+                </h1>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  We sent a verification link to{" "}
+                  {email ? <span className="font-medium text-foreground">{email}</span> : "your email address"}.
+                  Click the link to activate your account.
+                </p>
+              </div>
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={() => router.push("/applicant/login")}
+              >
+                Back to Sign In
+              </Button>
+            </>
+          )}
+
           {state === "loading" && (
             <>
               <div className="flex justify-center">
@@ -108,6 +149,35 @@ export default function VerifyEmailPage() {
                   {errorMessage || "This link is invalid, expired, or has already been used."}
                 </p>
               </div>
+
+              {/* Resend option — only shown when we know the email */}
+              {email && resendState !== "sent" && (
+                <div className="space-y-2">
+                  <Button
+                    className="w-full"
+                    disabled={resendState === "loading"}
+                    onClick={handleResend}
+                  >
+                    {resendState === "loading" ? (
+                      <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Sending...</>
+                    ) : (
+                      <><Mail className="h-4 w-4 mr-2" /> Resend Verification Email</>
+                    )}
+                  </Button>
+                  {resendState === "error" && (
+                    <p className="text-xs text-destructive text-center">{resendError}</p>
+                  )}
+                </div>
+              )}
+
+              {resendState === "sent" && (
+                <div className="rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 px-4 py-3">
+                  <p className="text-sm text-green-700 dark:text-green-400 text-center">
+                    A new verification link has been sent to <span className="font-medium">{email}</span>. Check your inbox.
+                  </p>
+                </div>
+              )}
+
               <Button
                 variant="outline"
                 className="w-full"

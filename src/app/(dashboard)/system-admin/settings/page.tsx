@@ -350,35 +350,36 @@ export default function GlobalSettingsPage() {
   return (
     <>
       <div className="max-w-7xl space-y-6">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-          <div className="flex items-start gap-3">
-            <div className="rounded-xl bg-primary/10 p-3 text-primary">
-              <Shield className="h-5 w-5" />
-            </div>
+        {/* Welcome card */}
+        <section className="relative overflow-hidden rounded-[26px] border border-slate-200 bg-[linear-gradient(135deg,#0f172a_0%,#172554_52%,#134e4a_100%)] px-6 py-7 text-white shadow-sm md:px-7 md:py-8">
+          <div className="absolute inset-y-0 right-0 w-72 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.20),transparent_60%)]" />
+          <div className="relative z-10 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
             <div>
-              <h1 className="text-xl font-bold">HRIS Role Settings</h1>
-              <p className="mt-1 max-w-3xl text-sm text-muted-foreground">
-                Configure lifecycle module access using the HRIS roles from the database.
-                Each toggle writes to the matching <span className="font-mono">role_feature</span> rows
-                with separate read, create, update, and delete permissions.
+              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/70">System Administration</p>
+              <h1 className="mt-2 text-2xl font-bold tracking-tight md:text-3xl">HRIS Role Settings</h1>
+              <p className="mt-2 max-w-2xl text-sm text-white/75">
+                Configure lifecycle module access per role. Each toggle controls read, create, update, and delete permissions.
               </p>
             </div>
+            <div className="flex items-center gap-2 shrink-0">
+              <Button
+                variant="outline"
+                className="gap-1.5 bg-white/10 border-white/20 text-white hover:bg-white/20 hover:text-white"
+                onClick={handleReset}
+                disabled={!isDirty || saving}
+              >
+                <RotateCcw className="h-3.5 w-3.5" /> Reset
+              </Button>
+              <Button
+                className="gap-1.5 bg-white text-slate-900 hover:bg-white/90"
+                onClick={handleSave}
+                disabled={!isDirty || saving}
+              >
+                {saving ? "Saving..." : "Save Changes"}
+              </Button>
+            </div>
           </div>
-
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              className="gap-1.5"
-              onClick={handleReset}
-              disabled={!isDirty || saving}
-            >
-              <RotateCcw className="h-3.5 w-3.5" /> Reset
-            </Button>
-            <Button className="gap-1.5" onClick={handleSave} disabled={!isDirty || saving}>
-              {saving ? "Saving..." : "Save Changes"}
-            </Button>
-          </div>
-        </div>
+        </section>
 
         <section className="rounded-2xl border border-border bg-card px-5 py-4 shadow-sm">
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">

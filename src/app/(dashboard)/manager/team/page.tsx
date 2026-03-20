@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { getUserInfo, getAccessToken, parseJwt } from "@/lib/authStorage";
 import { authFetch } from "@/lib/authApi";
 import { API_BASE_URL } from "@/lib/api";
@@ -10,7 +11,8 @@ import { Input } from "@/components/ui/input";
 import {
   Search, MoreHorizontal, X,
   ChevronLeft, ChevronRight, Pencil, UserX, UserCheck,
-  Filter, Download, Check, Mail, Users,
+  Filter, Download, Check, Mail, Users, Eye,
+  Hash, User, Building2, Calendar, Shield, Loader2,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -111,6 +113,13 @@ function formatInviteDeadline(value: string | null) {
   });
 }
 
+function formatDate(value: string | null) {
+  if (!value) return "—";
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return "Unknown";
+  return parsed.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
+}
+
 function formatInviteCountdown(expiresAt: string | null, now: number) {
   if (!expiresAt) return "No active invite";
   const expiry = new Date(expiresAt).getTime();
@@ -129,14 +138,29 @@ function formatInviteCountdown(expiresAt: string | null, now: number) {
 }
 
 // Row action dropdown
+function MenuRow({ icon: Icon, label, onClick, color }: {
+  icon: React.ElementType; label: string; onClick: () => void; color?: string;
+}) {
+  return (
+    <button
+      className={`flex items-center gap-2 px-3 py-2 w-full hover:bg-muted/50 text-sm ${color ?? "text-foreground"}`}
+      onClick={onClick}
+    >
+      <Icon className="h-3.5 w-3.5" /> {label}
+    </button>
+  );
+}
+
 function RowMenu({
   employee,
+  onView,
   onEdit,
   onDeactivate,
   onReactivate,
   onResendInvite,
 }: {
   employee: Employee;
+  onView: () => void;
   onEdit: () => void;
   onDeactivate: () => void;
   onReactivate: () => void;
@@ -165,6 +189,8 @@ function RowMenu({
     setOpen(v => !v);
   };
 
+  const close = (fn: () => void) => () => { fn(); setOpen(false); };
+
   return (
     <div>
       <Button
@@ -179,36 +205,18 @@ function RowMenu({
         <div
           ref={menuRef}
           style={{ top: menuPos.top, right: menuPos.right }}
-          className="fixed z-50 w-44 bg-card border border-border rounded-lg shadow-lg py-1 text-sm"
+          className="fixed z-50 w-48 bg-card border border-border rounded-lg shadow-lg py-1 text-sm"
         >
-          <button
-            className="flex items-center gap-2 px-3 py-2 w-full hover:bg-muted/50 text-foreground"
-            onClick={() => { onEdit(); setOpen(false); }}
-          >
-            <Pencil className="h-3.5 w-3.5" /> Edit Details
-          </button>
+          <MenuRow icon={Eye}    label="View Profile" onClick={close(onView)} />
+          <MenuRow icon={Pencil} label="Edit Employee" onClick={close(onEdit)} />
           {employee.account_status === "Pending" && (
-            <button
-              className="flex items-center gap-2 px-3 py-2 w-full hover:bg-muted/50 text-blue-600"
-              onClick={() => { onResendInvite(); setOpen(false); }}
-            >
-              <Mail className="h-3.5 w-3.5" /> Resend Invite
-            </button>
+            <MenuRow icon={Mail} label="Resend Invite" onClick={close(onResendInvite)} color="text-blue-600" />
           )}
+          <div className="border-t border-border my-1" />
           {employee.account_status === "Inactive" ? (
-            <button
-              className="flex items-center gap-2 px-3 py-2 w-full hover:bg-muted/50 text-green-600"
-              onClick={() => { onReactivate(); setOpen(false); }}
-            >
-              <UserCheck className="h-3.5 w-3.5" /> Reactivate
-            </button>
+            <MenuRow icon={UserCheck} label="Reactivate"  onClick={close(onReactivate)}  color="text-green-600" />
           ) : (
-            <button
-              className="flex items-center gap-2 px-3 py-2 w-full hover:bg-muted/50 text-red-600"
-              onClick={() => { onDeactivate(); setOpen(false); }}
-            >
-              <UserX className="h-3.5 w-3.5" /> Deactivate
-            </button>
+            <MenuRow icon={UserX}    label="Deactivate"  onClick={close(onDeactivate)}  color="text-red-600" />
           )}
         </div>
       )}
@@ -216,8 +224,83 @@ function RowMenu({
   );
 }
 
-// Edit Employee slide-over
-function EditUserPanel({
+// View Profile sheet (right-side slide-in)
+function ProfileField({ icon: Icon, label, value }: {
+  icon: React.ElementType; label: string; value: string;
+}) {
+  return (
+    <div className="flex items-start gap-3 py-3 border-b border-border last:border-0">
+      <div className="p-1.5 rounded-md bg-muted text-muted-foreground mt-0.5 shrink-0">
+        <Icon className="h-3.5 w-3.5" />
+      </div>
+      <div>
+        <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{label}</p>
+        <p className="text-sm font-medium text-foreground mt-0.5">{value || "—"}</p>
+      </div>
+    </div>
+  );
+}
+
+function ViewProfileSheet({
+  employee,
+  roles,
+  departments,
+  onClose,
+}: {
+  employee: Employee;
+  roles: Role[];
+  departments: Department[];
+  onClose: () => void;
+}) {
+  const roleName = roles.find(r => r.role_id === employee.role_id)?.role_name ?? "—";
+  const deptName = departments.find(d => d.department_id === employee.department_id)?.department_name ?? "—";
+
+  return (
+    <div className="fixed inset-0 z-50 flex justify-end">
+      <div className="absolute inset-0 bg-black/30" onClick={onClose} />
+      <div className="relative bg-card w-full max-w-sm h-full shadow-2xl flex flex-col overflow-y-auto">
+        <div className="flex items-center justify-between px-6 py-5 border-b border-border">
+          <div>
+            <h2 className="font-bold text-lg">Employee Profile</h2>
+            <p className="text-xs text-muted-foreground">{employee.email}</p>
+          </div>
+          <Button variant="ghost" size="icon" onClick={onClose}><X className="h-4 w-4" /></Button>
+        </div>
+
+        <div className="flex-1 px-6 py-6 overflow-y-auto">
+          {/* Avatar + name */}
+          <div className="flex items-center gap-4 mb-6">
+            <div className="h-14 w-14 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-xl border border-primary/20 shrink-0">
+              {employee.first_name.charAt(0)}
+            </div>
+            <div>
+              <p className="font-bold text-lg leading-tight">{employee.first_name} {employee.last_name}</p>
+              <StatusBadge status={employee.account_status} />
+            </div>
+          </div>
+
+          {/* Fields */}
+          <ProfileField icon={Hash}      label="Employee ID" value={employee.employee_id} />
+          <ProfileField icon={User}      label="Username"    value={employee.username} />
+          <ProfileField icon={Shield}    label="Role"        value={roleName} />
+          <ProfileField icon={Building2} label="Department"  value={deptName} />
+          <ProfileField icon={Calendar}  label="Start Date"  value={formatDate(employee.start_date)} />
+          <ProfileField icon={Calendar}  label="Last Login"  value={formatLastLogin(employee.last_login)} />
+
+          {employee.account_status === "Pending" && employee.invite_expires_at && (
+            <div className="mt-4 p-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg">
+              <p className="text-xs font-bold text-amber-700 dark:text-amber-400 uppercase tracking-widest mb-0.5">Invite Expiry</p>
+              <p className="text-sm text-amber-800 dark:text-amber-300">{formatInviteDeadline(employee.invite_expires_at)}</p>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Edit Employee modal (centered)
+function EditEmployeeModal({
   employee,
   roles,
   departments,
@@ -283,9 +366,9 @@ function EditUserPanel({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex justify-end">
-      <div className="absolute inset-0 bg-black/30" onClick={onClose} />
-      <div className="relative bg-card w-full max-w-md h-full shadow-2xl flex flex-col overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+      <div className="bg-card border border-border rounded-2xl shadow-2xl w-full max-w-md flex flex-col max-h-[90vh]">
+        {/* Header */}
         <div className="flex items-center justify-between px-6 py-5 border-b border-border">
           <div>
             <h2 className="font-bold text-lg">Edit Employee</h2>
@@ -296,13 +379,8 @@ function EditUserPanel({
           <Button variant="ghost" size="icon" onClick={onClose}><X className="h-4 w-4" /></Button>
         </div>
 
+        {/* Body */}
         <div className="flex-1 px-6 py-6 space-y-5 overflow-y-auto">
-          <div className="space-y-1.5">
-            <label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Username</label>
-            <Input value={employee.username} disabled className="opacity-60 cursor-not-allowed" />
-            <p className="text-[11px] text-muted-foreground">Username cannot be changed after account creation.</p>
-          </div>
-
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">First Name</label>
@@ -358,10 +436,11 @@ function EditUserPanel({
           </div>
         </div>
 
+        {/* Footer */}
         <div className="px-6 py-5 border-t border-border flex gap-3">
           <Button variant="outline" className="flex-1" onClick={onClose}>Cancel</Button>
           <Button className="flex-1" onClick={handleSave} disabled={loading}>
-            {loading ? "Saving..." : "Save Changes"}
+            {loading ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Saving...</> : "Save Changes"}
           </Button>
         </div>
       </div>
@@ -408,6 +487,9 @@ function ConfirmDeactivate({
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
 export default function ManagerTeamPage() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const user = getUserInfo();
   const currentUserId = parseJwt(getAccessToken() ?? "")?.sub_userid as string | undefined;
 
@@ -417,9 +499,15 @@ export default function ManagerTeamPage() {
   const [departments, setDepartments] = useState<Department[]>([]);
   const [loading, setLoading]         = useState(true);
   const [now, setNow]                 = useState(() => Date.now());
-  const [search, setSearch]           = useState("");
+  const [search, setSearch]           = useState(searchParams.get("q") ?? "");
   const [page, setPage]               = useState(1);
 
+  // Sync URL ?q= → local search state
+  useEffect(() => {
+    setSearch(searchParams.get("q") ?? "");
+  }, [searchParams]);
+
+  const [viewEmployee, setViewEmployee]   = useState<Employee | null>(null);
   const [editEmployee, setEditEmployee]   = useState<Employee | null>(null);
   const [confirmDeact, setConfirmDeact]   = useState<Employee | null>(null);
   const [showFilter, setShowFilter]       = useState(false);
@@ -549,16 +637,23 @@ export default function ManagerTeamPage() {
   return (
     <div className="space-y-6">
 
-      {/* Header */}
-      <div className="flex items-center gap-3">
-        <div className="rounded-xl bg-primary/10 p-3 text-primary">
-          <Users className="h-5 w-5" />
+      {/* Welcome card */}
+      <section className="relative overflow-hidden rounded-[26px] border border-slate-200 bg-[linear-gradient(135deg,#0f172a_0%,#172554_52%,#134e4a_100%)] px-6 py-7 text-white shadow-sm md:px-7 md:py-8">
+        <div className="absolute inset-y-0 right-0 w-72 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.20),transparent_60%)]" />
+        <div className="relative z-10 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/70">Team Management</p>
+            <h1 className="mt-2 text-2xl font-bold tracking-tight md:text-3xl">My Team</h1>
+            <p className="mt-2 max-w-2xl text-sm text-white/75">
+              View and manage your team members, handle account status, and track direct reports.
+            </p>
+          </div>
+          <div className="rounded-xl border border-white/20 bg-white/10 px-4 py-3 text-right backdrop-blur">
+            <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-white/65">Total Members</p>
+            <p className="mt-1 text-lg font-bold">{stats?.total ?? "—"}</p>
+          </div>
         </div>
-        <div>
-          <h1 className="text-xl font-bold">My Team</h1>
-          <p className="text-xs text-muted-foreground">View and manage your team members</p>
-        </div>
-      </div>
+      </section>
 
       {/* Stats */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
@@ -583,7 +678,13 @@ export default function ManagerTeamPage() {
               <Input
                 placeholder="Search employees..."
                 value={search}
-                onChange={e => { setSearch(e.target.value); setPage(1); }}
+                onChange={e => {
+                  const v = e.target.value;
+                  setSearch(v); setPage(1);
+                  const params = new URLSearchParams(searchParams.toString());
+                  if (v) params.set("q", v); else params.delete("q");
+                  router.replace(`${pathname}?${params.toString()}`, { scroll: false } as any);
+                }}
                 className="pl-9 h-9 w-full sm:w-60"
               />
             </div>
@@ -733,6 +834,7 @@ export default function ManagerTeamPage() {
                   <td className="px-5 py-4 text-right">
                     <RowMenu
                       employee={e}
+                      onView={() => setViewEmployee(e)}
                       onEdit={() => setEditEmployee(e)}
                       onDeactivate={() => setConfirmDeact(e)}
                       onReactivate={() => handleReactivate(e)}
@@ -766,8 +868,16 @@ export default function ManagerTeamPage() {
       </div>
 
       {/* Panels & Dialogs */}
+      {viewEmployee && (
+        <ViewProfileSheet
+          employee={viewEmployee}
+          roles={roles}
+          departments={departments}
+          onClose={() => setViewEmployee(null)}
+        />
+      )}
       {editEmployee && (
-        <EditUserPanel
+        <EditEmployeeModal
           employee={editEmployee}
           roles={roles}
           departments={departments}

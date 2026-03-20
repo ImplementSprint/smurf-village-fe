@@ -7,6 +7,7 @@ export function roleToPath(roleName?: string) {
     case "HR Interviewer":
       return "/hr";
     case "Active Employee":
+      case "Employee":
       return "/employee";
     case "Applicant":
       return "/applicant";

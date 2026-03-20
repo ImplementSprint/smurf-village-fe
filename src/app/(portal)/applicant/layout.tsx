@@ -3,7 +3,7 @@
 import { useLayoutEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { getAccessToken } from "@/lib/authStorage";
-import { refreshApi } from "@/lib/authApi";
+import { applicantRefreshApi } from "@/lib/authApi";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { Topbar } from "@/components/layout/Topbar";
 
@@ -30,7 +30,7 @@ export default function PortalLayout({
       return;
     }
 
-    refreshApi()
+    applicantRefreshApi()
       .then(() => setReady(true))
       .catch(() => router.replace("/applicant/login"));
   }, [isPublicPage, router]);

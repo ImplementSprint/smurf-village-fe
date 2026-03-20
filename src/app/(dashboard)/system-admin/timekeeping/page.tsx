@@ -2,8 +2,8 @@
 
 import { useState, useMemo, useEffect } from "react";
 import {
-  Clock, Search, Download, ChevronLeft, ChevronRight,
-  Users, CheckCircle2, Timer, MapPin, MapPinOff,
+  Clock, Search, ChevronLeft, ChevronRight,
+  Users, TrendingUp, Timer, BarChart2, MapPin, MapPinOff,
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -45,7 +45,6 @@ type RosterEntry = {
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-// Supabase returns `timestamp without time zone` without Z — force UTC parsing
 function parseTs(ts: string): Date {
   return new Date(ts.includes("Z") || ts.includes("+") ? ts : ts + "Z");
 }
@@ -138,14 +137,14 @@ function buildFullRoster(users: UserRow[], punches: PunchRow[]): RosterEntry[] {
 }
 
 function computeStats(roster: RosterEntry[]) {
-  const total    = roster.length;
-  const present  = roster.filter(r => r.status === "present" || r.status === "clocked-in").length;
-  const late     = roster.filter(r => r.status === "late").length;
-  const absent   = roster.filter(r => r.status === "absent").length;
+  const total   = roster.length;
+  const present = roster.filter(r => r.status === "present" || r.status === "clocked-in").length;
+  const late    = roster.filter(r => r.status === "late").length;
+  const absent  = roster.filter(r => r.status === "absent").length;
   const totalHours = roster.reduce((sum, r) => sum + (r.hours_worked ?? 0), 0);
-  const avg_hours  = present > 0 ? totalHours / present : 0;
+  const avgHours   = present > 0 ? totalHours / present : 0;
   const attendance_rate = total > 0 ? Math.round((present / total) * 100) : 0;
-  return { total, present, late, absent, totalHours, avg_hours, attendance_rate };
+  return { total, present, late, absent, totalHours, avgHours, attendance_rate };
 }
 
 // ─── Status Badge ─────────────────────────────────────────────────────────────
@@ -203,7 +202,7 @@ const ITEMS_PER_PAGE = 8;
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
-export default function ManagerTimekeepingPage() {
+export default function SystemAdminTimekeepingPage() {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [roster, setRoster]             = useState<RosterEntry[]>([]);
   const [loading, setLoading]           = useState(true);
@@ -259,11 +258,11 @@ export default function ManagerTimekeepingPage() {
             <Clock className="h-5 w-5" />
           </div>
           <div>
-            <h1 className="text-xl font-bold">Team Timekeeping</h1>
-            <p className="text-xs text-muted-foreground mt-0.5">Monitor your team&apos;s daily attendance and compliance</p>
+            <h1 className="text-xl font-bold">Timekeeping Management</h1>
+            <p className="text-xs text-muted-foreground mt-0.5">Platform-wide attendance and compliance tracking</p>
           </div>
         </div>
-        <div className="flex items-center gap-2 flex-wrap">
+        <div className="flex items-center gap-2">
           <Button variant="outline" size="icon" className="h-9 w-9" onClick={goToPrev}>
             <ChevronLeft className="h-4 w-4" />
           </Button>
@@ -286,12 +285,12 @@ export default function ManagerTimekeepingPage() {
         </div>
       </div>
 
-      {/* Manager stat cards */}
+      {/* Stat Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <StatCard icon={Users}        label="Total Team"    value={String(stats.total)}              sub="employees"                              colorClass="bg-primary/10 text-primary" />
-        <StatCard icon={CheckCircle2} label="Present Today" value={String(stats.present)}            sub={`${stats.attendance_rate}% attendance`} colorClass="bg-green-50 text-green-600" />
-        <StatCard icon={Timer}        label="Late Arrivals" value={String(stats.late)}               sub="needs follow-up"                        colorClass="bg-amber-50 text-amber-600" />
-        <StatCard icon={Clock}        label="Avg Hours"     value={`${stats.avg_hours.toFixed(1)}h`} sub="per employee"                           colorClass="bg-blue-50 text-blue-600" />
+        <StatCard icon={Users}      label="Total Employees"   value={String(stats.total)}               sub="tracked"                             colorClass="bg-primary/10 text-primary" />
+        <StatCard icon={TrendingUp} label="Attendance Rate"   value={`${stats.attendance_rate}%`}       sub={`${stats.present} present`}          colorClass="bg-green-50 text-green-600" />
+        <StatCard icon={BarChart2}  label="Total Hours"       value={`${stats.totalHours.toFixed(1)}h`} sub={`${stats.avgHours.toFixed(1)}h avg`} colorClass="bg-blue-50 text-blue-600" />
+        <StatCard icon={Timer}      label="Compliance Issues" value={String(stats.late + stats.absent)} sub="late + absent"                       colorClass="bg-red-50 text-red-600" />
       </div>
 
       {/* Table */}
@@ -312,19 +311,14 @@ export default function ManagerTimekeepingPage() {
               </button>
             ))}
           </div>
-          <div className="flex items-center gap-2">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search employees..."
-                value={search}
-                onChange={e => { setSearch(e.target.value); setPage(1); }}
-                className="pl-9 h-9 w-52 bg-background"
-              />
-            </div>
-            <Button variant="outline" size="icon" className="h-9 w-9 shrink-0">
-              <Download className="h-4 w-4" />
-            </Button>
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search by name or ID..."
+              value={search}
+              onChange={e => { setSearch(e.target.value); setPage(1); }}
+              className="pl-9 h-9 w-52 bg-background"
+            />
           </div>
         </div>
 

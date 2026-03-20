@@ -916,14 +916,20 @@ function JobRowMenu({
   onManageForm: () => void;
 }) {
   const [open, setOpen] = useState(false);
-  const [pos, setPos] = useState({ top: 0, right: 0 });
+  const [pos, setPos] = useState<{ top?: number; bottom?: number; right: number }>({ top: 0, right: 0 });
   const btnRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
 
   const handleToggle = () => {
     if (!open && btnRef.current) {
       const rect = btnRef.current.getBoundingClientRect();
-      setPos({ top: rect.bottom + 4, right: window.innerWidth - rect.right });
+      const menuHeight = 160;
+      const spaceBelow = window.innerHeight - rect.bottom;
+      if (spaceBelow < menuHeight) {
+        setPos({ bottom: window.innerHeight - rect.top + 4, right: window.innerWidth - rect.right });
+      } else {
+        setPos({ top: rect.bottom + 4, right: window.innerWidth - rect.right });
+      }
     }
     setOpen((v) => !v);
   };
@@ -947,7 +953,7 @@ function JobRowMenu({
       {open && createPortal(
         <div
           ref={menuRef}
-          style={{ position: "fixed", top: pos.top, right: pos.right }}
+          style={{ position: "fixed", top: pos.top, bottom: pos.bottom, right: pos.right }}
           className="z-[200] w-48 bg-card border border-border rounded-lg shadow-lg py-1 text-sm"
           onClick={() => setOpen(false)}
         >

@@ -75,10 +75,11 @@ const MENU_CONFIG: Record<PersonaType, { name: string; href: string; icon: any }
     { name: "Users", href: "/admin/users", icon: Users },
   ],
   "system-admin": [
-    { name: "Dashboard", href: "/system-admin", icon: LayoutDashboard },
-    { name: "Users", href: "/system-admin/users", icon: Users },
-    { name: "Subscriptions", href: "/system-admin/subscriptions", icon: DollarSign },
-    { name: "Global Settings", href: "/system-admin/settings", icon: ClipboardCheck },
+    { name: "Dashboard",      href: "/system-admin",              icon: LayoutDashboard },
+    { name: "Users",          href: "/system-admin/users",        icon: Users },
+    { name: "Timekeeping",    href: "/system-admin/timekeeping",  icon: Clock },
+    { name: "Subscriptions",  href: "/system-admin/subscriptions", icon: DollarSign },
+    { name: "Global Settings", href: "/system-admin/settings",   icon: ClipboardCheck },
   ],
 };
 

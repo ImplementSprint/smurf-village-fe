@@ -63,6 +63,24 @@ export default function ManagerDashboardPage() {
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
 
+      {/* Welcome card */}
+      <section className="relative overflow-hidden rounded-[26px] border border-slate-200 bg-[linear-gradient(135deg,#0f172a_0%,#172554_52%,#134e4a_100%)] px-6 py-7 text-white shadow-sm md:px-7 md:py-8">
+        <div className="absolute inset-y-0 right-0 w-72 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.20),transparent_60%)]" />
+        <div className="relative z-10 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/70">Manager Dashboard</p>
+            <h1 className="mt-2 text-2xl font-bold tracking-tight md:text-3xl">Your Team Overview</h1>
+            <p className="mt-2 max-w-2xl text-sm text-white/75">
+              Monitor your direct reports, track attendance, and manage your team from one place.
+            </p>
+          </div>
+          <div className="rounded-xl border border-white/20 bg-white/10 px-4 py-3 text-right backdrop-blur">
+            <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-white/65">Team Members</p>
+            <p className="mt-1 text-lg font-bold">{totalCount ?? "—"}</p>
+          </div>
+        </div>
+      </section>
+
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <MetricCard icon={Users}       label="My Team Size"     value={totalCount !== null ? String(totalCount) : "—"} sub="Company Members"    trend={totalCount !== null ? `${totalCount} total` : "Loading..."} />
         {/* TODO: wire to dedicated endpoint when available */}
