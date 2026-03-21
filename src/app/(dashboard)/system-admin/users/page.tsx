@@ -769,6 +769,8 @@ export default function AdminUsersPage() {
   const [newDeptName, setNewDeptName]     = useState("");
   const [deptLoading, setDeptLoading]     = useState(false);
   const [manageDept, setManageDept]       = useState<Department | null>(null);
+  const [showDeptPanel, setShowDeptPanel] = useState(false);
+  const [now, setNow]                     = useState(Date.now());
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
