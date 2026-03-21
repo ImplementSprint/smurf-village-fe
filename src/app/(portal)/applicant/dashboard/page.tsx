@@ -487,10 +487,9 @@ export default function ApplicantDashboardPage() {
             )}
           </>
         )}
-          </CardContent>
-        </Card>
+      </div>
 
-        <Card className="xl:col-span-2 border-border shadow-sm bg-card overflow-hidden">
+      <Card className="border-border shadow-sm bg-card overflow-hidden">
           <CardHeader className="pb-4 bg-[linear-gradient(145deg,rgba(23,37,84,0.09),rgba(15,118,110,0.06))] border-b border-border/70">
             <p className="text-[10px] font-bold text-primary uppercase tracking-widest mb-1">Application Feed</p>
             <CardTitle className="text-lg font-bold tracking-tight">Recent Applications</CardTitle>
