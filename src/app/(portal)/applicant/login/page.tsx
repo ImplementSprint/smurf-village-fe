@@ -44,8 +44,8 @@ function ApplicantPortalAuthInner() {
     setIsLoading(true);
 
     try {
+      const companyId = searchParams.get("company") ?? undefined;
       if (isSignUp) {
-        const companyId = searchParams.get("company") ?? undefined;
         await applicantRegisterApi(
           {
             first_name: firstName.trim(),
