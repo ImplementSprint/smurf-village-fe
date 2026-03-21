@@ -36,6 +36,8 @@ type Department = { department_id: string; department_name: string };
 
 // â”€â”€â”€ Constants â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
+const ITEMS_PER_PAGE = 10;
+
 const STATUS_STYLES: Record<string, string> = {
   Active:   "bg-green-100 text-green-700 border-green-200",
   Inactive: "bg-red-100 text-red-700 border-red-200",
