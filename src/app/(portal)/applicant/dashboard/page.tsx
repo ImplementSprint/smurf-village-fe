@@ -233,6 +233,27 @@ function timeAgo(dateStr: string): string {
   return `${Math.floor(days / 7)}w ago`;
 }
 
+function formatDate(dateStr: string): string {
+  return new Date(dateStr).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+}
+
+function statusLabel(status: string): string {
+  const map: Record<string, string> = {
+    submitted: "Submitted", screening: "Screening",
+    first_interview: "1st Interview", technical_interview: "Technical",
+    final_interview: "Final Interview", hired: "Hired",
+    rejected: "Rejected", withdrawn: "Withdrawn",
+  };
+  return map[status] ?? status;
+}
+
+function statusPillClass(status: string): string {
+  if (["hired"].includes(status)) return "text-green-600 border-green-600/20 bg-green-500/10";
+  if (["rejected", "withdrawn"].includes(status)) return "text-red-600 border-red-600/20 bg-red-500/10";
+  if (status.includes("interview")) return "text-blue-600 border-blue-600/20 bg-blue-500/10";
+  return "text-muted-foreground border-border bg-muted/30";
+}
+
 const STAGE_LABELS = ["Submitted", "Screening", "1st Interview", "Technical", "Final"];
 const STAGE_KEYS   = ["submitted", "screening", "first_interview", "technical_interview", "final_interview"];
 
