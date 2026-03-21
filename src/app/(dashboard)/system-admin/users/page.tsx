@@ -764,6 +764,7 @@ export default function AdminUsersPage() {
   const [confirmDeact, setConfirmDeact]   = useState<Employee | null>(null);
   const [showFilter, setShowFilter]       = useState(false);
   const [statusFilter, setStatusFilter]   = useState<Set<string>>(new Set());
+  const [deptFilter, setDeptFilter]       = useState<string | null>(null);
   const filterRef                         = useRef<HTMLDivElement>(null);
   const [newDeptName, setNewDeptName]     = useState("");
   const [deptLoading, setDeptLoading]     = useState(false);
