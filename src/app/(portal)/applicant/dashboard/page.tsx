@@ -555,12 +555,12 @@ export default function ApplicantDashboardPage() {
   );
 }
 
-function StepItem({ icon, label, active, completed, current }: {
-  icon: React.ReactNode;
+function MetricCard({ label, value, helper, icon, inverted }: {
   label: string;
-  active: boolean;
-  completed: boolean;
-  current: boolean;
+  value: string;
+  helper: string;
+  icon: React.ReactNode;
+  inverted?: boolean;
 }) {
   return (
     <div className={`rounded-xl border p-4 ${inverted ? "border-white/20 bg-white/10 backdrop-blur" : "border-border bg-muted/20"}`}>
@@ -572,6 +572,29 @@ function StepItem({ icon, label, active, completed, current }: {
       </div>
       <p className={`text-2xl font-bold tracking-tight ${inverted ? "text-white" : "text-foreground"}`}>{value}</p>
       <p className={`text-xs mt-1 ${inverted ? "text-white/70" : "text-muted-foreground"}`}>{helper}</p>
+    </div>
+  );
+}
+
+function StepItem({ icon, label, active, completed, current }: {
+  icon: React.ReactNode;
+  label: string;
+  active: boolean;
+  completed: boolean;
+  current: boolean;
+}) {
+  return (
+    <div className="flex flex-col items-center gap-1 relative z-10">
+      <div className={`h-9 w-9 rounded-full border-2 flex items-center justify-center transition-all
+        ${completed ? "bg-primary border-primary text-primary-foreground" :
+          current ? "bg-background border-primary text-primary" :
+          "bg-background border-border text-muted-foreground"}`}>
+        {icon}
+      </div>
+      <span className={`text-[10px] font-bold uppercase tracking-widest text-center max-w-[72px] leading-tight
+        ${active ? "text-foreground" : "text-muted-foreground"}`}>
+        {label}
+      </span>
     </div>
   );
 }
