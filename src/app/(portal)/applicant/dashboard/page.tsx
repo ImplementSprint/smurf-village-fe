@@ -530,7 +530,6 @@ export default function ApplicantDashboardPage() {
             </div>
           </CardContent>
         </Card>
-      </div>
 
       {/* Application form modal */}
       {applyingJob && (
