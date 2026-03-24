@@ -104,17 +104,47 @@ function ApplicationForm({
     }
   };
 
+  const hasQuestions = !loadingQ && questions.length > 0;
+  const totalSteps = hasQuestions ? 2 : 1;
+  const [formStep, setFormStep] = useState(1);
+
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50">
-      <div className="bg-card border border-border rounded-2xl shadow-2xl w-full max-w-lg mx-4 max-h-[90vh] flex flex-col">
-        <div className="flex items-center justify-between px-6 py-5 border-b border-border shrink-0">
-          <div>
-            <h3 className="font-bold text-lg">Apply — {job.title}</h3>
-            <p className="text-xs text-muted-foreground mt-0.5">Complete the form below to submit your application</p>
+    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm">
+      <div className="bg-card border border-border rounded-2xl shadow-2xl w-full max-w-lg mx-4 max-h-[90vh] flex flex-col overflow-hidden">
+        {/* Gradient header */}
+        <div className="relative bg-[linear-gradient(135deg,#0f172a_0%,#1e3a8a_60%,#134e4a_100%)] px-6 py-5 shrink-0">
+          <div className="absolute inset-0 opacity-[0.03]"
+            style={{ backgroundImage: "radial-gradient(circle, white 1px, transparent 1px)", backgroundSize: "24px 24px" }} />
+          <div className="relative flex items-start justify-between gap-4">
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/40 mb-1">Submitting for</p>
+              <h3 className="font-bold text-lg text-white leading-tight">{job.title}</h3>
+              <p className="text-xs text-white/50 mt-0.5">Complete the form below to submit your application</p>
+            </div>
+            <button onClick={onClose} className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 border border-white/15 transition-colors shrink-0 mt-0.5">
+              <X className="h-4 w-4 text-white/70" />
+            </button>
           </div>
-          <button onClick={onClose} className="p-1.5 rounded-md hover:bg-muted/50">
-            <X className="h-4 w-4 text-muted-foreground" />
-          </button>
+          {/* Step indicator */}
+          {hasQuestions && (
+            <div className="relative mt-4 flex items-center gap-2">
+              {[1, 2].map((step) => (
+                <div key={step} className="flex items-center gap-2">
+                  <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full border text-[10px] font-bold transition-all ${
+                    formStep === step
+                      ? "bg-white/20 border-white/30 text-white"
+                      : formStep > step
+                      ? "bg-green-500/30 border-green-400/40 text-green-300"
+                      : "bg-white/5 border-white/10 text-white/30"
+                  }`}>
+                    {formStep > step ? <Check className="h-2.5 w-2.5" /> : <span>{step}</span>}
+                    <span>{step === 1 ? "Your Info" : "Questions"}</span>
+                  </div>
+                  {step < totalSteps && <div className="h-px w-4 bg-white/20" />}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto px-6 py-5 space-y-5">
@@ -254,12 +284,28 @@ function statusPillClass(status: string): string {
   return "text-muted-foreground border-border bg-muted/30";
 }
 
+function statusDotClass(status: string): string {
+  if (status === "hired") return "bg-green-500";
+  if (status === "rejected" || status === "withdrawn") return "bg-red-500";
+  if (status === "final_interview") return "bg-violet-500";
+  if (status.includes("interview")) return "bg-blue-500";
+  if (status === "screening") return "bg-amber-500";
+  return "bg-primary";
+}
+
 const STAGE_LABELS = ["Submitted", "Screening", "1st Interview", "Technical", "Final"];
 const STAGE_KEYS   = ["submitted", "screening", "first_interview", "technical_interview", "final_interview"];
 
 function stageIndex(status: string) {
   const i = STAGE_KEYS.indexOf(status);
   return i === -1 ? 0 : i;
+}
+
+function getGreeting(): string {
+  const h = new Date().getHours();
+  if (h < 12) return "Good morning";
+  if (h < 17) return "Good afternoon";
+  return "Good evening";
 }
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
@@ -316,61 +362,89 @@ export default function ApplicantDashboardPage() {
 
   const currentStep = latestApp ? stageIndex(latestApp.status) + 1 : 0;
 
+  const metricCards = [
+    {
+      label: "Open Jobs",
+      value: loading ? "..." : jobs.length.toString(),
+      helper: "Roles available now",
+      icon: <Briefcase className="h-4 w-4" />,
+      iconBg: "bg-blue-500/25 border-blue-400/30 text-blue-200",
+    },
+    {
+      label: "Applications",
+      value: loading ? "..." : applications.length.toString(),
+      helper: "Total submitted",
+      icon: <FileText className="h-4 w-4" />,
+      iconBg: "bg-indigo-500/25 border-indigo-400/30 text-indigo-200",
+    },
+    {
+      label: "In Progress",
+      value: loading ? "..." : activeCount.toString(),
+      helper: "Awaiting next step",
+      icon: <TrendingUp className="h-4 w-4" />,
+      iconBg: "bg-amber-500/25 border-amber-400/30 text-amber-200",
+    },
+    {
+      label: "Interviews",
+      value: loading ? "..." : interviewCount.toString(),
+      helper: "Interview stages reached",
+      icon: <CalendarClock className="h-4 w-4" />,
+      iconBg: "bg-purple-500/25 border-purple-400/30 text-purple-200",
+    },
+  ];
+
   return (
     <div className="space-y-6 max-w-5xl mx-auto animate-in fade-in duration-500">
-      <Card className="relative overflow-hidden rounded-[28px] border border-slate-200 bg-[linear-gradient(135deg,#0f172a_0%,#172554_52%,#134e4a_100%)] text-white shadow-sm">
-        <div className="absolute inset-y-0 right-0 w-80 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.18),transparent_58%)]" />
-        <CardHeader className="relative z-10 border-b border-white/15 pb-6">
-          <p className="text-[10px] font-bold uppercase tracking-widest text-white/70 mb-1">Candidate Dashboard</p>
-          <CardTitle className="text-2xl font-bold tracking-tight text-white">
-            Welcome back, {session?.name?.split(" ")[0] || "Applicant"}
-          </CardTitle>
-          <p className="text-sm text-white/75 mt-1">
+
+      {/* ── Hero ── */}
+      <div className="relative overflow-hidden rounded-[28px] border border-white/10 bg-[linear-gradient(135deg,#0f172a_0%,#172554_52%,#134e4a_100%)] text-white shadow-lg">
+        {/* Dot-grid overlay */}
+        <div className="absolute inset-0 opacity-[0.03] pointer-events-none"
+          style={{ backgroundImage: "radial-gradient(circle, white 1px, transparent 1px)", backgroundSize: "24px 24px" }} />
+        {/* Glow blobs */}
+        <div className="absolute -top-20 -right-20 h-64 w-64 rounded-full bg-blue-500 blur-[80px] opacity-20 pointer-events-none" />
+        <div className="absolute bottom-0 left-1/4 h-40 w-40 rounded-full bg-teal-400 blur-[80px] opacity-20 pointer-events-none" />
+        <div className="absolute top-1/2 right-1/4 h-32 w-32 rounded-full bg-indigo-500 blur-[80px] opacity-10 pointer-events-none" />
+
+        {/* Header */}
+        <div className="relative z-10 px-6 pt-7 pb-5 border-b border-white/10">
+          <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-white/50 mb-1.5">Candidate Dashboard</p>
+          <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-white leading-tight">
+            {getGreeting()}, {session?.name?.split(" ")[0] || "Applicant"} 👋
+          </h1>
+          <p className="text-sm text-white/60 mt-1.5">
             Track your applications and discover fresh opportunities in one place.
           </p>
-        </CardHeader>
-        <CardContent className="relative z-10 p-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-          <MetricCard
-            label="Open Jobs"
-            value={loading ? "..." : jobs.length.toString()}
-            helper="Roles available now"
-            icon={<Briefcase className="h-4 w-4" />}
-            inverted
-          />
-          <MetricCard
-            label="Applications"
-            value={loading ? "..." : applications.length.toString()}
-            helper="Total submitted"
-            icon={<FileText className="h-4 w-4" />}
-            inverted
-          />
-          <MetricCard
-            label="In Progress"
-            value={loading ? "..." : activeCount.toString()}
-            helper="Awaiting next step"
-            icon={<TrendingUp className="h-4 w-4" />}
-            inverted
-          />
-          <MetricCard
-            label="Interviews"
-            value={loading ? "..." : interviewCount.toString()}
-            helper="Interview stages reached"
-            icon={<CalendarClock className="h-4 w-4" />}
-            inverted
-          />
-        </CardContent>
-      </Card>
+        </div>
 
-      <Card className="border-border shadow-sm overflow-hidden bg-card">
-        <CardHeader className="bg-muted/20 border-b border-border pb-6">
+        {/* Metric cards */}
+        <div className="relative z-10 p-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          {metricCards.map((m) => (
+            <div key={m.label} className="rounded-xl border border-white/15 bg-white/8 backdrop-blur-sm p-4">
+              <div className="flex items-center justify-between mb-3">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-white/60">{m.label}</p>
+                <span className={`h-8 w-8 rounded-lg border flex items-center justify-center ${m.iconBg}`}>
+                  {m.icon}
+                </span>
+              </div>
+              <p className="text-3xl font-bold tracking-tight text-white">{m.value}</p>
+              <p className="text-xs mt-1 text-white/55">{m.helper}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* ── Application Stage Tracker ── */}
+      <div className="rounded-2xl border border-border shadow-sm overflow-hidden bg-card">
+        <div className="px-6 pt-5 pb-4 border-b border-border bg-[linear-gradient(145deg,rgba(23,37,84,0.06),rgba(15,118,110,0.04))]">
           <div className="flex flex-col md:flex-row md:items-start justify-between gap-3">
             <div>
               <p className="text-[10px] font-bold text-primary uppercase tracking-widest mb-1">Current Application</p>
               {latestApp ? (
                 <>
-                  <CardTitle className="text-xl font-bold tracking-tight">
+                  <h2 className="text-xl font-bold tracking-tight text-foreground">
                     {latestApp.job_postings?.title}
-                  </CardTitle>
+                  </h2>
                   <p className="text-sm text-muted-foreground mt-1 flex items-center gap-1.5">
                     <Building2 className="h-3.5 w-3.5" />
                     {STAGE_LABELS[stageIndex(latestApp.status)] ?? latestApp.status}
@@ -378,9 +452,9 @@ export default function ApplicantDashboardPage() {
                   </p>
                 </>
               ) : (
-                <CardTitle className="text-xl font-bold tracking-tight text-muted-foreground">
+                <h2 className="text-xl font-bold tracking-tight text-muted-foreground">
                   No applications yet
-                </CardTitle>
+                </h2>
               )}
             </div>
             {latestApp && (
@@ -389,19 +463,22 @@ export default function ApplicantDashboardPage() {
               </span>
             )}
           </div>
-        </CardHeader>
-        <CardContent className="p-10">
+        </div>
+
+        <div className="px-8 py-10">
           {latestApp ? (
             <div className="relative flex items-center justify-between w-full max-w-4xl mx-auto">
-              <div className="absolute left-0 top-1/2 -translate-y-1/2 w-full h-1 bg-muted rounded-full z-0" />
+              {/* Background track */}
+              <div className="absolute left-0 top-5 -translate-y-1/2 w-full h-1.5 bg-muted rounded-full z-0" />
+              {/* Progress fill */}
               <div
-                className="absolute left-0 top-1/2 -translate-y-1/2 h-1 bg-primary rounded-full z-0 transition-all duration-1000"
+                className="absolute left-0 top-5 -translate-y-1/2 h-1.5 bg-primary rounded-full z-0 transition-all duration-1000"
                 style={{ width: `${((currentStep - 1) / (STAGE_LABELS.length - 1)) * 100}%` }}
               />
               {STAGE_LABELS.map((label, i) => (
                 <StepItem
                   key={label}
-                  icon={i + 1 < currentStep ? <Check className="h-4 w-4" /> : <span className="text-xs">{i + 1}</span>}
+                  icon={i + 1 < currentStep ? <Check className="h-4 w-4" /> : <span className="text-xs font-bold">{i + 1}</span>}
                   label={label}
                   active={i + 1 <= currentStep}
                   completed={i + 1 < currentStep}
@@ -414,10 +491,19 @@ export default function ApplicantDashboardPage() {
               Start by applying to an open role, then track every stage here.
             </p>
           )}
-        </CardContent>
-      </Card>
+        </div>
 
-      {/* Available Job Roles */}
+        <div className="px-6 pb-4 border-t border-border flex justify-end">
+          <Link
+            href="/applicant/applications"
+            className="text-xs font-semibold text-primary hover:text-primary/80 transition-colors flex items-center gap-1"
+          >
+            View all applications <ChevronRight className="h-3.5 w-3.5" />
+          </Link>
+        </div>
+      </div>
+
+      {/* ── Available Positions ── */}
       <div className="space-y-4">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
           <div>
@@ -448,42 +534,48 @@ export default function ApplicantDashboardPage() {
           </p>
         ) : (
           <>
-            <div className="grid gap-3">
+            <div className="grid gap-2.5">
               {filtered.slice(0, 5).map((job) => {
                 const applied = appliedJobIds.has(job.job_posting_id);
                 return (
-                  <Card
+                  <div
                     key={job.job_posting_id}
-                    className="border-border shadow-sm hover:border-primary/40 transition-all group cursor-pointer bg-card"
+                    className="group relative bg-card border border-border border-l-4 border-l-primary/40 hover:border-l-primary rounded-xl shadow-sm hover:shadow-md hover:-translate-y-px transition-all cursor-pointer overflow-hidden"
                     onClick={() => router.push("/applicant/jobs")}
                   >
-                    <CardContent className="p-5 flex flex-col md:flex-row items-center justify-between gap-4">
-                      <div className="flex items-center gap-4 w-full">
-                        <div className="h-12 w-12 rounded-xl border border-border bg-muted/30 flex items-center justify-center shrink-0 group-hover:bg-primary/5 transition-colors">
-                          <Briefcase className="h-6 w-6 text-muted-foreground group-hover:text-primary" />
+                    <div className="p-4 flex flex-col md:flex-row items-center justify-between gap-4">
+                      <div className="flex items-center gap-3 w-full min-w-0">
+                        <div className="h-10 w-10 rounded-xl border border-border bg-muted/30 flex items-center justify-center shrink-0 group-hover:bg-primary/8 group-hover:border-primary/20 transition-colors">
+                          <Briefcase className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
                         </div>
-                        <div className="min-w-0">
-                          <h3 className="font-bold text-foreground text-lg leading-none mb-2 group-hover:text-primary transition-colors">
+                        <div className="min-w-0 flex-1">
+                          <h3 className="font-bold text-foreground text-[15px] leading-tight truncate group-hover:text-primary transition-colors">
                             {job.title}
                           </h3>
-                          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] text-muted-foreground font-semibold uppercase tracking-tight">
-                            {job.location && (
-                              <span className="flex items-center gap-1.5"><MapPin className="h-3 w-3" />{job.location}</span>
-                            )}
+                          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1">
                             {job.employment_type && (
-                              <span className="flex items-center gap-1.5"><Clock className="h-3 w-3" />{job.employment_type}</span>
+                              <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-md bg-muted/60 text-muted-foreground">
+                                {job.employment_type}
+                              </span>
+                            )}
+                            {job.location && (
+                              <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
+                                <MapPin className="h-3 w-3" />{job.location}
+                              </span>
                             )}
                             {job.salary_range && (
-                              <span className="flex items-center gap-1.5"><DollarSign className="h-3 w-3" />{job.salary_range}</span>
+                              <span className="flex items-center gap-1 text-[11px] text-muted-foreground font-medium">
+                                <DollarSign className="h-3 w-3" />{job.salary_range}
+                              </span>
                             )}
-                            <span className="flex items-center gap-1.5 normal-case font-normal">
+                            <span className="text-[11px] text-muted-foreground/60">
                               {timeAgo(job.posted_at)}
                             </span>
                           </div>
                         </div>
                       </div>
                       <div
-                        className="flex items-center gap-3 w-full md:w-auto justify-between md:justify-end"
+                        className="flex items-center gap-3 w-full md:w-auto justify-between md:justify-end shrink-0"
                         onClick={(e) => e.stopPropagation()}
                       >
                         {applied ? (
@@ -492,15 +584,15 @@ export default function ApplicantDashboardPage() {
                           </span>
                         ) : (
                           <Button
-                            className="bg-primary hover:bg-primary/90 text-primary-foreground h-10 px-6"
+                            className="bg-primary hover:bg-primary/90 text-primary-foreground h-9 px-5 text-xs"
                             onClick={() => setApplyingJob(job)}
                           >
-                            Apply Now <ChevronRight className="ml-2 h-4 w-4" />
+                            Apply Now <ChevronRight className="ml-1.5 h-3.5 w-3.5" />
                           </Button>
                         )}
                       </div>
-                    </CardContent>
-                  </Card>
+                    </div>
+                  </div>
                 );
               })}
             </div>
@@ -509,10 +601,10 @@ export default function ApplicantDashboardPage() {
               <div className="flex justify-center pt-2">
                 <Button
                   variant="ghost"
-                  className="text-primary font-bold hover:bg-primary/5 text-sm uppercase tracking-widest"
+                  className="text-primary font-bold hover:bg-primary/5 text-sm gap-1.5"
                   onClick={() => router.push("/applicant/jobs")}
                 >
-                  View all {jobs.length} open positions
+                  View all {jobs.length} positions <ChevronRight className="h-4 w-4" />
                 </Button>
               </div>
             )}
@@ -520,47 +612,49 @@ export default function ApplicantDashboardPage() {
         )}
       </div>
 
+      {/* ── Recent Applications ── */}
       <Card className="border-border shadow-sm bg-card overflow-hidden">
-          <CardHeader className="pb-4 bg-[linear-gradient(145deg,rgba(23,37,84,0.09),rgba(15,118,110,0.06))] border-b border-border/70">
-            <p className="text-[10px] font-bold text-primary uppercase tracking-widest mb-1">Application Feed</p>
-            <CardTitle className="text-lg font-bold tracking-tight">Recent Applications</CardTitle>
-            <p className="text-xs text-muted-foreground mt-1">
-              Quick view of your latest submissions and status.
-            </p>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {loading ? (
-              <div className="flex items-center justify-center py-10">
-                <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-              </div>
-            ) : recentApplications.length === 0 ? (
-              <p className="text-center text-muted-foreground text-sm py-8">No applications yet.</p>
-            ) : (
-              recentApplications.map((app) => (
-                <div key={app.application_id} className="rounded-xl border border-border p-4 bg-muted/10">
+        <CardHeader className="pb-4 bg-[linear-gradient(145deg,rgba(23,37,84,0.09),rgba(15,118,110,0.06))] border-b border-border/70">
+          <p className="text-[10px] font-bold text-primary uppercase tracking-widest mb-1">Application Feed</p>
+          <CardTitle className="text-lg font-bold tracking-tight">Recent Applications</CardTitle>
+          <p className="text-xs text-muted-foreground mt-1">
+            Quick view of your latest submissions and status.
+          </p>
+        </CardHeader>
+        <CardContent className="p-5 space-y-2.5">
+          {loading ? (
+            <div className="flex items-center justify-center py-10">
+              <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+            </div>
+          ) : recentApplications.length === 0 ? (
+            <p className="text-center text-muted-foreground text-sm py-8">No applications yet.</p>
+          ) : (
+            recentApplications.map((app) => (
+              <div key={app.application_id} className="rounded-xl border border-border p-3.5 bg-muted/10 flex items-center gap-3">
+                <div className={`h-2.5 w-2.5 rounded-full shrink-0 ${statusDotClass(app.status)}`} />
+                <div className="flex-1 min-w-0">
                   <p className="font-semibold text-sm truncate text-foreground">
                     {app.job_postings?.title ?? "Untitled role"}
                   </p>
-                  <div className="mt-2 flex items-center justify-between gap-2">
-                    <span className={`text-[10px] font-bold uppercase tracking-widest px-2 py-1 rounded-md border ${statusPillClass(app.status)}`}>
-                      {statusLabel(app.status)}
-                    </span>
-                    <span className="text-[11px] text-muted-foreground">{formatDate(app.applied_at)}</span>
-                  </div>
+                  <span className={`text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-md border inline-block mt-1 ${statusPillClass(app.status)}`}>
+                    {statusLabel(app.status)}
+                  </span>
                 </div>
-              ))
-            )}
+                <span className="text-[11px] text-muted-foreground shrink-0">{formatDate(app.applied_at)}</span>
+              </div>
+            ))
+          )}
 
-            <div className="pt-1">
-              <Button asChild variant="outline" className="w-full">
-                <Link href="/applicant/applications">
-                  <Sparkles className="h-4 w-4" />
-                  Open Full Tracker
-                </Link>
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+          <div className="pt-2">
+            <Button asChild className="w-full bg-primary hover:bg-primary/90 text-primary-foreground">
+              <Link href="/applicant/applications">
+                <Sparkles className="h-4 w-4 mr-2" />
+                Open Full Tracker
+              </Link>
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Application form modal */}
       {applyingJob && (
@@ -586,27 +680,6 @@ export default function ApplicantDashboardPage() {
   );
 }
 
-function MetricCard({ label, value, helper, icon, inverted }: {
-  label: string;
-  value: string;
-  helper: string;
-  icon: React.ReactNode;
-  inverted?: boolean;
-}) {
-  return (
-    <div className={`rounded-xl border p-4 ${inverted ? "border-white/20 bg-white/10 backdrop-blur" : "border-border bg-muted/20"}`}>
-      <div className="flex items-center justify-between mb-3">
-        <p className={`text-[10px] font-bold uppercase tracking-widest ${inverted ? "text-white/70" : "text-muted-foreground"}`}>{label}</p>
-        <span className={`h-7 w-7 rounded-md border flex items-center justify-center ${inverted ? "bg-white/10 border-white/25 text-white" : "bg-primary/10 border-primary/20 text-primary"}`}>
-          {icon}
-        </span>
-      </div>
-      <p className={`text-2xl font-bold tracking-tight ${inverted ? "text-white" : "text-foreground"}`}>{value}</p>
-      <p className={`text-xs mt-1 ${inverted ? "text-white/70" : "text-muted-foreground"}`}>{helper}</p>
-    </div>
-  );
-}
-
 function StepItem({ icon, label, active, completed, current }: {
   icon: React.ReactNode;
   label: string;
@@ -615,15 +688,15 @@ function StepItem({ icon, label, active, completed, current }: {
   current: boolean;
 }) {
   return (
-    <div className="flex flex-col items-center gap-1 relative z-10">
-      <div className={`h-9 w-9 rounded-full border-2 flex items-center justify-center transition-all
+    <div className="flex flex-col items-center gap-2 relative z-10">
+      <div className={`h-10 w-10 rounded-full border-2 flex items-center justify-center transition-all shadow-sm
         ${completed ? "bg-primary border-primary text-primary-foreground" :
-          current ? "bg-background border-primary text-primary" :
+          current ? "bg-background border-primary text-primary ring-4 ring-primary/15" :
           "bg-background border-border text-muted-foreground"}`}>
         {icon}
       </div>
       <span className={`text-[10px] font-bold uppercase tracking-widest text-center max-w-[72px] leading-tight
-        ${active ? "text-foreground" : "text-muted-foreground"}`}>
+        ${active ? "text-foreground" : "text-muted-foreground/50"}`}>
         {label}
       </span>
     </div>

@@ -68,14 +68,14 @@ function StageProgress({ status }: { status: string }) {
         return (
           <div key={stage.key} className="flex items-center flex-1 min-w-0">
             <div className="flex flex-col items-center shrink-0">
-              <div className={`h-6 w-6 rounded-full border-2 flex items-center justify-center transition-all
+              <div className={`h-7 w-7 rounded-full border-2 flex items-center justify-center transition-all
                 ${done    ? "bg-primary border-primary"                         : ""}
                 ${current ? "bg-background border-primary ring-[3px] ring-primary/15" : ""}
                 ${!done && !current ? "bg-muted/30 border-border"              : ""}
               `}>
-                {done    && <CheckCircle2 className="h-3 w-3 text-white" />}
-                {current && <Icon className="h-2.5 w-2.5 text-primary" />}
-                {!done && !current && <Icon className="h-2.5 w-2.5 text-muted-foreground/30" />}
+                {done    && <CheckCircle2 className="h-3.5 w-3.5 text-white" />}
+                {current && <Icon className="h-3 w-3 text-primary" />}
+                {!done && !current && <Icon className="h-3 w-3 text-muted-foreground/30" />}
               </div>
               <span className={`mt-1 text-[9px] font-bold uppercase tracking-[0.06em] text-center leading-tight max-w-[44px]
                 ${done || current ? "text-foreground" : "text-muted-foreground/35"}
@@ -91,10 +91,10 @@ function StageProgress({ status }: { status: string }) {
       <div className="flex items-center flex-1 min-w-0">
         <div className={`h-0.5 flex-1 -mt-4 mx-0.5 rounded-full ${terminal ? "bg-primary" : "bg-border"}`} />
         <div className="flex flex-col items-center shrink-0">
-          <div className={`h-6 w-6 rounded-full border-2 flex items-center justify-center transition-all
+          <div className={`h-7 w-7 rounded-full border-2 flex items-center justify-center transition-all
             ${terminal ? (status === "hired" ? "bg-green-500 border-green-500" : "bg-red-400 border-red-400") : "bg-muted/30 border-border"}
           `}>
-            {terminal ? <CheckCircle2 className="h-3 w-3 text-white" /> : <Trophy className="h-2.5 w-2.5 text-muted-foreground/30" />}
+            {terminal ? <CheckCircle2 className="h-3.5 w-3.5 text-white" /> : <Trophy className="h-3 w-3 text-muted-foreground/30" />}
           </div>
           <span className={`mt-1 text-[9px] font-bold uppercase tracking-[0.06em] text-center leading-tight max-w-[44px]
             ${terminal ? (status === "hired" ? "text-green-600" : "text-red-500") : "text-muted-foreground/35"}
@@ -115,6 +115,7 @@ function ApplicationCard({ app, onView }: { app: MyApplication; onView: (id: str
     <div className={`bg-card border rounded-2xl shadow-sm overflow-hidden hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 ${
       app.status === "hired" ? "border-green-200" : app.status === "rejected" ? "border-red-200/60" : "border-border"
     }`}>
+      {/* Top color bar */}
       <div className={`h-1 w-full ${cfg.dot}`} />
       <div className="p-5 space-y-3.5">
         {/* Header */}
@@ -124,7 +125,7 @@ function ApplicationCard({ app, onView }: { app: MyApplication; onView: (id: str
               <Briefcase className="h-5 w-5" />
             </div>
             <div className="min-w-0">
-              <p className="font-bold text-foreground text-[15px] leading-tight truncate">{app.job_postings?.title ?? "—"}</p>
+              <p className="font-bold text-foreground text-base leading-tight truncate">{app.job_postings?.title ?? "—"}</p>
               <div className="flex flex-wrap items-center gap-x-2.5 gap-y-0.5 mt-1">
                 {app.job_postings?.location && (
                   <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
@@ -174,8 +175,8 @@ function ApplicationCard({ app, onView }: { app: MyApplication; onView: (id: str
             <span className="text-xs text-muted-foreground font-medium">{cfg.label}</span>
           </div>
           <Button
-            size="sm" variant="outline"
-            className="h-8 px-3 gap-1.5 text-xs font-semibold hover:bg-primary/5 hover:border-primary/30 hover:text-primary transition-all"
+            size="sm" variant="ghost"
+            className="h-8 px-3 gap-1.5 text-xs font-semibold text-muted-foreground border border-transparent hover:bg-primary/5 hover:border-primary/30 hover:text-primary transition-all"
             onClick={() => onView(app.application_id)}
           >
             View Details <ChevronRight className="h-3.5 w-3.5" />
@@ -209,10 +210,12 @@ function DetailModal({ detail, onClose }: { detail: DetailWithJob; onClose: () =
 
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 animate-in fade-in duration-200 p-4" onClick={onClose}>
-      <div className="bg-card border border-border rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-hidden flex flex-col animate-in zoom-in-95 duration-200" onClick={(e) => e.stopPropagation()}>
+      <div className="bg-card border border-border rounded-2xl shadow-2xl w-full max-w-lg max-h-[92vh] overflow-hidden flex flex-col animate-in zoom-in-95 duration-200" onClick={(e) => e.stopPropagation()}>
 
         {/* Gradient header */}
         <div className="relative overflow-hidden rounded-t-2xl bg-[linear-gradient(135deg,#0f172a_0%,#172554_55%,#134e4a_100%)] px-6 pt-5 pb-0">
+          <div className="absolute inset-0 opacity-[0.03] pointer-events-none"
+            style={{ backgroundImage: "radial-gradient(circle, white 1px, transparent 1px)", backgroundSize: "24px 24px" }} />
           <div className="absolute -top-8 -right-8 h-40 w-40 rounded-full bg-blue-500 blur-3xl opacity-15 pointer-events-none" />
           <div className="absolute bottom-0 left-0 right-0 h-px bg-white/10" />
 
@@ -291,22 +294,22 @@ function DetailModal({ detail, onClose }: { detail: DetailWithJob; onClose: () =
               {/* Quick meta chips */}
               <div className="flex flex-wrap gap-2">
                 {job?.salary_range && (
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-green-50 border border-green-200 text-green-700 text-xs font-semibold">
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-green-50 border border-green-200 text-green-700 text-xs font-semibold shadow-sm">
                     <DollarSign className="h-3.5 w-3.5" />{job.salary_range}
                   </span>
                 )}
                 {job?.employment_type && (
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-blue-50 border border-blue-200 text-blue-700 text-xs font-semibold">
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-blue-50 border border-blue-200 text-blue-700 text-xs font-semibold shadow-sm">
                     <Clock className="h-3.5 w-3.5" />{job.employment_type}
                   </span>
                 )}
                 {job?.location && (
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-muted border border-border text-muted-foreground text-xs font-semibold">
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-muted border border-border text-muted-foreground text-xs font-semibold shadow-sm">
                     <MapPin className="h-3.5 w-3.5" />{job.location}
                   </span>
                 )}
                 {job?.closes_at && (
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-50 border border-amber-200 text-amber-700 text-xs font-semibold">
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-50 border border-amber-200 text-amber-700 text-xs font-semibold shadow-sm">
                     <AlarmClock className="h-3.5 w-3.5" />Closes {fmtDate(job.closes_at)}
                   </span>
                 )}
@@ -316,7 +319,7 @@ function DetailModal({ detail, onClose }: { detail: DetailWithJob; onClose: () =
               {job?.description ? (
                 <div>
                   <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground mb-2">Job Description</p>
-                  <div className="rounded-xl border border-border bg-muted/20 px-4 py-4">
+                  <div className="rounded-xl border border-border bg-muted/20 px-4 py-4 shadow-inner">
                     <p className="text-sm text-foreground leading-relaxed whitespace-pre-wrap">{job.description}</p>
                   </div>
                 </div>
@@ -353,17 +356,23 @@ function DetailModal({ detail, onClose }: { detail: DetailWithJob; onClose: () =
           {/* ── MY ANSWERS TAB ── */}
           {tab === "answers" && (
             sorted.length > 0 ? (
-              <div className="space-y-3">
+              <div className="space-y-4">
                 <p className="text-xs text-muted-foreground">These are the answers you submitted with your application.</p>
                 {sorted.map((ans, i) => (
-                  <div key={ans.answer_id} className="rounded-xl border border-border bg-muted/20 px-4 py-3">
-                    <div className="flex items-start gap-2 mb-2">
+                  <div key={ans.answer_id} className="rounded-xl border border-border bg-muted/15 overflow-hidden">
+                    {/* Question */}
+                    <div className="flex items-start gap-2.5 px-4 pt-3 pb-2.5">
                       <span className="h-5 w-5 rounded-full bg-primary/10 text-primary flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">{i + 1}</span>
                       <p className="text-xs font-semibold text-foreground leading-snug">{ans.application_questions.question_text}</p>
                     </div>
-                    <p className="text-sm text-foreground pl-7">
-                      {ans.answer_value || <span className="text-muted-foreground italic text-xs">No answer provided</span>}
-                    </p>
+                    {/* Divider */}
+                    <div className="h-px bg-border mx-4" />
+                    {/* Answer */}
+                    <div className="px-4 pb-3 pt-2.5 pl-11">
+                      <p className="text-sm text-foreground leading-relaxed">
+                        {ans.answer_value || <span className="text-muted-foreground italic text-xs">No answer provided</span>}
+                      </p>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -463,9 +472,15 @@ export default function ApplicantApplicationsPage() {
     <div className="space-y-6 max-w-4xl mx-auto animate-in fade-in duration-500">
 
       {/* ── Hero ── */}
-      <div className="rounded-[26px] border border-slate-200 bg-[linear-gradient(135deg,#0f172a_0%,#172554_52%,#134e4a_100%)] px-6 py-7 md:px-7 md:py-7 relative overflow-hidden">
-        <div className="absolute -top-10 -right-10 h-48 w-48 rounded-full bg-blue-500 blur-3xl opacity-15 pointer-events-none" />
-        <div className="absolute -bottom-8 left-16 h-32 w-32 rounded-full bg-teal-500 blur-3xl opacity-10 pointer-events-none" />
+      <div className="rounded-[26px] border border-white/10 bg-[linear-gradient(135deg,#0f172a_0%,#172554_52%,#134e4a_100%)] px-6 py-7 md:px-7 md:py-7 relative overflow-hidden">
+        {/* Dot-grid overlay */}
+        <div className="absolute inset-0 opacity-[0.03] pointer-events-none"
+          style={{ backgroundImage: "radial-gradient(circle, white 1px, transparent 1px)", backgroundSize: "24px 24px" }} />
+        {/* Glow blobs */}
+        <div className="absolute -top-10 -right-10 h-48 w-48 rounded-full bg-blue-500 blur-[80px] opacity-20 pointer-events-none" />
+        <div className="absolute -bottom-8 left-16 h-32 w-32 rounded-full bg-teal-500 blur-[80px] opacity-20 pointer-events-none" />
+        <div className="absolute top-1/2 right-1/3 h-28 w-28 rounded-full bg-indigo-400 blur-[80px] opacity-10 pointer-events-none" />
+
         <div className="relative flex flex-col md:flex-row md:items-end md:justify-between gap-5">
           <div>
             <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-white/50 mb-1.5">Candidate Portal</p>
@@ -475,23 +490,23 @@ export default function ApplicantApplicationsPage() {
             <p className="text-sm text-white/60 mt-1.5">Track your progress across all roles you've applied to</p>
           </div>
           {/* Stat chips */}
-          <div className="flex items-center gap-3 flex-wrap">
-            <div className="bg-white/10 border border-white/15 rounded-xl px-4 py-2.5 text-center min-w-[64px]">
+          <div className="flex items-center gap-2.5 flex-wrap">
+            <div className="bg-white/10 border border-white/15 rounded-xl px-4 py-2.5 text-center min-w-[60px]">
               <p className="text-xl font-bold text-white leading-none">{total}</p>
               <p className="text-[10px] text-white/50 uppercase tracking-widest mt-0.5">Total</p>
             </div>
-            <div className="bg-white/10 border border-white/15 rounded-xl px-4 py-2.5 text-center min-w-[64px]">
+            <div className="bg-white/10 border border-white/15 rounded-xl px-4 py-2.5 text-center min-w-[60px]">
               <p className="text-xl font-bold text-white leading-none">{active}</p>
               <p className="text-[10px] text-white/50 uppercase tracking-widest mt-0.5">Active</p>
             </div>
             {inInterview > 0 && (
-              <div className="bg-purple-500/20 border border-purple-400/30 rounded-xl px-4 py-2.5 text-center min-w-[64px]">
+              <div className="bg-purple-500/20 border border-purple-400/30 rounded-xl px-4 py-2.5 text-center min-w-[60px]">
                 <p className="text-xl font-bold text-purple-200 leading-none">{inInterview}</p>
                 <p className="text-[10px] text-purple-300/70 uppercase tracking-widest mt-0.5">Interview</p>
               </div>
             )}
             {hired > 0 && (
-              <div className="bg-green-500/20 border border-green-400/30 rounded-xl px-4 py-2.5 text-center min-w-[64px]">
+              <div className="bg-green-500/20 border border-green-400/30 rounded-xl px-4 py-2.5 text-center min-w-[60px]">
                 <p className="text-xl font-bold text-green-300 leading-none">{hired}</p>
                 <p className="text-[10px] text-green-400/70 uppercase tracking-widest mt-0.5">Hired</p>
               </div>
@@ -521,24 +536,26 @@ export default function ApplicantApplicationsPage() {
       {/* ── Filters + search ── */}
       {!loading && total > 0 && (
         <div className="space-y-3">
-          {/* Filter tabs */}
+          {/* Filter tab pills with count badges */}
           <div className="flex items-center gap-1.5 flex-wrap">
             {filterTabs.map((f) => {
               const Icon = f.icon;
-              const active = filterStatus === f.key;
+              const isActive = filterStatus === f.key;
               return (
                 <button
                   key={f.key}
                   onClick={() => setFilterStatus(f.key)}
-                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all ${
-                    active
+                  className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold border transition-all ${
+                    isActive
                       ? "bg-primary text-primary-foreground border-primary shadow-sm"
                       : "bg-background text-muted-foreground border-border hover:border-primary/40 hover:text-foreground"
                   }`}
                 >
                   <Icon className="h-3 w-3" />
                   {f.label}
-                  <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${active ? "bg-white/20" : "bg-muted"}`}>
+                  <span className={`text-[10px] font-bold min-w-[18px] px-1.5 py-0.5 rounded-full text-center ${
+                    isActive ? "bg-white/25 text-white" : "bg-muted text-muted-foreground"
+                  }`}>
                     {f.count}
                   </span>
                 </button>
@@ -607,13 +624,19 @@ export default function ApplicantApplicationsPage() {
           <Loader2 className="h-7 w-7 animate-spin text-primary/40" />
         </div>
       ) : total === 0 ? (
-        <div className="flex flex-col items-center justify-center py-24 gap-4 text-muted-foreground">
-          <div className="h-16 w-16 rounded-2xl bg-muted/40 border border-border flex items-center justify-center">
-            <FileText className="h-8 w-8 opacity-30" />
+        /* Empty state */
+        <div className="flex flex-col items-center justify-center py-24 gap-5 text-muted-foreground">
+          <div className="relative">
+            <div className="h-20 w-20 rounded-3xl bg-gradient-to-br from-primary/10 to-muted/30 border border-border flex items-center justify-center">
+              <FileText className="h-9 w-9 opacity-25" />
+            </div>
+            <div className="absolute -top-2 -right-2 h-7 w-7 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center">
+              <Search className="h-3.5 w-3.5 text-primary/50" />
+            </div>
           </div>
-          <div className="text-center">
-            <p className="text-sm font-semibold text-foreground">No applications yet</p>
-            <p className="text-xs mt-1">Browse open positions and submit your first application.</p>
+          <div className="text-center space-y-1">
+            <p className="text-base font-bold text-foreground">No applications yet</p>
+            <p className="text-sm text-muted-foreground max-w-[240px]">Browse open positions and submit your first application to get started.</p>
           </div>
         </div>
       ) : filtered.length === 0 ? (

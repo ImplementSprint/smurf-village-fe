@@ -8,7 +8,7 @@ import {
   Search, MapPin, Clock, Building2, Briefcase,
   DollarSign, SlidersHorizontal, Bookmark, CheckCircle,
   Loader2, Calendar, CalendarX2, X, ArrowRight, Zap,
-  Sparkles, TrendingUp, Users, ChevronRight,
+  Sparkles, TrendingUp, Users, ChevronRight, Check,
 } from "lucide-react";
 import {
   getApplicantJobs, applyToJob, getMyApplications, getJobQuestions,
@@ -119,13 +119,16 @@ function ApplicationForm({
     }
   };
 
+  const hasQuestions = !loading && questions.length > 0;
+  const totalSteps = hasQuestions ? 2 : 1;
+
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm">
       <div className="bg-card border border-border rounded-2xl shadow-2xl w-full max-w-lg mx-4 max-h-[90vh] flex flex-col overflow-hidden">
-        {/* Modal header */}
+        {/* Modal gradient header */}
         <div className="relative bg-[linear-gradient(135deg,#0f172a_0%,#1e3a8a_60%,#134e4a_100%)] px-6 py-5 shrink-0">
-          <div className="absolute inset-0 opacity-5"
-            style={{ backgroundImage: "radial-gradient(circle at 20% 50%, white 1px, transparent 1px), radial-gradient(circle at 80% 20%, white 1px, transparent 1px)", backgroundSize: "40px 40px" }} />
+          <div className="absolute inset-0 opacity-[0.03] pointer-events-none"
+            style={{ backgroundImage: "radial-gradient(circle, white 1px, transparent 1px)", backgroundSize: "24px 24px" }} />
           <div className="relative flex items-start justify-between gap-4">
             <div>
               <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/40 mb-1">Submitting for</p>
@@ -136,6 +139,24 @@ function ApplicationForm({
               <X className="h-4 w-4 text-white/70" />
             </button>
           </div>
+
+          {/* Step progress indicator */}
+          {hasQuestions && (
+            <div className="relative mt-4 flex items-center gap-2">
+              {[
+                { step: 1, label: "Your Info" },
+                { step: 2, label: "Questions" },
+              ].map(({ step, label }, idx) => (
+                <div key={step} className="flex items-center gap-2">
+                  <div className="flex items-center gap-1.5 px-3 py-1 rounded-full border border-white/20 bg-white/10 text-[10px] font-bold text-white/80">
+                    <span className="h-4 w-4 rounded-full bg-white/20 flex items-center justify-center text-[9px]">{step}</span>
+                    {label}
+                  </div>
+                  {idx < 1 && <div className="h-px w-4 bg-white/20" />}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Body */}
@@ -311,20 +332,24 @@ export default function ApplicantJobsPage() {
 
   const activeFilters = (typeFilter !== "All Types" ? 1 : 0) + (locationFilter !== "All Locations" ? 1 : 0);
 
+  // Whether any search/filter is active — to show match counter
+  const hasActiveFilter = search.trim().length > 0 || activeFilters > 0;
+
   return (
     <div className="space-y-0 max-w-[1200px] mx-auto animate-in fade-in duration-500">
 
       {/* ── Hero Banner ─────────────────────────────────────────────────────── */}
       <div className="relative overflow-hidden rounded-2xl bg-[linear-gradient(135deg,#0f172a_0%,#172554_45%,#134e4a_100%)] mb-5">
-        {/* Decorative grid */}
-        <div className="absolute inset-0 opacity-[0.04]"
+        {/* Decorative dot-grid */}
+        <div className="absolute inset-0 opacity-[0.03] pointer-events-none"
           style={{
-            backgroundImage: "linear-gradient(rgba(255,255,255,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.5) 1px, transparent 1px)",
-            backgroundSize: "48px 48px",
+            backgroundImage: "radial-gradient(circle, white 1px, transparent 1px)",
+            backgroundSize: "24px 24px",
           }} />
         {/* Glow blobs */}
         <div className="absolute -top-16 -right-16 h-64 w-64 rounded-full bg-blue-500 blur-[80px] opacity-20 pointer-events-none" />
-        <div className="absolute bottom-0 left-1/3 h-40 w-40 rounded-full bg-teal-400 blur-[60px] opacity-15 pointer-events-none" />
+        <div className="absolute bottom-0 left-1/3 h-40 w-40 rounded-full bg-teal-400 blur-[80px] opacity-15 pointer-events-none" />
+        <div className="absolute top-1/2 right-1/4 h-32 w-32 rounded-full bg-indigo-400 blur-[80px] opacity-10 pointer-events-none" />
 
         <div className="relative px-8 pt-8 pb-6">
           {/* Top row */}
@@ -343,13 +368,22 @@ export default function ApplicantJobsPage() {
               </p>
             </div>
 
-            {/* Stats */}
+            {/* Stats — show match counter when filtering, otherwise total */}
             {!loading && (
               <div className="flex gap-3 shrink-0">
-                <div className="flex flex-col items-center justify-center rounded-xl border border-white/12 bg-white/6 px-5 py-3.5 text-center backdrop-blur-sm">
-                  <p className="text-2xl font-bold text-white">{jobs.length}</p>
-                  <p className="text-[10px] font-semibold text-white/40 uppercase tracking-wide mt-0.5">Open Roles</p>
-                </div>
+                {hasActiveFilter ? (
+                  <div className="flex flex-col items-center justify-center rounded-xl border border-white/12 bg-white/6 px-5 py-3.5 text-center backdrop-blur-sm">
+                    <p className="text-2xl font-bold text-white">{filtered.length}</p>
+                    <p className="text-[10px] font-semibold text-white/40 uppercase tracking-wide mt-0.5">
+                      {filtered.length === 1 ? "Match" : "Matches"}
+                    </p>
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center justify-center rounded-xl border border-white/12 bg-white/6 px-5 py-3.5 text-center backdrop-blur-sm">
+                    <p className="text-2xl font-bold text-white">{jobs.length}</p>
+                    <p className="text-[10px] font-semibold text-white/40 uppercase tracking-wide mt-0.5">Open Roles</p>
+                  </div>
+                )}
                 {appliedJobIds.size > 0 && (
                   <div className="flex flex-col items-center justify-center rounded-xl border border-green-400/20 bg-green-500/10 px-5 py-3.5 text-center backdrop-blur-sm">
                     <p className="text-2xl font-bold text-green-300">{appliedJobIds.size}</p>
@@ -523,6 +557,11 @@ export default function ApplicantJobsPage() {
                     <div className="absolute left-0 top-3 bottom-3 w-[3px] rounded-full bg-primary" />
                   )}
 
+                  {/* Hover left accent */}
+                  {!isSelected && (
+                    <div className="absolute left-0 top-3 bottom-3 w-[3px] rounded-full bg-transparent group-hover:bg-primary/50 transition-colors duration-200" />
+                  )}
+
                   <div className="flex items-start gap-3">
                     {/* Icon */}
                     <div className={`h-10 w-10 rounded-xl border flex items-center justify-center shrink-0 transition-all ${
@@ -561,6 +600,12 @@ export default function ApplicantJobsPage() {
                             <CheckCircle className="h-2.5 w-2.5" /> Applied
                           </span>
                         )}
+                        {/* Salary chip */}
+                        {job.salary_range && (
+                          <span className="inline-flex items-center gap-0.5 text-[10px] font-medium px-2 py-0.5 rounded-md bg-muted/40 text-muted-foreground">
+                            <DollarSign className="h-2.5 w-2.5" />{job.salary_range}
+                          </span>
+                        )}
                       </div>
 
                       {/* Meta */}
@@ -569,12 +614,6 @@ export default function ApplicantJobsPage() {
                           <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
                             <MapPin className="h-2.5 w-2.5 shrink-0" />
                             <span className="truncate max-w-[90px]">{job.location}</span>
-                          </span>
-                        )}
-                        {job.salary_range && (
-                          <span className="flex items-center gap-1 text-[11px] text-muted-foreground font-medium">
-                            <DollarSign className="h-2.5 w-2.5 shrink-0" />
-                            <span className="truncate max-w-[70px]">{job.salary_range}</span>
                           </span>
                         )}
                       </div>
@@ -621,7 +660,7 @@ export default function ApplicantJobsPage() {
                 {/* ─── Gradient Header ─────────────────────────────────── */}
                 <div className="relative bg-[linear-gradient(135deg,#0f172a_0%,#1e3a8a_55%,#134e4a_100%)] px-6 py-7 overflow-hidden">
                   {/* Decorative dots */}
-                  <div className="absolute inset-0 opacity-[0.03]"
+                  <div className="absolute inset-0 opacity-[0.03] pointer-events-none"
                     style={{
                       backgroundImage: "radial-gradient(circle, white 1px, transparent 1px)",
                       backgroundSize: "24px 24px",
@@ -747,9 +786,9 @@ export default function ApplicantJobsPage() {
                     </div>
                   </div>
 
-                  {/* Bottom CTA strip */}
+                  {/* Bottom CTA strip — more prominent */}
                   {!isApplied && (
-                    <div className="px-6 py-4 bg-muted/10 flex items-center justify-between gap-4">
+                    <div className="px-6 py-4 bg-muted/20 border-t border-border flex items-center justify-between gap-4">
                       <div className="flex items-center gap-2 text-muted-foreground">
                         <Users className="h-4 w-4" />
                         <span className="text-xs">Interested? Submit your application today.</span>
@@ -814,7 +853,7 @@ function SummaryCard({
     "text-foreground";
 
   return (
-    <div className={`flex items-start gap-3 rounded-xl border px-3.5 py-3 ${containerClass}`}>
+    <div className={`flex items-start gap-3 rounded-xl border px-3 py-2.5 ${containerClass}`}>
       <div className={`h-8 w-8 rounded-lg flex items-center justify-center shrink-0 ${iconClass}`}>
         {icon}
       </div>
