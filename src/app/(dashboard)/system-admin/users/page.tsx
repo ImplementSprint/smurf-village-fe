@@ -10,6 +10,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem,
+  DropdownMenuSeparator, DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
   Search, UserPlus, MoreHorizontal, X,
   ChevronLeft, ChevronRight, Pencil, UserX, UserCheck,
   Filter, Download, Check, Mail, Eye, Hash, User,
@@ -113,67 +117,43 @@ function RowMenu({
   onReactivate: () => void;
   onResendInvite: () => void;
 }) {
-  const [open, setOpen] = useState(false);
-  const [menuPos, setMenuPos] = useState<{ top: number; right: number } | null>(null);
-  const buttonRef = useRef<HTMLButtonElement>(null);
-  const menuRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      if (!buttonRef.current?.contains(e.target as Node) && !menuRef.current?.contains(e.target as Node))
-        setOpen(false);
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, []);
-
-  const handleOpen = () => {
-    if (buttonRef.current) {
-      const rect = buttonRef.current.getBoundingClientRect();
-      setMenuPos({ top: rect.bottom + 4, right: window.innerWidth - rect.right });
-    }
-    setOpen(v => !v);
-  };
-
-  const action = (fn: () => void) => () => { fn(); setOpen(false); };
-
   return (
-    <div>
-      <Button ref={buttonRef} variant="ghost" size="icon"
-        className="h-8 w-8 text-muted-foreground hover:text-foreground" onClick={handleOpen}>
-        <MoreHorizontal className="h-4 w-4" />
-      </Button>
-      {open && menuPos && (
-        <div ref={menuRef} style={{ top: menuPos.top, right: menuPos.right }}
-          className="fixed z-50 w-52 bg-card border border-border rounded-xl shadow-xl py-1 text-sm overflow-hidden">
-          <div className="p-1 space-y-0.5">
-            <MenuRow icon={Eye}       label="View Profile"      onClick={action(onView)} />
-            <MenuRow icon={Pencil}    label="Edit Employee"     onClick={action(onEdit)} />
-            {employee.account_status === "Pending" && (
-              <MenuRow icon={Mail}    label="Resend Invite"     onClick={action(onResendInvite)} />
-            )}
-            <div className="h-px bg-border mx-2 my-1" />
-            {employee.account_status === "Inactive"
-              ? <MenuRow icon={UserCheck} label="Reactivate Account" onClick={action(onReactivate)} />
-              : <MenuRow icon={UserX}     label="Deactivate Account" onClick={action(onDeactivate)} danger />
-            }
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
-function MenuRow({ icon: Icon, label, onClick, danger = false }: {
-  icon: React.ElementType; label: string; onClick: () => void; danger?: boolean;
-}) {
-  return (
-    <button onClick={onClick}
-      className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-left
-        ${danger ? "text-destructive hover:bg-destructive/10" : "text-foreground hover:bg-muted/60"}`}>
-      <Icon className="h-4 w-4 shrink-0" />
-      {label}
-    </button>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground">
+          <MoreHorizontal className="h-4 w-4" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-52">
+        <DropdownMenuItem onClick={onView} className="gap-2.5 cursor-pointer">
+          <Eye className="h-4 w-4" /> View Profile
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={onEdit} className="gap-2.5 cursor-pointer">
+          <Pencil className="h-4 w-4" /> Edit Employee
+        </DropdownMenuItem>
+        {employee.account_status === "Pending" && (
+          <DropdownMenuItem onClick={onResendInvite} className="gap-2.5 cursor-pointer">
+            <Mail className="h-4 w-4" /> Resend Invite
+          </DropdownMenuItem>
+        )}
+        <DropdownMenuSeparator />
+        {employee.account_status === "Inactive" ? (
+          <DropdownMenuItem
+            onClick={onReactivate}
+            className="gap-2.5 cursor-pointer text-green-600 focus:text-green-600 focus:bg-green-50"
+          >
+            <UserCheck className="h-4 w-4" /> Reactivate Account
+          </DropdownMenuItem>
+        ) : (
+          <DropdownMenuItem
+            onClick={onDeactivate}
+            className="gap-2.5 cursor-pointer text-destructive focus:text-destructive focus:bg-destructive/10"
+          >
+            <UserX className="h-4 w-4" /> Deactivate Account
+          </DropdownMenuItem>
+        )}
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }
 
@@ -1109,9 +1089,9 @@ export default function AdminUsersPage() {
             </thead>
             <tbody className="divide-y divide-border">
               {loading ? (
-                <tr><td colSpan={7} className="px-5 py-10 text-center text-muted-foreground">Loading employees...</td></tr>
+                <tr><td colSpan={8} className="px-5 py-10 text-center text-muted-foreground">Loading employees...</td></tr>
               ) : paged.length === 0 ? (
-                <tr><td colSpan={7} className="px-5 py-10 text-center text-muted-foreground">No employees found.</td></tr>
+                <tr><td colSpan={8} className="px-5 py-10 text-center text-muted-foreground">No employees found.</td></tr>
               ) : paged.map(e => (
                 <tr key={e.user_id} className="hover:bg-muted/20 transition-colors">
                   <td className="px-5 py-4">
@@ -1129,6 +1109,7 @@ export default function AdminUsersPage() {
                   <td className="px-5 py-4"><span className="text-xs font-semibold text-foreground">{roles.find(r => r.role_id === e.role_id)?.role_name ?? "—"}</span></td>
                   <td className="px-5 py-4"><span className="text-xs text-muted-foreground">{departments.find(d => d.department_id === e.department_id)?.department_name ?? (e.department_id ?? "—")}</span></td>
                   <td className="px-5 py-4"><StatusBadge status={e.account_status} /></td>
+                  <td className="px-5 py-4"><span className="text-xs text-muted-foreground">{formatDate(e.invite_expires_at)}</span></td>
                   <td className="px-5 py-4"><span className="text-xs text-muted-foreground">{formatDate(e.last_login)}</span></td>
                   <td className="px-5 py-4 text-right">
                     {e.user_id === currentUserId ? (

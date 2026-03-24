@@ -18,7 +18,8 @@ import {
   Layers,
   ClipboardCheck,
   Clock,
-  Loader2
+  Loader2,
+  ScrollText,
 } from "lucide-react";
 
 import {
@@ -65,7 +66,7 @@ const MENU_CONFIG: Record<PersonaType, { name: string; href: string; icon: any }
   hr: [
     { name: "Dashboard",    href: "/hr",              icon: LayoutDashboard },
     { name: "Timekeeping",  href: "/hr/timekeeping",  icon: Clock },
-    { name: "Recruitment",  href: "/hr/jobs",          icon: Briefcase },
+    { name: "Recruitment",  href: "/hr/jobs",         icon: Briefcase },
     { name: "Onboarding",   href: "/hr/onboarding",   icon: UserPlus },
     { name: "Compensation", href: "/hr/payroll",      icon: DollarSign },
     { name: "Performance",  href: "/hr/performance",  icon: BarChart },
@@ -75,11 +76,12 @@ const MENU_CONFIG: Record<PersonaType, { name: string; href: string; icon: any }
     { name: "Users", href: "/admin/users", icon: Users },
   ],
   "system-admin": [
-    { name: "Dashboard",      href: "/system-admin",              icon: LayoutDashboard },
-    { name: "Users",          href: "/system-admin/users",        icon: Users },
-    { name: "Timekeeping",    href: "/system-admin/timekeeping",  icon: Clock },
-    { name: "Subscriptions",  href: "/system-admin/subscriptions", icon: DollarSign },
-    { name: "Global Settings", href: "/system-admin/settings",   icon: ClipboardCheck },
+    { name: "Dashboard",      href: "/system-admin",                  icon: LayoutDashboard },
+    { name: "Users",          href: "/system-admin/users",            icon: Users },
+    { name: "Timekeeping",    href: "/system-admin/timekeeping",      icon: Clock },
+    { name: "Subscriptions",  href: "/system-admin/subscriptions",    icon: DollarSign },
+    { name: "Audit Logs",     href: "/system-admin/audit-logs",       icon: ScrollText },
+    { name: "Global Settings", href: "/system-admin/settings",        icon: ClipboardCheck },
   ],
 };
 

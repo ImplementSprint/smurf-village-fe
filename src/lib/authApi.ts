@@ -201,6 +201,13 @@ export async function getApplicationDetail(applicationId: string): Promise<Appli
   return data as ApplicationDetail;
 }
 
+export async function getMyApplicationDetail(applicationId: string): Promise<ApplicationDetail> {
+  const res = await authFetch(`${API_BASE_URL}/jobs/applicant/my-applications/${applicationId}`);
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data?.message || "Failed to fetch application detail");
+  return data as ApplicationDetail;
+}
+
 export async function getMyApplications() {
   const res = await authFetch(`${API_BASE_URL}/jobs/applicant/my-applications`);
   const data = await res.json().catch(() => ({}));

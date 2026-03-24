@@ -14,7 +14,10 @@ import {
   Search, Plus, MoreHorizontal, X, ChevronLeft, ChevronRight,
   Briefcase, MapPin, Users, XCircle, Loader2, CheckCircle, Link2, Copy, Check,
   ArrowRight, GripVertical, Trash2, ChevronDown, Pencil, RefreshCw, FileText,
+  KanbanSquare, List, Mail, Phone, Calendar, Mic, Cpu, Trophy, CheckCircle2,
+  LayoutGrid,
 } from "lucide-react";
+import { PipelineKanbanView } from "./_components/PipelineKanbanView";
 import { getMyCompany } from "@/lib/authApi";
 import { toast } from "sonner";
 
@@ -86,6 +89,31 @@ const APP_STATUS_STYLES: Record<string, string> = {
 };
 
 type StatusFilter = "all" | "open" | "closed" | "draft";
+type PageView = "postings" | "pipeline";
+
+const PIPELINE_STAGES = [
+  { value: "submitted",           label: "Applied",             icon: FileText,     dot: "bg-blue-500",   badge: "bg-blue-100 text-blue-700 border-blue-200",      tab: "border-blue-500 text-blue-700"   },
+  { value: "screening",           label: "Screening",           icon: Search,        dot: "bg-amber-500",  badge: "bg-amber-100 text-amber-700 border-amber-200",   tab: "border-amber-500 text-amber-700" },
+  { value: "first_interview",     label: "1st Interview",       icon: Mic,           dot: "bg-purple-500", badge: "bg-purple-100 text-purple-700 border-purple-200",tab: "border-purple-500 text-purple-700"},
+  { value: "technical_interview", label: "Technical",           icon: Cpu,           dot: "bg-indigo-500", badge: "bg-indigo-100 text-indigo-700 border-indigo-200",tab: "border-indigo-500 text-indigo-700"},
+  { value: "final_interview",     label: "Final Interview",     icon: Trophy,        dot: "bg-violet-500", badge: "bg-violet-100 text-violet-700 border-violet-200",tab: "border-violet-500 text-violet-700"},
+  { value: "hired",               label: "Hired",               icon: CheckCircle2,  dot: "bg-green-500",  badge: "bg-green-100 text-green-700 border-green-200",   tab: "border-green-500 text-green-700" },
+  { value: "rejected",            label: "Rejected",            icon: XCircle,       dot: "bg-red-500",    badge: "bg-red-100 text-red-700 border-red-200",         tab: "border-red-500 text-red-700"     },
+] as const;
+
+interface PipelineApplication {
+  application_id: string;
+  applicant_id: string;
+  status: string;
+  applied_at: string;
+  applicant_profile: {
+    first_name: string;
+    last_name: string;
+    email: string;
+    phone_number: string | null;
+    applicant_code: string;
+  };
+}
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -990,6 +1018,112 @@ function JobRowMenu({
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
+// ─── Pipeline Detail Modal ────────────────────────────────────────────────────
+
+function PipelineDetailModal({
+  detail,
+  onClose,
+  onStatusChange,
+  updating,
+}: {
+  detail: ApplicationDetail;
+  onClose: () => void;
+  onStatusChange: (appId: string, status: string) => Promise<void>;
+  updating: boolean;
+}) {
+  const [showStageMenu, setShowStageMenu] = useState(false);
+  const p = detail.applicant_profile;
+  const initials = `${p.first_name.charAt(0)}${p.last_name.charAt(0)}`.toUpperCase();
+  const currentStage = PIPELINE_STAGES.find((s) => s.value === detail.status) ?? PIPELINE_STAGES[0];
+
+  return (
+    <div
+      className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 animate-in fade-in duration-200 p-4"
+      onClick={onClose}
+    >
+      <div
+        className="bg-card border border-border rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-hidden flex flex-col animate-in zoom-in-95 duration-200"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div className="flex items-start justify-between p-6 border-b border-border bg-[linear-gradient(155deg,rgba(37,99,235,0.06),transparent)]">
+          <div className="flex items-start gap-4">
+            <div className="h-12 w-12 rounded-full bg-[linear-gradient(135deg,#1e3a8a,#2563eb)] flex items-center justify-center text-white font-bold shadow-sm shrink-0">
+              {initials}
+            </div>
+            <div>
+              <h2 className="text-lg font-bold tracking-tight text-foreground leading-tight">{p.first_name} {p.last_name}</h2>
+              <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground mt-0.5">{p.applicant_code}</p>
+            </div>
+          </div>
+          <button onClick={onClose} className="h-8 w-8 rounded-lg hover:bg-muted/60 flex items-center justify-center transition-colors">
+            <X className="h-4 w-4 text-muted-foreground" />
+          </button>
+        </div>
+
+        {/* Body */}
+        <div className="overflow-y-auto flex-1 p-6 space-y-6">
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground mb-3">Contact Info</p>
+            <div className="space-y-2">
+              <div className="flex items-center gap-3 text-sm"><Mail className="h-4 w-4 text-muted-foreground" /><span>{p.email}</span></div>
+              {p.phone_number && <div className="flex items-center gap-3 text-sm"><Phone className="h-4 w-4 text-muted-foreground" /><span>{p.phone_number}</span></div>}
+              <div className="flex items-center gap-3 text-sm"><Calendar className="h-4 w-4 text-muted-foreground" /><span>Applied {new Date(detail.applied_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</span></div>
+            </div>
+          </div>
+
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground mb-3">Application Stage</p>
+            <div className="relative">
+              <button
+                onClick={() => setShowStageMenu((v) => !v)}
+                disabled={updating}
+                className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full border text-xs font-bold uppercase tracking-wide cursor-pointer transition-all ${currentStage.badge} hover:opacity-80`}
+              >
+                {updating && <Loader2 className="h-3 w-3 animate-spin" />}
+                {APP_STATUSES.find((s) => s.value === detail.status)?.label ?? detail.status}
+                <ChevronDown className="h-3 w-3" />
+              </button>
+              {showStageMenu && (
+                <div className="absolute top-full left-0 mt-1 z-50 bg-card border border-border rounded-lg shadow-lg py-1 min-w-[180px]">
+                  {APP_STATUSES.map((s) => (
+                    <button
+                      key={s.value}
+                      onClick={async () => { setShowStageMenu(false); await onStatusChange(detail.application_id, s.value); }}
+                      className={`flex items-center gap-2 px-3 py-2 w-full text-left text-sm hover:bg-muted/50 transition-colors ${detail.status === s.value ? "font-semibold text-primary" : "text-foreground"}`}
+                    >
+                      <span className={`h-1.5 w-1.5 rounded-full ${PIPELINE_STAGES.find((ps) => ps.value === s.value)?.dot ?? "bg-gray-400"}`} />
+                      {s.label}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {detail.answers.length > 0 && (
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground mb-3">Application Answers</p>
+              <div className="space-y-4">
+                {[...detail.answers]
+                  .sort((a, b) => a.application_questions.sort_order - b.application_questions.sort_order)
+                  .map((ans) => (
+                    <div key={ans.answer_id} className="rounded-xl border border-border bg-muted/20 px-4 py-3">
+                      <p className="text-xs font-semibold text-foreground mb-1">{ans.application_questions.question_text}</p>
+                      <p className="text-sm text-muted-foreground">{ans.answer_value || <span className="italic opacity-50">No answer</span>}</p>
+                    </div>
+                  ))}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Main Page ────────────────────────────────────────────────────────────────
+
 const STATUS_FILTERS: { value: StatusFilter; label: string }[] = [
   { value: "all",    label: "All" },
   { value: "open",   label: "Open" },
@@ -1015,6 +1149,18 @@ export default function HRJobsPage() {
   const [careersUrl, setCareersUrl]         = useState<string | null>(null);
   const [copied, setCopied]                 = useState(false);
 
+  // Pipeline view state
+  const [pageView, setPageView]               = useState<PageView>("postings");
+  const [pipelineView, setPipelineView]       = useState<"list" | "kanban">("kanban");
+  const [pipelineJobId, setPipelineJobId]     = useState<string | null>(null);
+  const [pipelineApps, setPipelineApps]       = useState<PipelineApplication[]>([]);
+  const [pipelineLoading, setPipelineLoading] = useState(false);
+  const [pipelineStage, setPipelineStage]     = useState<string>("submitted");
+  const [pipelineSearch, setPipelineSearch]   = useState("");
+  const [pipelineDetail, setPipelineDetail]   = useState<ApplicationDetail | null>(null);
+  const [pipelineDetailLoading, setPipelineDetailLoading] = useState(false);
+  const [pipelineUpdating, setPipelineUpdating]           = useState(false);
+
   const load = useCallback(async () => {
     setLoading(true);
     try {
@@ -1028,6 +1174,61 @@ export default function HRJobsPage() {
   }, []);
 
   useEffect(() => { load(); }, [load]);
+
+  // Auto-select first job for pipeline once jobs load
+  useEffect(() => {
+    if (jobs.length > 0 && !pipelineJobId) {
+      const firstOpen = jobs.find((j) => j.status === "open") ?? jobs[0];
+      setPipelineJobId(firstOpen.job_posting_id);
+    }
+  }, [jobs, pipelineJobId]);
+
+  const loadPipelineApps = useCallback(async (jobId: string) => {
+    setPipelineLoading(true);
+    try {
+      const data = await apiFetch<PipelineApplication[]>(`/jobs/${jobId}/applications`);
+      setPipelineApps(data);
+    } catch {
+      toast.error("Failed to load pipeline applications");
+    } finally {
+      setPipelineLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (pageView === "pipeline" && pipelineJobId) loadPipelineApps(pipelineJobId);
+  }, [pageView, pipelineJobId, loadPipelineApps]);
+
+  const handlePipelineStatusChange = async (appId: string, newStatus: string) => {
+    setPipelineUpdating(true);
+    try {
+      await apiFetch(`/jobs/applications/${appId}/status`, {
+        method: "PATCH",
+        body: JSON.stringify({ status: newStatus }),
+      });
+      setPipelineApps((prev) => prev.map((a) => a.application_id === appId ? { ...a, status: newStatus } : a));
+      if (pipelineDetail?.application_id === appId) {
+        setPipelineDetail((d) => d ? { ...d, status: newStatus } : d);
+      }
+      toast.success("Stage updated");
+    } catch {
+      toast.error("Failed to update stage");
+    } finally {
+      setPipelineUpdating(false);
+    }
+  };
+
+  const handleOpenPipelineDetail = async (appId: string) => {
+    setPipelineDetailLoading(true);
+    try {
+      const d = await getApplicationDetail(appId);
+      setPipelineDetail(d);
+    } catch {
+      toast.error("Failed to load application details");
+    } finally {
+      setPipelineDetailLoading(false);
+    }
+  };
 
   useEffect(() => {
     getMyCompany()
@@ -1101,6 +1302,239 @@ export default function HRJobsPage() {
           </div>
         </div>
       </section>
+
+      {/* View Tab Switcher */}
+      <div className="flex items-center gap-1 bg-muted/40 border border-border rounded-xl p-1 w-fit">
+        <button
+          onClick={() => setPageView("postings")}
+          className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
+            pageView === "postings"
+              ? "bg-card text-foreground shadow-sm border border-border"
+              : "text-muted-foreground hover:text-foreground"
+          }`}
+        >
+          <List className="h-4 w-4" /> Job Postings
+        </button>
+        <button
+          onClick={() => setPageView("pipeline")}
+          className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
+            pageView === "pipeline"
+              ? "bg-card text-foreground shadow-sm border border-border"
+              : "text-muted-foreground hover:text-foreground"
+          }`}
+        >
+          <KanbanSquare className="h-4 w-4" /> Recruitment Pipeline
+        </button>
+      </div>
+
+      {/* ── PIPELINE VIEW ─────────────────────────────────────────────────── */}
+      {pageView === "pipeline" && (() => {
+        const selectedPipelineJob = jobs.find((j) => j.job_posting_id === pipelineJobId);
+        const stageFiltered = pipelineApps.filter((a) => {
+          const q = pipelineSearch.toLowerCase();
+          const { first_name, last_name, email, applicant_code } = a.applicant_profile;
+          return !q || `${first_name} ${last_name}`.toLowerCase().includes(q) || email.toLowerCase().includes(q) || applicant_code.toLowerCase().includes(q);
+        });
+        const stageCounts = Object.fromEntries(PIPELINE_STAGES.map((s) => [s.value, pipelineApps.filter((a) => a.status === s.value).length]));
+        const visibleApps = stageFiltered.filter((a) => a.status === pipelineStage);
+        const activeStage = PIPELINE_STAGES.find((s) => s.value === pipelineStage)!;
+
+        return (
+          <div className="space-y-5 animate-in fade-in duration-300">
+            {/* Job selector + search bar */}
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+              <div className="relative">
+                <button
+                  className="inline-flex items-center gap-2 h-9 pl-3 pr-3 rounded-lg border border-border bg-card text-sm font-medium text-foreground hover:bg-muted/40 transition-colors shadow-xs min-w-[200px] max-w-[280px]"
+                  onClick={() => {/* toggle handled by select below */}}
+                >
+                  <Briefcase className="h-4 w-4 text-muted-foreground shrink-0" />
+                  <select
+                    value={pipelineJobId ?? ""}
+                    onChange={(e) => { setPipelineJobId(e.target.value); setPipelineStage("submitted"); }}
+                    className="flex-1 bg-transparent text-sm outline-none cursor-pointer"
+                  >
+                    {jobs.map((j) => (
+                      <option key={j.job_posting_id} value={j.job_posting_id}>{j.title}</option>
+                    ))}
+                  </select>
+                </button>
+              </div>
+              <div className="relative flex-1 min-w-[180px] max-w-xs">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+                <input
+                  value={pipelineSearch}
+                  onChange={(e) => setPipelineSearch(e.target.value)}
+                  placeholder="Search candidates…"
+                  className="h-9 w-full pl-9 pr-3 rounded-lg border border-border bg-card text-sm shadow-xs focus:outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] transition-all"
+                />
+                {pipelineSearch && (
+                  <button onClick={() => setPipelineSearch("")} className="absolute right-2 top-1/2 -translate-y-1/2 h-5 w-5 flex items-center justify-center rounded hover:bg-muted/60 transition-colors">
+                    <X className="h-3 w-3 text-muted-foreground" />
+                  </button>
+                )}
+              </div>
+              <div className="flex items-center gap-2 ml-auto">
+                {/* View toggle */}
+                <div className="flex items-center gap-0.5 bg-muted/40 border border-border rounded-lg p-0.5">
+                  <button
+                    onClick={() => setPipelineView("kanban")}
+                    title="Kanban view"
+                    className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-semibold transition-all ${
+                      pipelineView === "kanban"
+                        ? "bg-card text-foreground shadow-sm border border-border"
+                        : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    <KanbanSquare className="h-3.5 w-3.5" /> Kanban
+                  </button>
+                  <button
+                    onClick={() => setPipelineView("list")}
+                    title="List view"
+                    className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-semibold transition-all ${
+                      pipelineView === "list"
+                        ? "bg-card text-foreground shadow-sm border border-border"
+                        : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    <LayoutGrid className="h-3.5 w-3.5" /> List
+                  </button>
+                </div>
+
+                <Button variant="outline" size="sm" className="h-9 px-3 gap-2" onClick={() => pipelineJobId && loadPipelineApps(pipelineJobId)} disabled={pipelineLoading}>
+                  <RefreshCw className={`h-4 w-4 ${pipelineLoading ? "animate-spin" : ""}`} /> Refresh
+                </Button>
+              </div>
+            </div>
+
+            {/* Stage summary stats + tab header — list view only */}
+            {pipelineView === "list" && (
+              <>
+                <div className="grid grid-cols-3 sm:grid-cols-7 gap-3">
+                  {PIPELINE_STAGES.map((s) => {
+                    const Icon = s.icon;
+                    const active = pipelineStage === s.value;
+                    return (
+                      <button
+                        key={s.value}
+                        onClick={() => setPipelineStage(s.value)}
+                        className={`flex flex-col items-center gap-1.5 py-3 px-2 rounded-xl border transition-all ${
+                          active
+                            ? `${s.badge} border-current shadow-sm scale-[1.03]`
+                            : "bg-card border-border hover:border-primary/30 hover:bg-muted/20 text-muted-foreground"
+                        }`}
+                      >
+                        <Icon className="h-4 w-4" />
+                        <span className="text-lg font-bold leading-none">{stageCounts[s.value] ?? 0}</span>
+                        <span className="text-[9px] font-bold uppercase tracking-[0.12em] text-center leading-tight">{s.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className={`h-2 w-2 rounded-full ${activeStage.dot}`} />
+                    <h2 className="text-base font-bold tracking-tight">{activeStage.label}</h2>
+                    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold border ${activeStage.badge}`}>
+                      {visibleApps.length}
+                    </span>
+                  </div>
+                  {selectedPipelineJob && (
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{selectedPipelineJob.title}</span>
+                  )}
+                </div>
+              </>
+            )}
+
+            {/* ── Kanban view ── */}
+            {pipelineView === "kanban" && (
+              pipelineLoading ? (
+                <div className="flex items-center justify-center py-20">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary/40" />
+                </div>
+              ) : (
+                <PipelineKanbanView
+                  apps={stageFiltered}
+                  onStatusChange={handlePipelineStatusChange}
+                  onViewDetail={handleOpenPipelineDetail}
+                />
+              )
+            )}
+
+            {/* ── List view (original design) ── */}
+            {pipelineView === "list" && (
+              pipelineLoading ? (
+                <div className="flex items-center justify-center py-20">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary/40" />
+                </div>
+              ) : visibleApps.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
+                  <activeStage.icon className="h-10 w-10 mb-3 opacity-20" />
+                  <p className="text-sm font-medium">No candidates in this stage</p>
+                  {pipelineSearch && <p className="text-xs mt-1 opacity-60">Try clearing the search filter</p>}
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                  {visibleApps.map((app) => {
+                    const { first_name, last_name, email, applicant_code } = app.applicant_profile;
+                    const ini = `${first_name.charAt(0)}${last_name.charAt(0)}`.toUpperCase();
+                    return (
+                      <div
+                        key={app.application_id}
+                        className="bg-card border border-border rounded-xl p-5 shadow-sm hover:shadow-md hover:border-primary/30 transition-all duration-200 hover:-translate-y-0.5 flex flex-col gap-4"
+                      >
+                        <div className="flex items-start gap-3">
+                          <div className="h-10 w-10 rounded-full bg-[linear-gradient(135deg,#1e3a8a,#2563eb)] flex items-center justify-center text-white text-sm font-bold shrink-0 shadow-sm">
+                            {ini}
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <p className="text-sm font-bold text-foreground truncate leading-tight">{first_name} {last_name}</p>
+                            <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-muted-foreground mt-0.5">{applicant_code}</p>
+                          </div>
+                          <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-bold uppercase border shrink-0 ${activeStage.badge}`}>
+                            {activeStage.label}
+                          </span>
+                        </div>
+                        <div className="space-y-1.5">
+                          <div className="flex items-center gap-2">
+                            <Mail className="h-3 w-3 text-muted-foreground shrink-0" />
+                            <span className="text-xs text-muted-foreground truncate">{email}</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Calendar className="h-3 w-3 text-muted-foreground shrink-0" />
+                            <span className="text-xs text-muted-foreground">
+                              Applied {new Date(app.applied_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2 pt-1 border-t border-border mt-auto">
+                          <select
+                            value={app.status}
+                            disabled={pipelineUpdating}
+                            onChange={(e) => handlePipelineStatusChange(app.application_id, e.target.value)}
+                            className="flex-1 h-7 rounded-md border border-border bg-background text-xs px-2 focus:outline-none focus:ring-1 focus:ring-ring cursor-pointer"
+                          >
+                            {APP_STATUSES.map((s) => (
+                              <option key={s.value} value={s.value}>{s.label}</option>
+                            ))}
+                          </select>
+                          <Button size="sm" variant="outline" className="h-7 px-3 text-xs shrink-0" onClick={() => handleOpenPipelineDetail(app.application_id)}>
+                            View
+                          </Button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )
+            )}
+          </div>
+        );
+      })()}
+
+      {/* ── POSTINGS VIEW ─────────────────────────────────────────────────── */}
+      {pageView === "postings" && <>
 
       {/* Careers Page Banner */}
       {careersUrl && (
@@ -1275,6 +1709,29 @@ export default function HRJobsPage() {
           </div>
         </div>
       </div>
+
+      </>}
+
+      {/* ── SHARED MODALS ──────────────────────────────────────────────────── */}
+
+      {/* Pipeline detail modal */}
+      {pipelineDetailLoading && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/30 animate-in fade-in duration-150">
+          <div className="bg-card border border-border rounded-2xl shadow-2xl p-8 flex flex-col items-center gap-3">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <p className="text-sm text-muted-foreground">Loading details…</p>
+          </div>
+        </div>
+      )}
+
+      {pipelineDetail && !pipelineDetailLoading && (
+        <PipelineDetailModal
+          detail={pipelineDetail}
+          onClose={() => setPipelineDetail(null)}
+          onStatusChange={handlePipelineStatusChange}
+          updating={pipelineUpdating}
+        />
+      )}
 
       {showCreate && (
         <CreateJobModal

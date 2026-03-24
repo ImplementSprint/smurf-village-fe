@@ -10,11 +10,40 @@ import { getSubscriptions, type Subscription } from "@/lib/adminApi";
 import {
   Users, Building2, Mail, Clock,
   UserPlus, CreditCard, Settings, ChevronRight,
-  RefreshCw,
+  RefreshCw, ScrollText, Briefcase, ClipboardList,
+  Shield, Activity, UserCheck, ArrowRight,
 } from "lucide-react";
 import { toast } from "sonner";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
+
+type AuditLog = {
+  log_id: string;
+  action: string;
+  performed_by: string;
+  target_user_id: string | null;
+  timestamp: string;
+};
+
+function getActionMeta(action: string): { icon: any; bg: string; text: string } {
+  const l = action.toLowerCase();
+  if (l.includes("job posting"))  return { icon: Briefcase,     bg: "bg-blue-50",   text: "text-blue-600"   };
+  if (l.includes("application"))  return { icon: ClipboardList, bg: "bg-purple-50", text: "text-purple-600" };
+  if (l.includes("user") || l.includes("invite") || l.includes("account"))
+                                   return { icon: UserCheck,     bg: "bg-green-50",  text: "text-green-600"  };
+  if (l.includes("role"))          return { icon: Shield,        bg: "bg-amber-50",  text: "text-amber-600"  };
+  return                                  { icon: Activity,      bg: "bg-muted",     text: "text-muted-foreground" };
+}
+
+function relativeTime(iso: string) {
+  const diff = Date.now() - new Date(iso).getTime();
+  const m = Math.floor(diff / 60000);
+  if (m < 1)  return "just now";
+  if (m < 60) return `${m}m ago`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `${h}h ago`;
+  return `${Math.floor(h / 24)}d ago`;
+}
 
 type Employee = {
   user_id: string;
@@ -65,11 +94,12 @@ export default function AdminDashboardPage() {
   const user      = getUserInfo();
   const adminName = user?.name || "Admin";
 
-  const [employees, setEmployees]       = useState<Employee[]>([]);
+  const [employees, setEmployees]         = useState<Employee[]>([]);
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
-  const [totalUsers, setTotalUsers]     = useState<number>(0);
-  const [loading, setLoading]           = useState(true);
-  const [resendingId, setResendingId]   = useState<string | null>(null);
+  const [totalUsers, setTotalUsers]       = useState<number>(0);
+  const [loading, setLoading]             = useState(true);
+  const [resendingId, setResendingId]     = useState<string | null>(null);
+  const [auditLogs, setAuditLogs]         = useState<AuditLog[]>([]);
 
   useWelcomeToast(adminName, "System Administration");
 
@@ -78,10 +108,12 @@ export default function AdminDashboardPage() {
       authFetch(`${API_BASE_URL}/users/stats`).then(r => r.json()),
       authFetch(`${API_BASE_URL}/users`).then(r => r.json()),
       getSubscriptions().catch(() => [] as Subscription[]),
-    ]).then(([stats, users, subs]) => {
+      authFetch(`${API_BASE_URL}/audit/logs?limit=8`).then(r => r.json()).catch(() => []),
+    ]).then(([stats, users, subs, logs]) => {
       setTotalUsers(stats?.total ?? 0);
       setEmployees(Array.isArray(users) ? users : []);
       setSubscriptions(Array.isArray(subs) ? subs : []);
+      setAuditLogs(Array.isArray(logs) ? logs : []);
     }).finally(() => setLoading(false));
   }, []);
 
@@ -156,39 +188,47 @@ export default function AdminDashboardPage() {
         {[
           {
             icon: Users,
-            color: "bg-blue-50 text-blue-600",
+            iconBg: "bg-blue-100 text-blue-600",
+            border: "border-border",
             label: "Total Users",
             value: loading ? "—" : String(totalUsers),
             sub: "All users across tenants",
+            valueColor: "text-foreground",
           },
           {
             icon: Building2,
-            color: "bg-emerald-50 text-emerald-600",
+            iconBg: "bg-emerald-100 text-emerald-600",
+            border: "border-border",
             label: "Companies",
             value: loading ? "—" : String(companies),
             sub: "Organizations onboarded",
+            valueColor: "text-foreground",
           },
           {
             icon: Mail,
-            color: "bg-amber-50 text-amber-600",
+            iconBg: "bg-amber-100 text-amber-600",
+            border: pending.length > 0 ? "border-amber-200" : "border-border",
             label: "Pending Invites",
             value: loading ? "—" : String(pending.length),
-            sub: "Accounts still awaiting activation",
+            sub: "Awaiting activation",
+            valueColor: pending.length > 0 ? "text-amber-600" : "text-foreground",
           },
           {
             icon: Clock,
-            color: "bg-red-50 text-red-500",
+            iconBg: "bg-red-100 text-red-500",
+            border: expiry.label !== "—" ? "border-red-200" : "border-border",
             label: "Next Expiry",
             value: loading ? "—" : expiry.label,
             sub: expiry.name,
+            valueColor: "text-red-500",
           },
-        ].map(({ icon: Icon, color, label, value, sub }) => (
-          <div key={label} className="bg-card border border-border rounded-xl p-5 shadow-sm">
-            <div className={`p-2 rounded-lg w-fit mb-4 ${color}`}>
-              <Icon className="h-4 w-4" />
+        ].map(({ icon: Icon, iconBg, border, label, value, sub, valueColor }) => (
+          <div key={label} className={`bg-card border ${border} rounded-xl p-5 shadow-sm`}>
+            <div className={`h-9 w-9 rounded-xl flex items-center justify-center mb-4 ${iconBg}`}>
+              <Icon className="h-4.5 w-4.5" />
             </div>
             <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">{label}</p>
-            <p className="text-2xl font-bold text-foreground">{value}</p>
+            <p className={`text-2xl font-bold ${valueColor}`}>{value}</p>
             <p className="text-xs text-muted-foreground mt-0.5 truncate">{sub}</p>
           </div>
         ))}
@@ -277,50 +317,120 @@ export default function AdminDashboardPage() {
         <div className="bg-card border border-border rounded-xl shadow-sm overflow-hidden">
           <div className="px-6 py-5 border-b border-border">
             <h2 className="font-bold text-base">Quick Actions</h2>
-            <p className="text-xs text-muted-foreground mt-0.5">Move directly into the areas you are likely to use next.</p>
+            <p className="text-xs text-muted-foreground mt-0.5">Jump directly to what matters most.</p>
           </div>
           <div className="divide-y divide-border">
             {[
               {
                 href: "/system-admin/users",
                 icon: UserPlus,
+                accent: "border-l-blue-500 group-hover:bg-blue-50/50",
+                iconBg: "bg-blue-50 text-blue-600",
                 label: "User Management",
-                sub: "Create, edit, move, and deactivate accounts across companies.",
+                sub: "Create, edit, move, and deactivate accounts.",
               },
               {
                 href: "/system-admin/subscriptions",
                 icon: CreditCard,
+                accent: "border-l-emerald-500 group-hover:bg-emerald-50/50",
+                iconBg: "bg-emerald-50 text-emerald-600",
                 label: "Subscriptions",
-                sub: "Review plan changes, renewal timing, and tenant billing posture.",
+                sub: "Review plans, renewals, and tenant billing.",
               },
               {
                 href: "/system-admin/timekeeping",
                 icon: Clock,
+                accent: "border-l-violet-500 group-hover:bg-violet-50/50",
+                iconBg: "bg-violet-50 text-violet-600",
                 label: "Timekeeping",
-                sub: "Company-wide attendance records and compliance tracking.",
+                sub: "Company-wide attendance and compliance.",
+              },
+              {
+                href: "/system-admin/audit-logs",
+                icon: ScrollText,
+                accent: "border-l-slate-500 group-hover:bg-slate-50/50",
+                iconBg: "bg-slate-100 text-slate-600",
+                label: "Audit Logs",
+                sub: "Full history of every admin action.",
               },
               {
                 href: "/system-admin/settings",
                 icon: Settings,
+                accent: "border-l-amber-500 group-hover:bg-amber-50/50",
+                iconBg: "bg-amber-50 text-amber-600",
                 label: "Global Settings",
-                sub: "Configure lifecycle module permissions per role.",
+                sub: "Configure lifecycle permissions per role.",
               },
-            ].map(({ href, icon: Icon, label, sub }) => (
-              <Link key={href} href={href} className="flex items-start gap-4 px-6 py-4 hover:bg-muted/30 transition-colors group">
-                <div className="p-2 rounded-lg bg-muted text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary transition-colors shrink-0 mt-0.5">
+            ].map(({ href, icon: Icon, accent, iconBg, label, sub }) => (
+              <Link key={href} href={href} className={`flex items-start gap-4 pl-5 pr-6 py-3.5 border-l-[3px] border-l-transparent transition-all group ${accent}`}>
+                <div className={`h-8 w-8 rounded-lg flex items-center justify-center shrink-0 mt-0.5 transition-colors ${iconBg}`}>
                   <Icon className="h-4 w-4" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold text-foreground">{label}</p>
                   <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">{sub}</p>
                 </div>
-                <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0 mt-1" />
+                <ChevronRight className="h-4 w-4 text-muted-foreground/40 group-hover:text-muted-foreground shrink-0 mt-1 transition-colors" />
               </Link>
             ))}
           </div>
         </div>
 
       </div>
+
+      {/* Recent Activity */}
+      <div className="bg-card border border-border rounded-xl shadow-sm overflow-hidden">
+        <div className="flex items-center justify-between px-6 py-5 border-b border-border">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-slate-100 text-slate-600">
+              <ScrollText className="h-4 w-4" />
+            </div>
+            <div>
+              <h2 className="font-bold text-base">Recent Activity</h2>
+              <p className="text-xs text-muted-foreground mt-0.5">Latest system-wide actions across all tenants.</p>
+            </div>
+          </div>
+          <Link
+            href="/system-admin/audit-logs"
+            className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:underline shrink-0"
+          >
+            View all <ArrowRight className="h-3.5 w-3.5" />
+          </Link>
+        </div>
+
+        {loading ? (
+          <p className="px-6 py-8 text-center text-sm text-muted-foreground">Loading activity…</p>
+        ) : auditLogs.length === 0 ? (
+          <p className="px-6 py-8 text-center text-sm text-muted-foreground">No activity recorded yet.</p>
+        ) : (
+          <div className="divide-y divide-border">
+            {auditLogs.map((log) => {
+              const meta = getActionMeta(log.action);
+              const Icon = meta.icon;
+              return (
+                <div key={log.log_id} className="flex items-start gap-4 px-6 py-3.5 hover:bg-muted/20 transition-colors">
+                  <div className={`p-1.5 rounded-lg shrink-0 mt-0.5 ${meta.bg}`}>
+                    <Icon className={`h-3.5 w-3.5 ${meta.text}`} />
+                  </div>
+                  <p className="flex-1 text-sm text-foreground leading-snug line-clamp-1 min-w-0">
+                    {log.action}
+                  </p>
+                  <span className="text-[11px] text-muted-foreground shrink-0 tabular-nums">
+                    {relativeTime(log.timestamp)}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        <div className="px-6 py-3 border-t border-border bg-muted/10">
+          <Link href="/system-admin/audit-logs" className="text-xs text-primary font-semibold hover:underline">
+            Open full audit log →
+          </Link>
+        </div>
+      </div>
+
     </div>
   );
 }
