@@ -5,7 +5,6 @@ import { createPortal } from "react-dom";
 import { useWelcomeToast } from "@/lib/useWelcomeToast";
 import { getUserInfo } from "@/lib/authStorage";
 import { authFetch } from "@/lib/authApi";
-import { getApplicationDetail, type ApplicationDetail } from "@/lib/authApi";
 import { API_BASE_URL } from "@/lib/api";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -18,7 +17,7 @@ import {
   LayoutGrid,
 } from "lucide-react";
 import { PipelineKanbanView } from "./_components/PipelineKanbanView";
-import { getMyCompany } from "@/lib/authApi";
+import { getApplicationDetail, getMyCompany, type ApplicationDetail } from "@/lib/authApi";
 import { toast } from "sonner";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -123,7 +122,7 @@ async function apiFetch<T>(path: string, init: RequestInit = {}): Promise<T> {
     ...init,
   });
   const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error((data as any)?.message || "Request failed");
+  if (!res.ok) throw new Error((data as { message?: string })?.message || "Request failed");
   return data as T;
 }
 
@@ -145,7 +144,7 @@ function newQuestion(): Question {
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
-function StatCard({ label, value, sub, color }: { label: string; value: number; sub: string; color: string }) {
+function StatCard({ label, value, sub, color }: Readonly<{ label: string; value: number; sub: string; color: string }>) {
   return (
     <Card className="border-border/70 shadow-sm bg-[linear-gradient(160deg,rgba(37,99,235,0.05),rgba(15,23,42,0.00))]">
       <CardContent className="p-5">
@@ -157,7 +156,7 @@ function StatCard({ label, value, sub, color }: { label: string; value: number; 
   );
 }
 
-function StatusBadge({ status }: { status: string }) {
+function StatusBadge({ status }: Readonly<{ status: string }>) {
   const style = JOB_STATUS_STYLES[status] ?? "bg-gray-100 text-gray-700 border-gray-200";
   return (
     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase border ${style}`}>
@@ -171,10 +170,10 @@ function StatusBadge({ status }: { status: string }) {
 function QuestionBuilder({
   questions,
   onChange,
-}: {
+}: Readonly<{
   questions: Question[];
   onChange: (qs: Question[]) => void;
-}) {
+}>) {
   const updateQ = (id: string, patch: Partial<Question>) =>
     onChange(questions.map((q) => (q.id === id ? { ...q, ...patch } : q)));
 
@@ -299,10 +298,10 @@ function QuestionBuilder({
 function CreateJobModal({
   onClose,
   onCreate,
-}: {
+}: Readonly<{
   onClose: () => void;
   onCreate: (job: JobPosting) => void;
-}) {
+}>) {
   const [step, setStep] = useState<1 | 2>(1);
   const [createdJob, setCreatedJob] = useState<JobPosting | null>(null);
   const [questions, setQuestions] = useState<Question[]>([]);
@@ -314,7 +313,7 @@ function CreateJobModal({
     employment_type: "", salary_range: "", closes_at: "",
   });
 
-  const handleCreatePosting = async (e: React.FormEvent) => {
+  const handleCreatePosting = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setSaving(true);
     try {
@@ -368,7 +367,7 @@ function CreateJobModal({
   };
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40">
+    <div className="fixed inset-0 z-60 flex items-center justify-center bg-black/40">
       <div className="bg-card border border-border rounded-2xl shadow-2xl w-full max-w-lg mx-4 max-h-[90vh] flex flex-col">
         <div className="flex items-center justify-between px-6 pt-6 pb-4 shrink-0">
           <div>
@@ -395,8 +394,9 @@ function CreateJobModal({
           {step === 1 ? (
             <form id="step1-form" onSubmit={handleCreatePosting} className="space-y-4">
               <div className="space-y-1.5">
-                <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Job Title *</label>
+                <label htmlFor="create-title" className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Job Title *</label>
                 <Input
+                  id="create-title"
                   value={form.title}
                   onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
                   placeholder="e.g. Senior Software Engineer"
@@ -404,8 +404,9 @@ function CreateJobModal({
                 />
               </div>
               <div className="space-y-1.5">
-                <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Description *</label>
+                <label htmlFor="create-description" className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Description *</label>
                 <textarea
+                  id="create-description"
                   value={form.description}
                   onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
                   placeholder="Describe the role, responsibilities, and requirements..."
@@ -415,12 +416,13 @@ function CreateJobModal({
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Location</label>
-                  <Input value={form.location} onChange={(e) => setForm((f) => ({ ...f, location: e.target.value }))} placeholder="e.g. Manila" className="h-10" />
+                  <label htmlFor="create-location" className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Location</label>
+                  <Input id="create-location" value={form.location} onChange={(e) => setForm((f) => ({ ...f, location: e.target.value }))} placeholder="e.g. Manila" className="h-10" />
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Employment Type</label>
+                  <label htmlFor="create-employment-type" className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Employment Type</label>
                   <select
+                    id="create-employment-type"
                     value={form.employment_type}
                     onChange={(e) => setForm((f) => ({ ...f, employment_type: e.target.value }))}
                     className="w-full h-10 rounded-md border border-input bg-background px-3 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
@@ -435,12 +437,12 @@ function CreateJobModal({
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Salary Range</label>
-                  <Input value={form.salary_range} onChange={(e) => setForm((f) => ({ ...f, salary_range: e.target.value }))} placeholder="e.g. ₱50k – ₱80k" className="h-10" />
+                  <label htmlFor="create-salary" className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Salary Range</label>
+                  <Input id="create-salary" value={form.salary_range} onChange={(e) => setForm((f) => ({ ...f, salary_range: e.target.value }))} placeholder="e.g. ₱50k – ₱80k" className="h-10" />
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Closes On</label>
-                  <Input type="date" value={form.closes_at} onChange={(e) => setForm((f) => ({ ...f, closes_at: e.target.value }))} className="h-10" />
+                  <label htmlFor="create-closes-at" className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Closes On</label>
+                  <Input id="create-closes-at" type="date" value={form.closes_at} onChange={(e) => setForm((f) => ({ ...f, closes_at: e.target.value }))} className="h-10" />
                 </div>
               </div>
               <div className="flex gap-3 pt-2">
@@ -475,11 +477,11 @@ function EditJobModal({
   job,
   onClose,
   onSave,
-}: {
+}: Readonly<{
   job: JobPosting;
   onClose: () => void;
   onSave: (updated: JobPosting) => void;
-}) {
+}>) {
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({
     title: job.title,
@@ -490,7 +492,7 @@ function EditJobModal({
     closes_at: job.closes_at ? job.closes_at.slice(0, 10) : "",
   });
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setSaving(true);
     try {
@@ -515,7 +517,7 @@ function EditJobModal({
   };
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40">
+    <div className="fixed inset-0 z-60 flex items-center justify-center bg-black/40">
       <div className="bg-card border border-border rounded-2xl shadow-2xl w-full max-w-lg mx-4 max-h-[90vh] flex flex-col">
         <div className="flex items-center justify-between px-6 pt-6 pb-4 shrink-0">
           <div>
@@ -529,12 +531,13 @@ function EditJobModal({
         <div className="flex-1 overflow-y-auto px-6 pb-6">
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-1.5">
-              <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Job Title *</label>
-              <Input value={form.title} onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))} placeholder="e.g. Senior Software Engineer" required className="h-10" />
+              <label htmlFor="edit-title" className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Job Title *</label>
+              <Input id="edit-title" value={form.title} onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))} placeholder="e.g. Senior Software Engineer" required className="h-10" />
             </div>
             <div className="space-y-1.5">
-              <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Description *</label>
+              <label htmlFor="edit-description" className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Description *</label>
               <textarea
+                id="edit-description"
                 value={form.description}
                 onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
                 placeholder="Describe the role, responsibilities, and requirements..."
@@ -544,12 +547,13 @@ function EditJobModal({
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Location</label>
-                <Input value={form.location} onChange={(e) => setForm((f) => ({ ...f, location: e.target.value }))} placeholder="e.g. Manila" className="h-10" />
+                <label htmlFor="edit-location" className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Location</label>
+                <Input id="edit-location" value={form.location} onChange={(e) => setForm((f) => ({ ...f, location: e.target.value }))} placeholder="e.g. Manila" className="h-10" />
               </div>
               <div className="space-y-1.5">
-                <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Employment Type</label>
+                <label htmlFor="edit-employment-type" className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Employment Type</label>
                 <select
+                  id="edit-employment-type"
                   value={form.employment_type}
                   onChange={(e) => setForm((f) => ({ ...f, employment_type: e.target.value }))}
                   className="w-full h-10 rounded-md border border-input bg-background px-3 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
@@ -564,12 +568,12 @@ function EditJobModal({
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Salary Range</label>
-                <Input value={form.salary_range} onChange={(e) => setForm((f) => ({ ...f, salary_range: e.target.value }))} placeholder="e.g. ₱50k – ₱80k" className="h-10" />
+                <label htmlFor="edit-salary" className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Salary Range</label>
+                <Input id="edit-salary" value={form.salary_range} onChange={(e) => setForm((f) => ({ ...f, salary_range: e.target.value }))} placeholder="e.g. ₱50k – ₱80k" className="h-10" />
               </div>
               <div className="space-y-1.5">
-                <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Closes On</label>
-                <Input type="date" value={form.closes_at} onChange={(e) => setForm((f) => ({ ...f, closes_at: e.target.value }))} className="h-10" />
+                <label htmlFor="edit-closes-at" className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Closes On</label>
+                <Input id="edit-closes-at" type="date" value={form.closes_at} onChange={(e) => setForm((f) => ({ ...f, closes_at: e.target.value }))} className="h-10" />
               </div>
             </div>
             <div className="flex gap-3 pt-2">
@@ -599,10 +603,10 @@ interface StoredQuestion {
 function ManageFormModal({
   job,
   onClose,
-}: {
+}: Readonly<{
   job: JobPosting;
   onClose: () => void;
-}) {
+}>) {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -651,7 +655,7 @@ function ManageFormModal({
   };
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40">
+    <div className="fixed inset-0 z-60 flex items-center justify-center bg-black/40">
       <div className="bg-card border border-border rounded-2xl shadow-2xl w-full max-w-lg mx-4 max-h-[90vh] flex flex-col">
         <div className="flex items-center justify-between px-6 pt-6 pb-4 shrink-0">
           <div>
@@ -694,11 +698,11 @@ function ApplicationDetailModal({
   applicationId,
   onClose,
   onStatusChange,
-}: {
+}: Readonly<{
   applicationId: string;
   onClose: () => void;
   onStatusChange: (newStatus: string) => void;
-}) {
+}>) {
   const [detail, setDetail] = useState<ApplicationDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
@@ -743,7 +747,7 @@ function ApplicationDetailModal({
   };
 
   return (
-    <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/50">
+    <div className="fixed inset-0 z-70 flex items-center justify-center bg-black/50">
       <div className="bg-card border border-border rounded-2xl shadow-2xl w-full max-w-xl mx-4 max-h-[85vh] flex flex-col">
         <div className="flex items-center justify-between px-6 py-5 border-b border-border shrink-0">
           <div>
@@ -831,10 +835,10 @@ function ApplicationDetailModal({
 function ApplicantsModal({
   job,
   onClose,
-}: {
+}: Readonly<{
   job: JobPosting;
   onClose: () => void;
-}) {
+}>) {
   const [applications, setApplications] = useState<Application[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedAppId, setSelectedAppId] = useState<string | null>(null);
@@ -848,13 +852,13 @@ function ApplicantsModal({
 
   return (
     <>
-      <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40">
+      <div className="fixed inset-0 z-60 flex items-center justify-center bg-black/40">
         <div className="bg-card border border-border rounded-2xl shadow-2xl w-full max-w-2xl p-6 mx-4 max-h-[85vh] flex flex-col">
           <div className="flex items-center justify-between mb-5 shrink-0">
             <div>
               <h3 className="font-bold text-foreground text-lg">{job.title}</h3>
               <p className="text-xs text-muted-foreground">
-                {loading ? "Loading..." : `${applications.length} applicant${applications.length !== 1 ? "s" : ""}`}
+                {loading ? "Loading..." : `${applications.length} applicant${applications.length === 1 ? "" : "s"}`}
               </p>
             </div>
             <button onClick={onClose} className="p-1.5 rounded-md hover:bg-muted/50 transition-colors">
@@ -879,8 +883,11 @@ function ApplicantsModal({
                   return (
                     <div
                       key={app.application_id}
+                      role="button"
+                      tabIndex={0}
                       className="flex items-center justify-between py-4 px-1 gap-4 hover:bg-muted/20 rounded-lg transition-colors cursor-pointer"
                       onClick={() => setSelectedAppId(app.application_id)}
+                      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { setSelectedAppId(app.application_id); } }}
                     >
                       <div className="flex items-center gap-3 min-w-0">
                         <div className="h-9 w-9 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-xs border border-primary/10 shrink-0">
@@ -935,14 +942,14 @@ function JobRowMenu({
   onReopen,
   onEdit,
   onManageForm,
-}: {
+}: Readonly<{
   job: JobPosting;
   onViewApplicants: () => void;
   onClose: () => void;
   onReopen: () => void;
   onEdit: () => void;
   onManageForm: () => void;
-}) {
+}>) {
   const [open, setOpen] = useState(false);
   const [pos, setPos] = useState<{ top?: number; bottom?: number; right: number }>({ top: 0, right: 0 });
   const btnRef = useRef<HTMLButtonElement>(null);
@@ -952,11 +959,11 @@ function JobRowMenu({
     if (!open && btnRef.current) {
       const rect = btnRef.current.getBoundingClientRect();
       const menuHeight = 160;
-      const spaceBelow = window.innerHeight - rect.bottom;
+      const spaceBelow = globalThis.innerHeight - rect.bottom;
       if (spaceBelow < menuHeight) {
-        setPos({ bottom: window.innerHeight - rect.top + 4, right: window.innerWidth - rect.right });
+        setPos({ bottom: globalThis.innerHeight - rect.top + 4, right: globalThis.innerWidth - rect.right });
       } else {
-        setPos({ top: rect.bottom + 4, right: window.innerWidth - rect.right });
+        setPos({ top: rect.bottom + 4, right: globalThis.innerWidth - rect.right });
       }
     }
     setOpen((v) => !v);
@@ -982,7 +989,7 @@ function JobRowMenu({
         <div
           ref={menuRef}
           style={{ position: "fixed", top: pos.top, bottom: pos.bottom, right: pos.right }}
-          className="z-[200] w-48 bg-card border border-border rounded-lg shadow-lg py-1 text-sm"
+          className="z-200 w-48 bg-card border border-border rounded-lg shadow-lg py-1 text-sm"
           onClick={() => setOpen(false)}
         >
           <button className="flex items-center gap-2 px-3 py-2 w-full hover:bg-muted/50 text-foreground" onClick={onViewApplicants}>
@@ -1025,12 +1032,12 @@ function PipelineDetailModal({
   onClose,
   onStatusChange,
   updating,
-}: {
+}: Readonly<{
   detail: ApplicationDetail;
   onClose: () => void;
   onStatusChange: (appId: string, status: string) => Promise<void>;
   updating: boolean;
-}) {
+}>) {
   const [showStageMenu, setShowStageMenu] = useState(false);
   const p = detail.applicant_profile;
   const initials = `${p.first_name.charAt(0)}${p.last_name.charAt(0)}`.toUpperCase();
@@ -1038,8 +1045,11 @@ function PipelineDetailModal({
 
   return (
     <div
-      className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 animate-in fade-in duration-200 p-4"
+      role="button"
+      tabIndex={0}
+      className="fixed inset-0 z-60 flex items-center justify-center bg-black/40 animate-in fade-in duration-200 p-4"
       onClick={onClose}
+      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { onClose(); } }}
     >
       <div
         className="bg-card border border-border rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-hidden flex flex-col animate-in zoom-in-95 duration-200"
@@ -1085,7 +1095,7 @@ function PipelineDetailModal({
                 <ChevronDown className="h-3 w-3" />
               </button>
               {showStageMenu && (
-                <div className="absolute top-full left-0 mt-1 z-50 bg-card border border-border rounded-lg shadow-lg py-1 min-w-[180px]">
+                <div className="absolute top-full left-0 mt-1 z-50 bg-card border border-border rounded-lg shadow-lg py-1 min-w-45">
                   {APP_STATUSES.map((s) => (
                     <button
                       key={s.value}
@@ -1233,7 +1243,7 @@ export default function HRJobsPage() {
   useEffect(() => {
     getMyCompany()
       .then((company) => {
-        const origin = typeof window !== "undefined" ? window.location.origin : "";
+        const origin = typeof globalThis.window !== "undefined" ? globalThis.location.origin : "";
         setCareersUrl(`${origin}/careers/${company.slug}`);
       })
       .catch(() => {});
@@ -1283,6 +1293,71 @@ export default function HRJobsPage() {
 
   const openCount   = jobs.filter((j) => j.status === "open").length;
   const closedCount = jobs.filter((j) => j.status === "closed").length;
+
+  const jobTableRows = loading ? (
+    <tr><td colSpan={7} className="px-5 py-10 text-center text-muted-foreground">Loading job postings...</td></tr>
+  ) : paged.length === 0 ? (
+    <tr>
+      <td colSpan={7} className="px-5 py-10 text-center">
+        <div className="flex flex-col items-center gap-2 text-muted-foreground">
+          <Briefcase className="h-10 w-10 opacity-20" />
+          <p className="text-sm font-medium">
+            {jobs.length === 0
+              ? "No job postings yet. Create your first one!"
+              : statusFilter !== "all"
+              ? `No ${statusFilter} postings found.`
+              : "No postings match your search."}
+          </p>
+          {jobs.length === 0 && (
+            <Button size="sm" className="mt-1 gap-1" onClick={() => setShowCreate(true)}>
+              <Plus className="h-3.5 w-3.5" /> Create Job Posting
+            </Button>
+          )}
+        </div>
+      </td>
+    </tr>
+  ) : (
+    <>
+      {paged.map((job) => (
+        <tr key={job.job_posting_id} className="hover:bg-primary/5 transition-colors">
+          <td className="px-5 py-4">
+            <div className="flex items-center gap-2">
+              <div className="h-8 w-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                <Briefcase className="h-4 w-4" />
+              </div>
+              <div>
+                <p className="font-semibold text-foreground leading-none">{job.title}</p>
+                {job.salary_range && <p className="text-[11px] text-muted-foreground mt-0.5">{job.salary_range}</p>}
+              </div>
+            </div>
+          </td>
+          <td className="px-5 py-4">
+            {job.location ? (
+              <span className="flex items-center gap-1 text-xs text-muted-foreground"><MapPin className="h-3 w-3 shrink-0" />{job.location}</span>
+            ) : <span className="text-xs text-muted-foreground">—</span>}
+          </td>
+          <td className="px-5 py-4"><span className="text-xs font-semibold text-foreground">{job.employment_type ?? "—"}</span></td>
+          <td className="px-5 py-4">
+            {(closingId === job.job_posting_id || reopeningId === job.job_posting_id)
+              ? <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+              : <StatusBadge status={job.status} />}
+          </td>
+          <td className="px-5 py-4"><span className="text-xs text-muted-foreground">{formatDate(job.posted_at)}</span></td>
+          <td className="px-5 py-4"><span className="text-xs text-muted-foreground">{job.closes_at ? formatDate(job.closes_at) : "—"}</span></td>
+          <td className="px-5 py-4 text-right">
+            <JobRowMenu
+              job={job}
+              onViewApplicants={() => setViewApplicants(job)}
+              onClose={() => handleClosePosting(job)}
+              onReopen={() => handleReopenPosting(job)}
+              onEdit={() => setEditJob(job)}
+              onManageForm={() => setManageFormJob(job)}
+            />
+          </td>
+        </tr>
+      ))}
+    </>
+  );
 
   return (
     <div className="space-y-6">
@@ -1345,7 +1420,7 @@ export default function HRJobsPage() {
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
               <div className="relative">
                 <button
-                  className="inline-flex items-center gap-2 h-9 pl-3 pr-3 rounded-lg border border-border bg-card text-sm font-medium text-foreground hover:bg-muted/40 transition-colors shadow-xs min-w-[200px] max-w-[280px]"
+                  className="inline-flex items-center gap-2 h-9 pl-3 pr-3 rounded-lg border border-border bg-card text-sm font-medium text-foreground hover:bg-muted/40 transition-colors shadow-xs min-w-50 max-w-70"
                   onClick={() => {/* toggle handled by select below */}}
                 >
                   <Briefcase className="h-4 w-4 text-muted-foreground shrink-0" />
@@ -1360,7 +1435,7 @@ export default function HRJobsPage() {
                   </select>
                 </button>
               </div>
-              <div className="relative flex-1 min-w-[180px] max-w-xs">
+              <div className="relative flex-1 min-w-45 max-w-xs">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
                 <input
                   value={pipelineSearch}
@@ -1631,66 +1706,7 @@ export default function HRJobsPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
-              {loading ? (
-                <tr><td colSpan={7} className="px-5 py-10 text-center text-muted-foreground">Loading job postings...</td></tr>
-              ) : paged.length === 0 ? (
-                <tr>
-                  <td colSpan={7} className="px-5 py-10 text-center">
-                    <div className="flex flex-col items-center gap-2 text-muted-foreground">
-                      <Briefcase className="h-10 w-10 opacity-20" />
-                      <p className="text-sm font-medium">
-                        {jobs.length === 0
-                          ? "No job postings yet. Create your first one!"
-                          : statusFilter !== "all"
-                          ? `No ${statusFilter} postings found.`
-                          : "No postings match your search."}
-                      </p>
-                      {jobs.length === 0 && (
-                        <Button size="sm" className="mt-1 gap-1" onClick={() => setShowCreate(true)}>
-                          <Plus className="h-3.5 w-3.5" /> Create Job Posting
-                        </Button>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              ) : paged.map((job) => (
-                <tr key={job.job_posting_id} className="hover:bg-primary/5 transition-colors">
-                  <td className="px-5 py-4">
-                    <div className="flex items-center gap-2">
-                      <div className="h-8 w-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
-                        <Briefcase className="h-4 w-4" />
-                      </div>
-                      <div>
-                        <p className="font-semibold text-foreground leading-none">{job.title}</p>
-                        {job.salary_range && <p className="text-[11px] text-muted-foreground mt-0.5">{job.salary_range}</p>}
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-5 py-4">
-                    {job.location ? (
-                      <span className="flex items-center gap-1 text-xs text-muted-foreground"><MapPin className="h-3 w-3 shrink-0" />{job.location}</span>
-                    ) : <span className="text-xs text-muted-foreground">—</span>}
-                  </td>
-                  <td className="px-5 py-4"><span className="text-xs font-semibold text-foreground">{job.employment_type ?? "—"}</span></td>
-                  <td className="px-5 py-4">
-                    {(closingId === job.job_posting_id || reopeningId === job.job_posting_id)
-                      ? <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-                      : <StatusBadge status={job.status} />}
-                  </td>
-                  <td className="px-5 py-4"><span className="text-xs text-muted-foreground">{formatDate(job.posted_at)}</span></td>
-                  <td className="px-5 py-4"><span className="text-xs text-muted-foreground">{job.closes_at ? formatDate(job.closes_at) : "—"}</span></td>
-                  <td className="px-5 py-4 text-right">
-                    <JobRowMenu
-                      job={job}
-                      onViewApplicants={() => setViewApplicants(job)}
-                      onClose={() => handleClosePosting(job)}
-                      onReopen={() => handleReopenPosting(job)}
-                      onEdit={() => setEditJob(job)}
-                      onManageForm={() => setManageFormJob(job)}
-                    />
-                  </td>
-                </tr>
-              ))}
+              {jobTableRows}
             </tbody>
           </table>
         </div>
@@ -1716,7 +1732,7 @@ export default function HRJobsPage() {
 
       {/* Pipeline detail modal */}
       {pipelineDetailLoading && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/30 animate-in fade-in duration-150">
+        <div className="fixed inset-0 z-60 flex items-center justify-center bg-black/30 animate-in fade-in duration-150">
           <div className="bg-card border border-border rounded-2xl shadow-2xl p-8 flex flex-col items-center gap-3">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
             <p className="text-sm text-muted-foreground">Loading details…</p>

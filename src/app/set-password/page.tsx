@@ -30,7 +30,7 @@ function SetPasswordForm() {
     if (!token) setError("Invalid or missing invite link. Please contact your administrator.");
   }, [token]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError("");
 
@@ -110,8 +110,9 @@ function SetPasswordForm() {
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <label className="text-sm font-semibold">New Password</label>
+                <label htmlFor="new-password" className="text-sm font-semibold">New Password</label>
                 <PasswordInput
+                  id="new-password"
                   placeholder="At least 8 characters"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -121,8 +122,9 @@ function SetPasswordForm() {
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-semibold">Confirm Password</label>
+                <label htmlFor="confirm-password" className="text-sm font-semibold">Confirm Password</label>
                 <PasswordInput
+                  id="confirm-password"
                   placeholder="Re-enter your password"
                   value={confirmPassword}
                   onChange={(e) => setConfirm(e.target.value)}

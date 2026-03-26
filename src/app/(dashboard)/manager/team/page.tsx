@@ -184,7 +184,7 @@ function RowMenu({
   const handleOpen = () => {
     if (buttonRef.current) {
       const rect = buttonRef.current.getBoundingClientRect();
-      setMenuPos({ top: rect.bottom + 4, right: window.innerWidth - rect.right });
+      setMenuPos({ top: rect.bottom + 4, right: globalThis.innerWidth - rect.right });
     }
     setOpen(v => !v);
   };
@@ -459,7 +459,7 @@ function ConfirmDeactivate({
   onConfirm: () => void;
 }) {
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40">
+    <div className="fixed inset-0 z-60 flex items-center justify-center bg-black/40">
       <div className="bg-card border border-border rounded-2xl shadow-2xl w-full max-w-sm p-6 mx-4">
         <div className="flex items-center gap-3 mb-4">
           <div className="p-2 bg-red-100 rounded-lg text-red-600">
@@ -524,8 +524,8 @@ export default function ManagerTeamPage() {
   }, []);
 
   useEffect(() => {
-    const timer = window.setInterval(() => setNow(Date.now()), 1000);
-    return () => window.clearInterval(timer);
+    const timer = globalThis.setInterval(() => setNow(Date.now()), 1000);
+    return () => globalThis.clearInterval(timer);
   }, []);
 
   const load = useCallback(async () => {

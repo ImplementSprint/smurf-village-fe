@@ -14,9 +14,9 @@ type UserRole = "hr" | "manager" | "employee" | "applicant" | "admin" | "system-
 
 export default function SharedDashboardLayout({
   children,
-}: {
+}: Readonly<{
   children: React.ReactNode;
-}) {
+}>) {
   const router = useRouter();
   const pathname = usePathname();
   const [role, setRole] = useState<UserRole | null>(null);
@@ -46,7 +46,7 @@ export default function SharedDashboardLayout({
       }
 
       const rolePath = roleToPath(me.role_name); // e.g. "/system-admin"
-      const rawRole = rolePath.replace("/", "");
+      const rawRole = rolePath.replaceAll("/", "");
       const userRole = rawRole as UserRole;
 
       // Strict Persona Guard: prevents a Manager from viewing /hr pages, etc.

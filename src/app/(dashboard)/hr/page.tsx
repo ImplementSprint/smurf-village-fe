@@ -1,5 +1,5 @@
 ﻿"use client";
-import { useState, useMemo, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,9 +9,9 @@ import { authFetch } from "@/lib/authApi";
 import { API_BASE_URL } from "@/lib/api";
 import { toast } from "sonner";
 import {
-  Users, MoreHorizontal, Filter, Download,
+  MoreHorizontal, Filter, Download,
   Search, ChevronLeft, ChevronRight, UserX,
-  UserCheck, Loader2, Check,
+  UserCheck, Check,
 } from "lucide-react";
 
 // â”€â”€â”€ Types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -49,11 +49,11 @@ const STATUS_STYLES: Record<string, string> = {
 async function apiFetch<T = unknown>(path: string, init?: RequestInit): Promise<T> {
   const res = await authFetch(`${API_BASE_URL}${path}`, init);
   const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error((data as any)?.message || "Request failed");
+  if (!res.ok) throw new Error((data as { message?: string })?.message || "Request failed");
   return data as T;
 }
 
-function StatCard({ label, value, sub, color }: { label: string; value: number; sub: string; color: string }) {
+function StatCard({ label, value, sub, color }: Readonly<{ label: string; value: number; sub: string; color: string }>) {
   return (
     <Card className="border-border/70 shadow-sm bg-[linear-gradient(160deg,rgba(37,99,235,0.05),rgba(15,23,42,0.00))]">
       <CardContent className="p-5">
@@ -65,7 +65,7 @@ function StatCard({ label, value, sub, color }: { label: string; value: number; 
   );
 }
 
-function StatusBadge({ status }: { status: string }) {
+function StatusBadge({ status }: Readonly<{ status: string }>) {
   const style = STATUS_STYLES[status] ?? "bg-gray-100 text-gray-700 border-gray-200";
   return (
     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase border ${style}`}>
@@ -79,11 +79,11 @@ function RowMenu({
   employee,
   onDeactivate,
   onReactivate,
-}: {
+}: Readonly<{
   employee: Employee;
   onDeactivate: () => void;
   onReactivate: () => void;
-}) {
+}>) {
   const [open, setOpen] = useState(false);
   const [menuPos, setMenuPos] = useState<{ top: number; right: number } | null>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
@@ -102,7 +102,7 @@ function RowMenu({
   const handleOpen = () => {
     if (buttonRef.current) {
       const rect = buttonRef.current.getBoundingClientRect();
-      setMenuPos({ top: rect.bottom + 4, right: window.innerWidth - rect.right });
+      setMenuPos({ top: rect.bottom + 4, right: globalThis.innerWidth - rect.right });
     }
     setOpen(v => !v);
   };
@@ -149,13 +149,13 @@ function ConfirmDeactivate({
   employee,
   onClose,
   onConfirm,
-}: {
+}: Readonly<{
   employee: Employee;
   onClose: () => void;
   onConfirm: () => void;
-}) {
+}>) {
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40">
+    <div className="fixed inset-0 z-60 flex items-center justify-center bg-black/40">
       <div className="bg-card border border-border rounded-2xl shadow-2xl w-full max-w-sm p-6 mx-4">
         <div className="flex items-center gap-3 mb-4">
           <div className="p-2 bg-red-100 rounded-lg text-red-600">
@@ -182,7 +182,7 @@ function ConfirmDeactivate({
 
 export default function HRDashboardPage() {
   const user = getUserInfo();
-  const currentUserId = parseJwt(getAccessToken() ?? "")?.sub_userid as string | undefined;
+  const currentUserId = parseJwt(getAccessToken() ?? "")?.sub_userid;
   useWelcomeToast(user?.name || "HR Officer", "HR Administration");
 
   const [employees, setEmployees]       = useState<Employee[]>([]);
@@ -273,6 +273,68 @@ export default function HRDashboardPage() {
       toast.error(err?.message || "Failed to reactivate account.");
     }
   };
+
+  const tableRowsPlaceholder = loading ? (
+    <tr>
+      <td colSpan={6} className="px-5 py-10 text-center text-muted-foreground">
+        Loading employees...
+      </td>
+    </tr>
+  ) : (
+    <tr>
+      <td colSpan={6} className="px-5 py-10 text-center text-muted-foreground">
+        No employees found.
+      </td>
+    </tr>
+  );
+  const tableRows = loading || paged.length === 0 ? tableRowsPlaceholder : paged.map(e => (
+    <tr key={e.user_id} className="hover:bg-primary/5 transition-colors">
+      {/* User */}
+      <td className="px-5 py-4">
+        <div className="flex items-center gap-3">
+          <div className="h-8 w-8 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-xs border border-primary/10 shrink-0">
+            {e.first_name.charAt(0)}
+          </div>
+          <div>
+            <p className="font-semibold text-foreground leading-none">
+              {e.first_name} {e.last_name}
+            </p>
+            <p className="text-[11px] text-muted-foreground mt-0.5">{e.email}</p>
+          </div>
+        </div>
+      </td>
+      {/* Employee ID */}
+      <td className="px-5 py-4">
+        <span className="font-mono text-xs text-muted-foreground">{e.employee_id}</span>
+      </td>
+      {/* Role */}
+      <td className="px-5 py-4">
+        <span className="text-xs font-semibold text-foreground">
+          {roles.find(r => r.role_id === e.role_id)?.role_name ?? "—"}
+        </span>
+      </td>
+      {/* Department */}
+      <td className="px-5 py-4">
+        <span className="text-xs text-muted-foreground">{e.department_id ?? "—"}</span>
+      </td>
+      {/* Status */}
+      <td className="px-5 py-4">
+        <StatusBadge status={e.account_status} />
+      </td>
+      {/* Actions */}
+      <td className="px-5 py-4 text-right">
+        {e.user_id === currentUserId ? (
+          <span className="text-[11px] text-muted-foreground italic px-2">You</span>
+        ) : (
+          <RowMenu
+            employee={e}
+            onDeactivate={() => setConfirmDeact(e)}
+            onReactivate={() => handleReactivate(e)}
+          />
+        )}
+      </td>
+    </tr>
+  ));
 
   return (
     <div className="space-y-6">
@@ -379,67 +441,8 @@ export default function HRDashboardPage() {
                 <th className="px-5 py-3 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-border">
-              {loading ? (
-                <tr>
-                  <td colSpan={6} className="px-5 py-10 text-center text-muted-foreground">
-                    Loading employees...
-                  </td>
-                </tr>
-              ) : paged.length === 0 ? (
-                <tr>
-                  <td colSpan={6} className="px-5 py-10 text-center text-muted-foreground">
-                    No employees found.
-                  </td>
-                </tr>
-              ) : paged.map(e => (
-                <tr key={e.user_id} className="hover:bg-primary/5 transition-colors">
-                  {/* User */}
-                  <td className="px-5 py-4">
-                    <div className="flex items-center gap-3">
-                      <div className="h-8 w-8 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-xs border border-primary/10 shrink-0">
-                        {e.first_name.charAt(0)}
-                      </div>
-                      <div>
-                        <p className="font-semibold text-foreground leading-none">
-                          {e.first_name} {e.last_name}
-                        </p>
-                        <p className="text-[11px] text-muted-foreground mt-0.5">{e.email}</p>
-                      </div>
-                    </div>
-                  </td>
-                  {/* Employee ID */}
-                  <td className="px-5 py-4">
-                    <span className="font-mono text-xs text-muted-foreground">{e.employee_id}</span>
-                  </td>
-                  {/* Role */}
-                  <td className="px-5 py-4">
-                    <span className="text-xs font-semibold text-foreground">
-                      {roles.find(r => r.role_id === e.role_id)?.role_name ?? "â€”"}
-                    </span>
-                  </td>
-                  {/* Department */}
-                  <td className="px-5 py-4">
-                    <span className="text-xs text-muted-foreground">{e.department_id ?? "â€”"}</span>
-                  </td>
-                  {/* Status */}
-                  <td className="px-5 py-4">
-                    <StatusBadge status={e.account_status} />
-                  </td>
-                  {/* Actions */}
-                  <td className="px-5 py-4 text-right">
-                    {e.user_id === currentUserId ? (
-                      <span className="text-[11px] text-muted-foreground italic px-2">You</span>
-                    ) : (
-                      <RowMenu
-                        employee={e}
-                        onDeactivate={() => setConfirmDeact(e)}
-                        onReactivate={() => handleReactivate(e)}
-                      />
-                    )}
-                  </td>
-                </tr>
-              ))}
+            <tbody className=”divide-y divide-border”>
+              {tableRows}
             </tbody>
           </table>
         </div>

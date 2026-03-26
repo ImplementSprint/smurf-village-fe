@@ -84,7 +84,7 @@ function formatDate(value: string | null) {
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
-function StatCard({ label, value, sub, color }: { label: string; value: number; sub: string; color: string }) {
+function StatCard({ label, value, sub, color }: Readonly<{ label: string; value: number; sub: string; color: string }>) {
   return (
     <Card className="border-border shadow-sm">
       <CardContent className="p-5">
@@ -96,7 +96,7 @@ function StatCard({ label, value, sub, color }: { label: string; value: number; 
   );
 }
 
-function StatusBadge({ status }: { status: string }) {
+function StatusBadge({ status }: Readonly<{ status: string }>) {
   const style = STATUS_STYLES[status] ?? "bg-gray-100 text-gray-700 border-gray-200";
   return (
     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase border ${style}`}>
@@ -109,14 +109,14 @@ function StatusBadge({ status }: { status: string }) {
 
 function RowMenu({
   employee, onView, onEdit, onDeactivate, onReactivate, onResendInvite,
-}: {
+}: Readonly<{
   employee: Employee;
   onView: () => void;
   onEdit: () => void;
   onDeactivate: () => void;
   onReactivate: () => void;
   onResendInvite: () => void;
-}) {
+}>) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -161,19 +161,19 @@ function RowMenu({
 
 function ViewProfileSheet({
   employee, roles, departments, onClose,
-}: {
+}: Readonly<{
   employee: Employee;
   roles: Role[];
   departments: Department[];
   onClose: () => void;
-}) {
+}>) {
   const name = `${employee.first_name} ${employee.last_name}`.trim() || employee.email;
   const roleName = roles.find(r => r.role_id === employee.role_id)?.role_name ?? null;
   const deptName = departments.find(d => d.department_id === employee.department_id)?.department_name ?? null;
 
   return (
     <div className="fixed inset-0 z-50 flex">
-      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" role="button" tabIndex={0} onClick={onClose} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { onClose(); } }} />
       <div className="relative ml-auto h-full w-full max-w-md bg-background shadow-2xl flex flex-col animate-in slide-in-from-right duration-300">
         <div className="flex items-center justify-between px-6 py-5 border-b border-border shrink-0">
           <div>
@@ -216,7 +216,7 @@ function ViewProfileSheet({
   );
 }
 
-function ProfileField({ icon: Icon, label, value }: { icon: React.ElementType; label: string; value?: string | null }) {
+function ProfileField({ icon: Icon, label, value }: Readonly<{ icon: React.ElementType; label: string; value?: string | null }>) {
   return (
     <div className="flex items-start gap-3 py-2 border-b border-border/50 last:border-0">
       <div className="h-7 w-7 rounded-md bg-muted flex items-center justify-center shrink-0 mt-0.5">
@@ -232,12 +232,11 @@ function ProfileField({ icon: Icon, label, value }: { icon: React.ElementType; l
 
 // ── Add User slide-over ───────────────────────────────────────────────────────
 
-function AddUserPanel({ roles, onClose, onCreated }: {
+function AddUserPanel({ roles, onClose, onCreated }: Readonly<{
   roles: Role[];
-  departments: Department[];
   onClose: () => void;
   onCreated: (employee: Employee) => void;
-}) {
+}>) {
   const [form, setForm] = useState({
     first_name: "", last_name: "", username: "", email: "",
     role_id: "", department_id: "", start_date: "",
@@ -271,13 +270,14 @@ function AddUserPanel({ roles, onClose, onCreated }: {
       if (form.department_id) payload.department_id = form.department_id;
       if (form.start_date) payload.start_date = form.start_date;
 
-      const res = await apiFetch<{ user_id: string; employee_id: string; email: string; username: string }>("/users", {
+      const res = await apiFetch<{ user_id: string; employee_id: string; email: string; username: string; company_id: string | null }>("/users", {
         method: "POST", body: JSON.stringify(payload),
       });
 
       onCreated({
         user_id: res.user_id, employee_id: res.employee_id, username: res.username,
         first_name: form.first_name, last_name: form.last_name, email: res.email,
+        company_id: res.company_id ?? null,
         role_id: form.role_id, department_id: form.department_id.trim() || null,
         start_date: form.start_date || null, account_status: "Pending",
         last_login: null, invite_expires_at: null,
@@ -302,7 +302,7 @@ function AddUserPanel({ roles, onClose, onCreated }: {
 
   return (
     <div className="fixed inset-0 z-50 flex justify-end">
-      <div className="absolute inset-0 bg-black/30" onClick={onClose} />
+      <div className="absolute inset-0 bg-black/30" role="button" tabIndex={0} onClick={onClose} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { onClose(); } }} />
       <div className="relative bg-card w-full max-w-md h-full shadow-2xl flex flex-col overflow-y-auto">
         <div className="flex items-center justify-between px-6 py-5 border-b border-border">
           <div>
@@ -319,8 +319,8 @@ function AddUserPanel({ roles, onClose, onCreated }: {
           {field("Username", "username", "text", "e.g. juan.delacruz")}
           {field("Email", "email", "email", "e.g. juan@company.com")}
           <div className="space-y-1.5">
-            <label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Role</label>
-            <select value={form.role_id} onChange={e => set("role_id", e.target.value)}
+            <label htmlFor="add-user-role" className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Role</label>
+            <select id="add-user-role" value={form.role_id} onChange={e => set("role_id", e.target.value)}
               className={`w-full h-10 rounded-md border bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 ${errors.role_id ? "border-red-400" : "border-input"}`}>
               <option value="">Select role...</option>
               {roles.map(r => <option key={r.role_id} value={r.role_id}>{r.role_name}</option>)}
@@ -345,13 +345,13 @@ function AddUserPanel({ roles, onClose, onCreated }: {
 
 function EditEmployeeModal({
   employee, roles, departments, onClose, onSaved,
-}: {
+}: Readonly<{
   employee: Employee;
   roles: Role[];
   departments: Department[];
   onClose: () => void;
   onSaved: (updated: Employee) => void;
-}) {
+}>) {
   const [form, setForm] = useState({
     first_name: employee.first_name,
     last_name: employee.last_name,
@@ -372,7 +372,7 @@ function EditEmployeeModal({
     return e;
   };
 
-  const handleSave = async (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const errs = validate();
     if (Object.keys(errs).length) { setErrors(errs); return; }
@@ -406,7 +406,7 @@ function EditEmployeeModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
+      <div className="absolute inset-0 bg-black/50" role="button" tabIndex={0} onClick={onClose} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { onClose(); } }} />
       <div className="relative bg-background rounded-2xl shadow-2xl w-full max-w-md mx-4 animate-in fade-in zoom-in-95 duration-200">
         <div className="flex items-center justify-between px-6 py-5 border-b border-border">
           <div>
@@ -421,27 +421,27 @@ function EditEmployeeModal({
         </div>
         <form onSubmit={handleSave} className="px-6 py-5 space-y-4">
           <div className="space-y-1.5">
-            <label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Username</label>
-            <Input value={employee.username} disabled className="opacity-60 cursor-not-allowed h-10" />
+            <label htmlFor="edit-username" className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Username</label>
+            <Input id="edit-username" value={employee.username} disabled className="opacity-60 cursor-not-allowed h-10" />
             <p className="text-[11px] text-muted-foreground">Username cannot be changed after account creation.</p>
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">First Name</label>
-              <Input value={form.first_name} onChange={e => set("first_name", e.target.value)}
+              <label htmlFor="edit-first-name" className="text-xs font-bold uppercase tracking-widest text-muted-foreground">First Name</label>
+              <Input id="edit-first-name" value={form.first_name} onChange={e => set("first_name", e.target.value)}
                 className={`h-10 ${errors.first_name ? "border-red-400" : ""}`} />
               {errors.first_name && <p className="text-xs text-red-500">{errors.first_name}</p>}
             </div>
             <div className="space-y-1.5">
-              <label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Last Name</label>
-              <Input value={form.last_name} onChange={e => set("last_name", e.target.value)}
+              <label htmlFor="edit-last-name" className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Last Name</label>
+              <Input id="edit-last-name" value={form.last_name} onChange={e => set("last_name", e.target.value)}
                 className={`h-10 ${errors.last_name ? "border-red-400" : ""}`} />
               {errors.last_name && <p className="text-xs text-red-500">{errors.last_name}</p>}
             </div>
           </div>
           <div className="space-y-1.5">
-            <label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Role</label>
-            <select value={form.role_id} onChange={e => set("role_id", e.target.value)}
+            <label htmlFor="edit-role" className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Role</label>
+            <select id="edit-role" value={form.role_id} onChange={e => set("role_id", e.target.value)}
               className={`w-full h-10 rounded-md border bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 ${errors.role_id ? "border-red-400" : "border-input"}`}>
               <option value="">Select role...</option>
               {roles.map(r => <option key={r.role_id} value={r.role_id}>{r.role_name}</option>)}
@@ -449,16 +449,16 @@ function EditEmployeeModal({
             {errors.role_id && <p className="text-xs text-red-500">{errors.role_id}</p>}
           </div>
           <div className="space-y-1.5">
-            <label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Department</label>
-            <select value={form.department_id} onChange={e => set("department_id", e.target.value)}
+            <label htmlFor="edit-department" className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Department</label>
+            <select id="edit-department" value={form.department_id} onChange={e => set("department_id", e.target.value)}
               className="w-full h-10 rounded-md border border-input bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30">
               <option value="">— No department —</option>
               {departments.map(d => <option key={d.department_id} value={d.department_id}>{d.department_name}</option>)}
             </select>
           </div>
           <div className="space-y-1.5">
-            <label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Start Date</label>
-            <Input type="date" value={form.start_date} onChange={e => set("start_date", e.target.value)} className="h-10" />
+            <label htmlFor="edit-start-date" className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Start Date</label>
+            <Input id="edit-start-date" type="date" value={form.start_date} onChange={e => set("start_date", e.target.value)} className="h-10" />
           </div>
           <div className="flex gap-3 pt-2">
             <Button type="button" variant="outline" className="flex-1" onClick={onClose} disabled={loading}>Cancel</Button>
@@ -483,7 +483,7 @@ function DeptManageSheet({
   onDelete,
   onAssignMembers,
   onUnassignMember,
-}: {
+}: Readonly<{
   dept: Department;
   departments: Department[];
   employees: Employee[];
@@ -492,7 +492,7 @@ function DeptManageSheet({
   onDelete: (dept: Department) => Promise<void>;
   onAssignMembers: (dept: Department, userIds: string[]) => Promise<void>;
   onUnassignMember: (dept: Department, emp: Employee) => Promise<void>;
-}) {
+}>) {
   const [isRenaming, setIsRenaming] = useState(false);
   const [renameValue, setRenameValue] = useState(dept.department_name);
   const [pendingAssign, setPendingAssign] = useState<Set<string>>(new Set());
@@ -537,7 +537,7 @@ function DeptManageSheet({
 
   return (
     <div className="fixed inset-0 z-50 flex">
-      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" role="button" tabIndex={0} onClick={onClose} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { onClose(); } }} />
       <div className="relative ml-auto h-full w-full max-w-md bg-background shadow-2xl flex flex-col animate-in slide-in-from-right duration-300">
 
         {/* Header */}
@@ -559,7 +559,7 @@ function DeptManageSheet({
             ) : (
               <h2 className="text-lg font-bold text-foreground truncate">{dept.department_name}</h2>
             )}
-            <p className="text-xs text-muted-foreground mt-0.5">{members.length} member{members.length !== 1 ? "s" : ""}</p>
+            <p className="text-xs text-muted-foreground mt-0.5">{members.length} member{members.length === 1 ? "" : "s"}</p>
           </div>
           <div className="flex items-center gap-1 shrink-0">
             <button onClick={() => { setIsRenaming(true); setRenameValue(dept.department_name); }}
@@ -675,7 +675,7 @@ function DeptManageSheet({
             <Button className="w-full gap-2" onClick={handleAssign} disabled={loading}>
               {loading
                 ? <Loader2 className="h-4 w-4 animate-spin" />
-                : <><Plus className="h-4 w-4" /> Assign {pendingAssign.size} Employee{pendingAssign.size !== 1 ? "s" : ""} to {dept.department_name}</>
+                : <><Plus className="h-4 w-4" /> Assign {pendingAssign.size} Employee{pendingAssign.size === 1 ? "" : "s"} to {dept.department_name}</>
               }
             </Button>
           </div>
@@ -687,11 +687,11 @@ function DeptManageSheet({
 
 // ── Deactivate confirmation ───────────────────────────────────────────────────
 
-function ConfirmDeactivate({ employee, onClose, onConfirm }: {
+function ConfirmDeactivate({ employee, onClose, onConfirm }: Readonly<{
   employee: Employee; onClose: () => void; onConfirm: () => void;
-}) {
+}>) {
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40">
+    <div className="fixed inset-0 z-60 flex items-center justify-center bg-black/40">
       <div className="bg-card border border-border rounded-2xl shadow-2xl w-full max-w-sm p-6 mx-4">
         <div className="flex items-center gap-3 mb-4">
           <div className="p-2 bg-red-100 rounded-lg text-red-600"><UserX className="h-5 w-5" /></div>
@@ -721,8 +721,7 @@ export default function AdminUsersPage() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const user = getUserInfo();
-  const currentUserId = parseJwt(getAccessToken() ?? "")?.sub_userid as string | undefined;
-  const isSystemAdmin = user?.role === "system-admin";
+  const currentUserId = parseJwt(getAccessToken() ?? "")?.sub_userid;
   useWelcomeToast(user?.name || "Admin", "User Management");
 
   const [employees, setEmployees]         = useState<Employee[]>([]);
@@ -750,7 +749,6 @@ export default function AdminUsersPage() {
   const [deptLoading, setDeptLoading]     = useState(false);
   const [manageDept, setManageDept]       = useState<Department | null>(null);
   const [showDeptPanel, setShowDeptPanel] = useState(false);
-  const [now, setNow]                     = useState(Date.now());
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
@@ -758,11 +756,6 @@ export default function AdminUsersPage() {
     };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
-  }, []);
-
-  useEffect(() => {
-    const timer = window.setInterval(() => setNow(Date.now()), 1000);
-    return () => window.clearInterval(timer);
   }, []);
 
   const load = useCallback(async () => {
@@ -786,11 +779,6 @@ export default function AdminUsersPage() {
   }, []);
 
   useEffect(() => { load(); }, [load]);
-
-  const departmentNameById = (departmentId: string | null) => {
-    if (!departmentId) return "—";
-    return departments.find(d => d.department_id === departmentId)?.department_name ?? departmentId;
-  };
 
   const filtered = employees.filter(e => {
     const q = search.toLowerCase();
@@ -816,7 +804,6 @@ export default function AdminUsersPage() {
 
   const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
   const paged = filtered.slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE);
-  const tableColSpan = 8;
 
   const activeCount   = employees.filter(e => e.account_status === "Active").length;
   const pendingCount  = employees.filter(e => e.account_status === "Pending").length;
@@ -934,7 +921,7 @@ export default function AdminUsersPage() {
       setEmployees(prev => prev.map(e =>
         userIds.includes(e.user_id) ? { ...e, department_id: dept.department_id } : e
       ));
-      toast.success(`${userIds.length} employee${userIds.length !== 1 ? "s" : ""} added to ${dept.department_name}.`);
+      toast.success(`${userIds.length} employee${userIds.length === 1 ? "" : "s"} added to ${dept.department_name}.`);
     } catch (err: any) {
       toast.error(err?.message || "Failed to assign members.");
       throw err;
@@ -956,6 +943,50 @@ export default function AdminUsersPage() {
       throw err;
     }
   };
+
+  const tableRows = loading ? (
+    <tr><td colSpan={8} className="px-5 py-10 text-center text-muted-foreground">Loading employees...</td></tr>
+  ) : paged.length === 0 ? (
+    <tr><td colSpan={8} className="px-5 py-10 text-center text-muted-foreground">No employees found.</td></tr>
+  ) : (
+    <>
+      {paged.map(e => (
+        <tr key={e.user_id} className="hover:bg-muted/20 transition-colors">
+          <td className="px-5 py-4">
+            <div className="flex items-center gap-3">
+              <div className="h-8 w-8 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-xs border border-primary/10 shrink-0">
+                {e.first_name.charAt(0)}
+              </div>
+              <div>
+                <p className="font-semibold text-foreground leading-none">{e.first_name} {e.last_name}</p>
+                <p className="text-[11px] text-muted-foreground mt-0.5">{e.email}</p>
+              </div>
+            </div>
+          </td>
+          <td className="px-5 py-4"><span className="font-mono text-xs text-muted-foreground">{e.employee_id}</span></td>
+          <td className="px-5 py-4"><span className="text-xs font-semibold text-foreground">{roles.find(r => r.role_id === e.role_id)?.role_name ?? "—"}</span></td>
+          <td className="px-5 py-4"><span className="text-xs text-muted-foreground">{departments.find(d => d.department_id === e.department_id)?.department_name ?? (e.department_id ?? "—")}</span></td>
+          <td className="px-5 py-4"><StatusBadge status={e.account_status} /></td>
+          <td className="px-5 py-4"><span className="text-xs text-muted-foreground">{formatDate(e.invite_expires_at)}</span></td>
+          <td className="px-5 py-4"><span className="text-xs text-muted-foreground">{formatDate(e.last_login)}</span></td>
+          <td className="px-5 py-4 text-right">
+            {e.user_id === currentUserId ? (
+              <span className="text-[11px] text-muted-foreground italic px-2">You</span>
+            ) : (
+              <RowMenu
+                employee={e}
+                onView={() => setViewEmployee(e)}
+                onEdit={() => setEditEmployee(e)}
+                onDeactivate={() => setConfirmDeact(e)}
+                onReactivate={() => handleReactivate(e)}
+                onResendInvite={() => handleResendInvite(e)}
+              />
+            )}
+          </td>
+        </tr>
+      ))}
+    </>
+  );
 
   return (
     <div className="space-y-6">
@@ -1088,45 +1119,7 @@ export default function AdminUsersPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
-              {loading ? (
-                <tr><td colSpan={8} className="px-5 py-10 text-center text-muted-foreground">Loading employees...</td></tr>
-              ) : paged.length === 0 ? (
-                <tr><td colSpan={8} className="px-5 py-10 text-center text-muted-foreground">No employees found.</td></tr>
-              ) : paged.map(e => (
-                <tr key={e.user_id} className="hover:bg-muted/20 transition-colors">
-                  <td className="px-5 py-4">
-                    <div className="flex items-center gap-3">
-                      <div className="h-8 w-8 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-xs border border-primary/10 shrink-0">
-                        {e.first_name.charAt(0)}
-                      </div>
-                      <div>
-                        <p className="font-semibold text-foreground leading-none">{e.first_name} {e.last_name}</p>
-                        <p className="text-[11px] text-muted-foreground mt-0.5">{e.email}</p>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-5 py-4"><span className="font-mono text-xs text-muted-foreground">{e.employee_id}</span></td>
-                  <td className="px-5 py-4"><span className="text-xs font-semibold text-foreground">{roles.find(r => r.role_id === e.role_id)?.role_name ?? "—"}</span></td>
-                  <td className="px-5 py-4"><span className="text-xs text-muted-foreground">{departments.find(d => d.department_id === e.department_id)?.department_name ?? (e.department_id ?? "—")}</span></td>
-                  <td className="px-5 py-4"><StatusBadge status={e.account_status} /></td>
-                  <td className="px-5 py-4"><span className="text-xs text-muted-foreground">{formatDate(e.invite_expires_at)}</span></td>
-                  <td className="px-5 py-4"><span className="text-xs text-muted-foreground">{formatDate(e.last_login)}</span></td>
-                  <td className="px-5 py-4 text-right">
-                    {e.user_id === currentUserId ? (
-                      <span className="text-[11px] text-muted-foreground italic px-2">You</span>
-                    ) : (
-                      <RowMenu
-                        employee={e}
-                        onView={() => setViewEmployee(e)}
-                        onEdit={() => setEditEmployee(e)}
-                        onDeactivate={() => setConfirmDeact(e)}
-                        onReactivate={() => handleReactivate(e)}
-                        onResendInvite={() => handleResendInvite(e)}
-                      />
-                    )}
-                  </td>
-                </tr>
-              ))}
+              {tableRows}
             </tbody>
           </table>
         </div>
@@ -1158,7 +1151,7 @@ export default function AdminUsersPage() {
             <p className="text-xs text-muted-foreground mt-0.5">Add or remove departments for your organisation</p>
           </div>
           <span className="text-xs font-bold text-muted-foreground bg-muted px-2.5 py-1 rounded-full border border-border">
-            {departments.length} dept{departments.length !== 1 ? "s" : ""}
+            {departments.length} dept{departments.length === 1 ? "" : "s"}
           </span>
         </div>
 
@@ -1194,7 +1187,7 @@ export default function AdminUsersPage() {
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold truncate">{dept.department_name}</p>
                   <p className="text-[11px] text-muted-foreground">
-                    {memberCount} member{memberCount !== 1 ? "s" : ""}
+                    {memberCount} member{memberCount === 1 ? "" : "s"}
                   </p>
                 </div>
                 <button

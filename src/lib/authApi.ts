@@ -176,7 +176,7 @@ export async function getApplicantJobs() {
 export async function getJobQuestions(jobPostingId: string): Promise<ApplicationQuestion[]> {
   const res = await fetch(`${API_BASE_URL}/jobs/${jobPostingId}/questions`);
   const data = await res.json().catch(() => ([]));
-  if (!res.ok) throw new Error((data as any)?.message || "Failed to fetch questions");
+  if (!res.ok) throw new Error((data as { message?: string })?.message || "Failed to fetch questions");
   return data as ApplicationQuestion[];
 }
 
@@ -310,7 +310,7 @@ export async function authFetch(input: RequestInfo, init: RequestInit = {}) {
     ...init,
     credentials: "include",
     headers: {
-      ...(init.headers || {}),
+      ...init.headers,
       ...(access ? { Authorization: `Bearer ${access}` } : {}),
     },
   });
@@ -331,7 +331,7 @@ export async function authFetch(input: RequestInfo, init: RequestInit = {}) {
       ...init,
       credentials: "include",
       headers: {
-        ...(init.headers || {}),
+        ...init.headers,
         Authorization: `Bearer ${access_token}`,
       },
     });
@@ -340,9 +340,9 @@ export async function authFetch(input: RequestInfo, init: RequestInit = {}) {
   } catch {
     // refresh failed: session is fully expired — clear storage and send to correct login page
     clearAuthStorage();
-    if (typeof window !== "undefined") {
+    if (typeof globalThis.window !== "undefined") {
       const userInfo = getUserInfo();
-      window.location.href = userInfo?.role === "applicant" ? "/applicant/login" : "/login";
+      globalThis.location.href = userInfo?.role === "applicant" ? "/applicant/login" : "/login";
     }
     return first;
   }

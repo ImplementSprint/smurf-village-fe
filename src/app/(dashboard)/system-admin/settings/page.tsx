@@ -252,8 +252,8 @@ export default function GlobalSettingsPage() {
       const destination = anchor.href;
       if (!destination) return;
 
-      const current = new URL(window.location.href);
-      const next = new URL(destination, window.location.href);
+      const current = new URL(globalThis.location.href);
+      const next = new URL(destination, globalThis.location.href);
       if (current.href === next.href) return;
 
       event.preventDefault();
@@ -261,11 +261,11 @@ export default function GlobalSettingsPage() {
       setShowLeaveDialog(true);
     };
 
-    window.addEventListener("beforeunload", handleBeforeUnload);
+    globalThis.addEventListener("beforeunload", handleBeforeUnload);
     document.addEventListener("click", handleDocumentClick, true);
 
     return () => {
-      window.removeEventListener("beforeunload", handleBeforeUnload);
+      globalThis.removeEventListener("beforeunload", handleBeforeUnload);
       document.removeEventListener("click", handleDocumentClick, true);
     };
   }, [isDirty]);

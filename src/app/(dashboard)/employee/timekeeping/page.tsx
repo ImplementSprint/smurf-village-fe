@@ -83,7 +83,7 @@ type EntryStatus = "on-time" | "late" | "in-progress" | "absent";
 function getEntryStatus(entry: TimesheetEntry): EntryStatus {
   if (!entry.time_in) return "absent";
   if (!entry.time_out) return "in-progress";
-  const hourPST = parseInt(
+  const hourPST = Number.parseInt(
     parseTs(entry.time_in.timestamp).toLocaleString("en-US", {
       hour: "numeric", hour12: false, timeZone: "Asia/Manila",
     }),
@@ -388,7 +388,7 @@ export default function EmployeeTimekeepingPage() {
                   <div
                     key={dateStr}
                     className={`
-                      relative rounded-xl border p-2 min-h-[120px] flex flex-col transition-all
+                      relative rounded-xl border p-2 min-h-30 flex flex-col transition-all
                       ${isToday
                         ? "bg-primary/10 border-primary shadow-md"
                         : isFuture

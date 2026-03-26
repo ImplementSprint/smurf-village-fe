@@ -147,6 +147,85 @@ export default function AdminDashboardPage() {
     return new Date(a.invite_expires_at).getTime() - new Date(b.invite_expires_at).getTime();
   });
 
+  const attentionQueueEmpty = loading ? (
+    <p className="px-6 py-8 text-center text-sm text-muted-foreground">Loading...</p>
+  ) : (
+    <p className="px-6 py-8 text-center text-sm text-muted-foreground">No pending invitations. All caught up!</p>
+  );
+  const attentionQueueContent = loading || attentionQueue.length === 0 ? attentionQueueEmpty : attentionQueue.map(u => {
+    const cd = countdown(u.invite_expires_at);
+    return (
+      <div key={u.user_id} className="px-6 py-4">
+        <div className="flex items-start justify-between gap-4">
+          <div className="min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <p className="font-semibold text-sm text-foreground">
+                {u.first_name} {u.last_name}
+              </p>
+            </div>
+            <p className="text-xs text-muted-foreground mt-0.5 truncate">{u.email}</p>
+            {u.invite_expires_at && (
+              <p className="text-[11px] text-muted-foreground mt-1">
+                Expires on {formatExpiry(u.invite_expires_at)}
+              </p>
+            )}
+          </div>
+          <div className="text-right shrink-0 flex flex-col items-end gap-1.5">
+            {u.invite_expires_at && !cd.expired ? (
+              <>
+                <p className={`text-sm font-bold ${cd.urgent ? "text-red-500" : "text-amber-600"}`}>
+                  {cd.label}
+                </p>
+                <p className="text-[10px] text-muted-foreground">Remaining before expiry</p>
+              </>
+            ) : (
+              <>
+                <p className={`text-xs font-bold ${cd.expired ? "text-red-500" : "text-muted-foreground"}`}>
+                  {cd.expired ? "Expired" : "No active invite"}
+                </p>
+                <button
+                  onClick={() => handleResendInvite(u)}
+                  disabled={resendingId === u.user_id}
+                  className="flex items-center gap-1 text-[11px] font-bold text-primary hover:underline disabled:opacity-50"
+                >
+                  <RefreshCw className={`h-3 w-3 ${resendingId === u.user_id ? "animate-spin" : ""}`} />
+                  {resendingId === u.user_id ? "Sending..." : "Resend Invite"}
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  });
+
+  const auditLogsEmpty = loading ? (
+    <p className="px-6 py-8 text-center text-sm text-muted-foreground">Loading activity…</p>
+  ) : (
+    <p className="px-6 py-8 text-center text-sm text-muted-foreground">No activity recorded yet.</p>
+  );
+  const auditLogsContent = loading || auditLogs.length === 0 ? auditLogsEmpty : (
+    <div className="divide-y divide-border">
+      {auditLogs.map((log) => {
+        const meta = getActionMeta(log.action);
+        const Icon = meta.icon;
+        return (
+          <div key={log.log_id} className="flex items-start gap-4 px-6 py-3.5 hover:bg-muted/20 transition-colors">
+            <div className={`p-1.5 rounded-lg shrink-0 mt-0.5 ${meta.bg}`}>
+              <Icon className={`h-3.5 w-3.5 ${meta.text}`} />
+            </div>
+            <p className="flex-1 text-sm text-foreground leading-snug line-clamp-1 min-w-0">
+              {log.action}
+            </p>
+            <span className="text-[11px] text-muted-foreground shrink-0 tabular-nums">
+              {relativeTime(log.timestamp)}
+            </span>
+          </div>
+        );
+      })}
+    </div>
+  );
+
   return (
     <div className="space-y-6 max-w-6xl">
 
@@ -173,7 +252,7 @@ export default function AdminDashboardPage() {
                 { label: "Pending",  value: pending.length },
                 { label: "Inactive", value: inactive.length },
               ].map(({ label, value }) => (
-                <div key={label} className="flex flex-col items-center justify-center rounded-xl border border-white/15 bg-white/8 px-5 py-3 min-w-[72px] backdrop-blur">
+                <div key={label} className="flex flex-col items-center justify-center rounded-xl border border-white/15 bg-white/8 px-5 py-3 min-w-18 backdrop-blur">
                   <p className="text-[10px] font-bold uppercase tracking-widest text-white/50 mb-1">{label}</p>
                   <p className="text-2xl font-bold">{loading ? "—" : value}</p>
                 </div>
@@ -216,7 +295,7 @@ export default function AdminDashboardPage() {
           {
             icon: Clock,
             iconBg: "bg-red-100 text-red-500",
-            border: expiry.label !== "—" ? "border-red-200" : "border-border",
+            border: expiry.label === "—" ? "border-border" : "border-red-200",
             label: "Next Expiry",
             value: loading ? "—" : expiry.label,
             sub: expiry.name,
@@ -252,56 +331,7 @@ export default function AdminDashboardPage() {
           </div>
 
           <div className="divide-y divide-border">
-            {loading ? (
-              <p className="px-6 py-8 text-center text-sm text-muted-foreground">Loading...</p>
-            ) : attentionQueue.length === 0 ? (
-              <p className="px-6 py-8 text-center text-sm text-muted-foreground">No pending invitations. All caught up!</p>
-            ) : attentionQueue.map(u => {
-              const cd = countdown(u.invite_expires_at);
-              return (
-                <div key={u.user_id} className="px-6 py-4">
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <p className="font-semibold text-sm text-foreground">
-                          {u.first_name} {u.last_name}
-                        </p>
-                      </div>
-                      <p className="text-xs text-muted-foreground mt-0.5 truncate">{u.email}</p>
-                      {u.invite_expires_at && (
-                        <p className="text-[11px] text-muted-foreground mt-1">
-                          Expires on {formatExpiry(u.invite_expires_at)}
-                        </p>
-                      )}
-                    </div>
-                    <div className="text-right shrink-0 flex flex-col items-end gap-1.5">
-                      {cd.expired || !u.invite_expires_at ? (
-                        <>
-                          <p className={`text-xs font-bold ${cd.expired ? "text-red-500" : "text-muted-foreground"}`}>
-                            {cd.expired ? "Expired" : "No active invite"}
-                          </p>
-                          <button
-                            onClick={() => handleResendInvite(u)}
-                            disabled={resendingId === u.user_id}
-                            className="flex items-center gap-1 text-[11px] font-bold text-primary hover:underline disabled:opacity-50"
-                          >
-                            <RefreshCw className={`h-3 w-3 ${resendingId === u.user_id ? "animate-spin" : ""}`} />
-                            {resendingId === u.user_id ? "Sending..." : "Resend Invite"}
-                          </button>
-                        </>
-                      ) : (
-                        <>
-                          <p className={`text-sm font-bold ${cd.urgent ? "text-red-500" : "text-amber-600"}`}>
-                            {cd.label}
-                          </p>
-                          <p className="text-[10px] text-muted-foreground">Remaining before expiry</p>
-                        </>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
+            {attentionQueueContent}
           </div>
 
           {attentionQueue.length > 0 && (
@@ -398,31 +428,7 @@ export default function AdminDashboardPage() {
           </Link>
         </div>
 
-        {loading ? (
-          <p className="px-6 py-8 text-center text-sm text-muted-foreground">Loading activity…</p>
-        ) : auditLogs.length === 0 ? (
-          <p className="px-6 py-8 text-center text-sm text-muted-foreground">No activity recorded yet.</p>
-        ) : (
-          <div className="divide-y divide-border">
-            {auditLogs.map((log) => {
-              const meta = getActionMeta(log.action);
-              const Icon = meta.icon;
-              return (
-                <div key={log.log_id} className="flex items-start gap-4 px-6 py-3.5 hover:bg-muted/20 transition-colors">
-                  <div className={`p-1.5 rounded-lg shrink-0 mt-0.5 ${meta.bg}`}>
-                    <Icon className={`h-3.5 w-3.5 ${meta.text}`} />
-                  </div>
-                  <p className="flex-1 text-sm text-foreground leading-snug line-clamp-1 min-w-0">
-                    {log.action}
-                  </p>
-                  <span className="text-[11px] text-muted-foreground shrink-0 tabular-nums">
-                    {relativeTime(log.timestamp)}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-        )}
+        {auditLogsContent}
 
         <div className="px-6 py-3 border-t border-border bg-muted/10">
           <Link href="/system-admin/audit-logs" className="text-xs text-primary font-semibold hover:underline">

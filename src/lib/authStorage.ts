@@ -14,12 +14,12 @@ let _accessToken: string | null = null;
 
 // Restored from localStorage so it survives page reloads.
 let _rememberMe =
-  typeof window !== "undefined" && localStorage.getItem(REMEMBER_KEY) === "1";
+  typeof globalThis.window !== "undefined" && localStorage.getItem(REMEMBER_KEY) === "1";
 
 export function setTokens(params: { access_token: string; rememberMe: boolean }) {
   _accessToken = params.access_token;
   _rememberMe = params.rememberMe;
-  if (typeof window !== "undefined") {
+  if (typeof globalThis.window !== "undefined") {
     if (params.rememberMe) {
       localStorage.setItem(REMEMBER_KEY, "1");
     } else {
@@ -43,7 +43,7 @@ export function writeAccessToken(access_token: string) {
 export function clearAuthStorage() {
   _accessToken = null;
   _rememberMe = false;
-  if (typeof window === "undefined") return;
+  if (typeof globalThis.window === "undefined") return;
   localStorage.removeItem(REMEMBER_KEY);
   // Clean up any legacy tokens that may have been stored in old versions
   localStorage.removeItem("access_token");
@@ -56,7 +56,7 @@ export function clearAuthStorage() {
 }
 
 export function saveUserInfo(info: StoredUser) {
-  if (typeof window === "undefined") return;
+  if (typeof globalThis.window === "undefined") return;
   // Always clear both storages first so a previous user's stale data never leaks
   localStorage.removeItem(USER_KEY);
   sessionStorage.removeItem(USER_KEY);
@@ -65,7 +65,7 @@ export function saveUserInfo(info: StoredUser) {
 }
 
 export function getUserInfo(): StoredUser | null {
-  if (typeof window === "undefined") return null;
+  if (typeof globalThis.window === "undefined") return null;
   const data = sessionStorage.getItem(USER_KEY) || localStorage.getItem(USER_KEY);
   if (!data) return null;
   try {
@@ -82,7 +82,7 @@ export function parseJwt(token: string) {
     const jsonPayload = decodeURIComponent(
       atob(base64)
         .split("")
-        .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
+        .map((c) => "%" + ("00" + (c.codePointAt(0) ?? 0).toString(16)).slice(-2))
         .join("")
     );
     return JSON.parse(jsonPayload);

@@ -84,7 +84,7 @@ function computeHoursDecimal(timeIn: string | null, timeOut: string | null): num
 }
 
 function isLate(timeIn: string): boolean {
-  const hourPST = parseInt(
+  const hourPST = Number.parseInt(
     parseTs(timeIn).toLocaleString("en-US", {
       hour: "numeric", hour12: false, timeZone: "Asia/Manila",
     }), 10
@@ -273,7 +273,7 @@ export default function SystemAdminTimekeepingPage() {
           >
             {isToday(selectedDate) ? "Today" : "Go to Today"}
           </Button>
-          <div className="h-9 px-4 flex items-center border border-border rounded-md text-sm font-medium bg-background min-w-[160px] justify-center">
+          <div className="h-9 px-4 flex items-center border border-border rounded-md text-sm font-medium bg-background min-w-40 justify-center">
             {formatDisplayDate(selectedDate)}
           </div>
           <Button

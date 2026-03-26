@@ -74,7 +74,57 @@ export default function ManagerDashboardPage() {
     currentPage * ITEMS_PER_PAGE,
   );
 
-  const teamSizeDisplay = totalCount !== null ? String(totalCount) : "-";
+  const teamSizeDisplay = totalCount === null ? "—" : String(totalCount);
+
+  const teamTableRowsPlaceholder = loading ? (
+    <tr>
+      <td colSpan={4} className="px-5 py-10 text-center text-sm text-muted-foreground">
+        Loading team...
+      </td>
+    </tr>
+  ) : fetchError ? (
+    <tr>
+      <td colSpan={4} className="px-5 py-10 text-center text-sm text-destructive">
+        Failed to load team data. Please refresh or contact support.
+      </td>
+    </tr>
+  ) : (
+    <tr>
+      <td colSpan={4} className="px-5 py-10 text-center text-sm text-muted-foreground">
+        No team members found.
+      </td>
+    </tr>
+  );
+  const teamTableRows = loading || fetchError || currentTableData.length === 0 ? teamTableRowsPlaceholder : (
+    currentTableData.map((row) => {
+      const name = [row.first_name, row.last_name].filter(Boolean).join(" ") || row.email;
+      return (
+        <tr key={row.user_id} className="transition-colors hover:bg-primary/5">
+          <td className="px-5 py-4">
+            <div className="flex items-center gap-3">
+              <div className="h-9 w-9 rounded-full border border-primary/10 bg-primary/10 text-primary flex items-center justify-center text-xs font-bold">
+                {name.charAt(0).toUpperCase()}
+              </div>
+              <p className="font-semibold text-foreground">{name}</p>
+            </div>
+          </td>
+          <td className="px-5 py-4 text-muted-foreground">{row.email}</td>
+          <td className="px-5 py-4">
+            <StatusBadge status={row.account_status} />
+          </td>
+          <td className="px-5 py-4 text-right">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-muted-foreground hover:text-primary"
+            >
+              <MoreHorizontal className="h-4 w-4" />
+            </Button>
+          </td>
+        </tr>
+      );
+    })
+  );
 
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
@@ -114,7 +164,7 @@ export default function ManagerDashboardPage() {
       </section>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <MetricCard icon={Users}       label="My Team Size"     value={totalCount !== null ? String(totalCount) : "—"} sub="Company Members"    trend={totalCount !== null ? `${totalCount} total` : "Loading..."} />
+        <MetricCard icon={Users}       label="My Team Size"     value={totalCount === null ? "—" : String(totalCount)} sub="Company Members"    trend={totalCount === null ? "Loading..." : `${totalCount} total`} />
         {/* TODO: wire to dedicated endpoint when available */}
         <MetricCard icon={Clock}       label="Pending Requests" value="—" sub="Time-off approvals"  trend="Coming soon" isAlert />
         <MetricCard icon={CheckCircle} label="Approvals Needed" value="—" sub="Performance reviews" trend="Coming soon" />
@@ -175,7 +225,7 @@ export default function ManagerDashboardPage() {
         </div>
 
         <div className="overflow-x-auto">
-          <table className="min-w-[680px] w-full text-left text-sm">
+          <table className="min-w-170 w-full text-left text-sm">
             <thead className="border-y border-border bg-muted/40 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
               <tr>
                 <th className="px-5 py-3">Employee</th>
@@ -185,54 +235,7 @@ export default function ManagerDashboardPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
-              {loading ? (
-                <tr>
-                  <td colSpan={4} className="px-5 py-10 text-center text-sm text-muted-foreground">
-                    Loading team...
-                  </td>
-                </tr>
-              ) : fetchError ? (
-                <tr>
-                  <td colSpan={4} className="px-5 py-10 text-center text-sm text-destructive">
-                    Failed to load team data. Please refresh or contact support.
-                  </td>
-                </tr>
-              ) : currentTableData.length === 0 ? (
-                <tr>
-                  <td colSpan={4} className="px-5 py-10 text-center text-sm text-muted-foreground">
-                    No team members found.
-                  </td>
-                </tr>
-              ) : (
-                currentTableData.map((row) => {
-                  const name = [row.first_name, row.last_name].filter(Boolean).join(" ") || row.email;
-                  return (
-                    <tr key={row.user_id} className="transition-colors hover:bg-primary/5">
-                      <td className="px-5 py-4">
-                        <div className="flex items-center gap-3">
-                          <div className="h-9 w-9 rounded-full border border-primary/10 bg-primary/10 text-primary flex items-center justify-center text-xs font-bold">
-                            {name.charAt(0).toUpperCase()}
-                          </div>
-                          <p className="font-semibold text-foreground">{name}</p>
-                        </div>
-                      </td>
-                      <td className="px-5 py-4 text-muted-foreground">{row.email}</td>
-                      <td className="px-5 py-4">
-                        <StatusBadge status={row.account_status} />
-                      </td>
-                      <td className="px-5 py-4 text-right">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 text-muted-foreground hover:text-primary"
-                        >
-                          <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
+              {teamTableRows}
             </tbody>
           </table>
         </div>
@@ -269,7 +272,7 @@ export default function ManagerDashboardPage() {
   );
 }
 
-function HeroStat({ label, value }: { label: string; value: string }) {
+function HeroStat({ label, value }: Readonly<{ label: string; value: string }>) {
   return (
     <div className="rounded-xl border border-white/20 bg-white/10 px-4 py-3 backdrop-blur">
       <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-white/65">{label}</p>
@@ -278,7 +281,7 @@ function HeroStat({ label, value }: { label: string; value: string }) {
   );
 }
 
-function StatusBadge({ status }: { status?: string | null }) {
+function StatusBadge({ status }: Readonly<{ status?: string | null }>) {
   const normalized = status?.toLowerCase();
   if (normalized === "active") {
     return (
@@ -310,14 +313,14 @@ function MetricCard({
   sub,
   trend,
   isAlert,
-}: {
+}: Readonly<{
   icon: LucideIcon;
   label: string;
   value: string;
   sub: string;
   trend: string;
   isAlert?: boolean;
-}) {
+}>) {
   return (
     <Card className="border-border/70 bg-[linear-gradient(160deg,rgba(37,99,235,0.05),rgba(15,23,42,0.00))] shadow-sm">
       <CardContent className="p-5">

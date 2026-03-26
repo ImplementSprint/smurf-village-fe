@@ -26,13 +26,13 @@ export function useIdleTimeout(onIdle: () => void, enabled: boolean) {
     if (!enabled) return;
 
     ACTIVITY_EVENTS.forEach((e) =>
-      window.addEventListener(e, reset, { passive: true })
+      globalThis.addEventListener(e, reset, { passive: true })
     );
     reset(); // start the timer immediately on mount
 
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
-      ACTIVITY_EVENTS.forEach((e) => window.removeEventListener(e, reset));
+      ACTIVITY_EVENTS.forEach((e) => globalThis.removeEventListener(e, reset));
     };
   }, [enabled, reset]);
 }

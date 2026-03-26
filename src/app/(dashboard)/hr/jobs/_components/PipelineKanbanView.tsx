@@ -72,11 +72,11 @@ function KanbanCard({
   app,
   onView,
   compact,
-}: {
+}: Readonly<{
   app: PipelineApplication;
   onView: (id: string) => void;
   compact: boolean;
-}) {
+}>) {
   const { first_name, last_name, email, applicant_code } = app.applicant_profile;
   const newApp = isNew(app.applied_at);
 
@@ -116,7 +116,7 @@ function KanbanCard({
           </div>
           <div className="min-w-0 flex-1">
             <p className="text-xs font-bold text-foreground truncate leading-tight">{first_name} {last_name}</p>
-            <p className="text-[9px] font-bold uppercase tracking-[0.1em] text-muted-foreground">{applicant_code}</p>
+            <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">{applicant_code}</p>
           </div>
           {newApp && (
             <span className="shrink-0 inline-flex items-center px-1 py-0.5 rounded-full bg-blue-100 text-blue-700 border border-blue-200 text-[8px] font-bold uppercase">
@@ -163,12 +163,12 @@ function KanbanCard({
                 </span>
               )}
             </div>
-            <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-muted-foreground mt-0.5">{applicant_code}</p>
+            <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mt-0.5">{applicant_code}</p>
           </div>
         </div>
 
         {/* Contact */}
-        <div className="pl-[52px] space-y-1">
+        <div className="pl-13 space-y-1">
           <div className="flex items-center gap-1.5">
             <Mail className="h-3 w-3 text-muted-foreground shrink-0" />
             <span className="text-[11px] text-muted-foreground truncate">{email}</span>
@@ -180,7 +180,7 @@ function KanbanCard({
         </div>
 
         {/* View button */}
-        <div className="pl-[52px]">
+        <div className="pl-13">
           <Button
             size="sm"
             variant="outline"
@@ -197,17 +197,17 @@ function KanbanCard({
 
 // ─── Ghost overlay card ───────────────────────────────────────────────────────
 
-function GhostCard({ app }: { app: PipelineApplication }) {
+function GhostCard({ app }: Readonly<{ app: PipelineApplication }>) {
   const { first_name, last_name, applicant_code } = app.applicant_profile;
   return (
-    <div className="bg-white border border-primary/30 rounded-xl shadow-2xl rotate-2 scale-105 w-[240px] p-3.5 opacity-95">
+    <div className="bg-white border border-primary/30 rounded-xl shadow-2xl rotate-2 scale-105 w-60 p-3.5 opacity-95">
       <div className="flex items-center gap-2.5">
         <div className="h-9 w-9 rounded-full bg-[linear-gradient(135deg,#1e3a8a,#2563eb)] flex items-center justify-center text-white text-xs font-bold shrink-0">
           {getInitials(first_name, last_name)}
         </div>
         <div className="min-w-0">
           <p className="text-sm font-bold text-foreground truncate">{first_name} {last_name}</p>
-          <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-muted-foreground">{applicant_code}</p>
+          <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{applicant_code}</p>
         </div>
       </div>
     </div>
@@ -221,12 +221,12 @@ function KanbanColumn({
   apps,
   onView,
   compact,
-}: {
+}: Readonly<{
   stage: typeof KANBAN_STAGES[number];
   apps: PipelineApplication[];
   onView: (id: string) => void;
   compact: boolean;
-}) {
+}>) {
   const { setNodeRef, isOver } = useDroppable({ id: stage.value });
   const Icon = stage.icon;
   const isHighCount = apps.length >= HIGH_COUNT_THRESHOLD;
@@ -234,7 +234,7 @@ function KanbanColumn({
   return (
     <div className={`flex flex-col rounded-xl border transition-colors duration-150 ${
       isOver ? "border-primary/40 bg-primary/5" : "border-border bg-card"
-    } ${compact ? "min-w-[220px] max-w-[220px]" : "min-w-[260px] max-w-[260px]"}`}>
+    } ${compact ? "min-w-55 max-w-55" : "min-w-65 max-w-65"}`}>
 
       {/* Column header */}
       <div className="px-4 pt-4 pb-0">
@@ -272,7 +272,7 @@ function KanbanColumn({
       <div
         ref={setNodeRef}
         data-column-scroll
-        className={`flex-1 overflow-y-auto px-3 pb-3 min-h-[120px] max-h-[calc(100vh-380px)] transition-colors rounded-b-xl ${
+        className={`flex-1 overflow-y-auto px-3 pb-3 min-h-30 max-h-[calc(100vh-380px)] transition-colors rounded-b-xl ${
           compact ? "space-y-1.5" : "space-y-2.5"
         } ${isOver ? "bg-primary/5" : ""}`}
       >
@@ -304,11 +304,11 @@ export function PipelineKanbanView({
   apps,
   onStatusChange,
   onViewDetail,
-}: {
+}: Readonly<{
   apps: PipelineApplication[];
   onStatusChange: (appId: string, newStatus: string) => Promise<void>;
   onViewDetail: (appId: string) => void;
-}) {
+}>) {
   const [activeId, setActiveId]   = useState<string | null>(null);
   const [compact, setCompact]     = useState(false);
   const scrollRef                  = useRef<HTMLDivElement>(null);
@@ -388,7 +388,7 @@ export function PipelineKanbanView({
               onClick={() => setCompact(false)}
               title="Detailed cards"
               className={`inline-flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-semibold transition-all ${
-                !compact ? "bg-card text-foreground shadow-sm border border-border" : "text-muted-foreground hover:text-foreground"
+                compact ? "text-muted-foreground hover:text-foreground" : "bg-card text-foreground shadow-sm border border-border"
               }`}
             >
               <AlignJustify className="h-3 w-3" /> Detailed

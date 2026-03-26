@@ -75,9 +75,6 @@ export interface CreateUserResponse {
 
 // GET /admin/users
 export async function getUsers(): Promise<InternalUser[]> {
-  // const res = await authFetch(`${ADMIN_URL}/users`);
-  // if (!res.ok) throw new Error("Failed to fetch users");
-  // return res.json();
   return [
     { user_id: "u1", employee_id: "EMP-0001", first_name: "Sarah", last_name: "Miller", username: "sarah.miller", email: "sarah@company.com", role: "HR Officer", department: "Human Resources", company: "Blue's Clues Inc.", start_date: "2024-01-15", status: "active", last_login: "2026-03-10T10:32:00Z", signup_link_expires_at: null },
     { user_id: "u2", employee_id: "EMP-0002", first_name: "John", last_name: "Doe", username: "john.doe", email: "john@company.com", role: "Active Employee", department: "Engineering", company: "Blue's Clues Inc.", start_date: "2026-03-15", status: "pending", last_login: null, signup_link_expires_at: "2026-03-12T10:00:00Z" },
@@ -87,9 +84,6 @@ export async function getUsers(): Promise<InternalUser[]> {
 
 // GET /admin/users/stats
 export async function getUserStats(): Promise<UserStats> {
-  // const res = await authFetch(`${ADMIN_URL}/users/stats`);
-  // if (!res.ok) throw new Error("Failed to fetch user stats");
-  // return res.json();
   return { total: 3, active: 1, pending: 1, locked: 1 };
 }
 
@@ -110,7 +104,7 @@ export async function createUser(payload: CreateUserPayload): Promise<CreateUser
     }),
   });
   const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error((data as any)?.message || "Failed to create user");
+  if (!res.ok) throw new Error((data as { message?: string })?.message || "Failed to create user");
 
   // Backend returns { user_id, employee_id, email, username } — map to InternalUser shape
   const expires = new Date(Date.now() + payload.link_expiry_hours * 3600 * 1000).toISOString();
@@ -137,12 +131,6 @@ export async function createUser(payload: CreateUserPayload): Promise<CreateUser
 
 // PATCH /admin/users/:id/status — body: { status: "active" | "locked" }
 export async function setUserStatus(userId: string, status: "active" | "locked"): Promise<void> {
-  // const res = await authFetch(`${ADMIN_URL}/users/${userId}/status`, {
-  //   method: "PATCH",
-  //   headers: { "Content-Type": "application/json" },
-  //   body: JSON.stringify({ status }),
-  // });
-  // if (!res.ok) throw new Error("Failed to update user status");
 }
 
 // PATCH /admin/users/:id — editable fields: role, department, start_date
@@ -150,12 +138,6 @@ export async function updateUser(
   userId: string,
   payload: Partial<Pick<InternalUser, "role" | "department" | "start_date">>
 ): Promise<void> {
-  // const res = await authFetch(`${ADMIN_URL}/users/${userId}`, {
-  //   method: "PATCH",
-  //   headers: { "Content-Type": "application/json" },
-  //   body: JSON.stringify(payload),
-  // });
-  // if (!res.ok) throw new Error("Failed to update user");
 }
 
 // POST /admin/users/:id/resend-link — body: { link_expiry_hours }
@@ -163,13 +145,6 @@ export async function resendSignupLink(
   userId: string,
   expiryHours: number
 ): Promise<{ signup_link: string; expires_at: string }> {
-  // const res = await authFetch(`${ADMIN_URL}/users/${userId}/resend-link`, {
-  //   method: "POST",
-  //   headers: { "Content-Type": "application/json" },
-  //   body: JSON.stringify({ link_expiry_hours: expiryHours }),
-  // });
-  // if (!res.ok) throw new Error("Failed to resend sign-up link");
-  // return res.json();
   const expires = new Date(Date.now() + expiryHours * 3600 * 1000).toISOString();
   return {
     signup_link: `${process.env.NEXT_PUBLIC_APP_URL ?? ""}/set-password?token=mock-token-${Date.now()}`,
@@ -181,9 +156,6 @@ export async function resendSignupLink(
 
 // GET /admin/companies
 export async function getCompanies(): Promise<Company[]> {
-  // const res = await authFetch(`${ADMIN_URL}/companies`);
-  // if (!res.ok) throw new Error("Failed to fetch companies");
-  // return res.json();
   return [
     { company_id: "c1", name: "Blue's Clues Inc." },
     { company_id: "c2", name: "Acme Corporation" },
@@ -224,9 +196,6 @@ export interface BillingStats {
 
 // GET /admin/subscriptions
 export async function getSubscriptions(): Promise<Subscription[]> {
-  // const res = await authFetch(`${ADMIN_URL}/subscriptions`);
-  // if (!res.ok) throw new Error("Failed to fetch subscriptions");
-  // return res.json();
   return [
     { subscription_id: "sub-1", company_id: "c1", company_name: "Blue's Clues Inc.", plan: "Enterprise", amount: 4999, status: "active", next_renewal: "2026-04-15", mrr: 4999, seats_used: 342, seats_limit: 500 },
     { subscription_id: "sub-2", company_id: "c2", company_name: "Acme Corporation", plan: "Professional", amount: 499, status: "active", next_renewal: "2026-04-20", mrr: 499, seats_used: 125, seats_limit: 200 },
@@ -238,17 +207,11 @@ export async function getSubscriptions(): Promise<Subscription[]> {
 
 // GET /admin/subscriptions/stats
 export async function getBillingStats(): Promise<BillingStats> {
-  // const res = await authFetch(`${ADMIN_URL}/subscriptions/stats`);
-  // if (!res.ok) throw new Error("Failed to fetch billing stats");
-  // return res.json();
   return { total_mrr: 10497, active_subscriptions: 3, trial_accounts: 1, expiring_soon: 1 };
 }
 
 // GET /admin/subscriptions/plans
 export async function getPlans(): Promise<PlanConfig[]> {
-  // const res = await authFetch(`${ADMIN_URL}/subscriptions/plans`);
-  // if (!res.ok) throw new Error("Failed to fetch plans");
-  // return res.json();
   return [
     { plan: "Starter",      price: 99,   seats: 25,   features: ["Core HR", "Employee Directory", "Basic Reporting"] },
     { plan: "Professional", price: 499,  seats: 200,  features: ["Everything in Starter", "Recruitment Module", "Performance Management", "API Access"] },
@@ -261,12 +224,6 @@ export async function updateSubscription(
   subscriptionId: string,
   payload: Partial<Pick<Subscription, "plan" | "status">>
 ): Promise<void> {
-  // const res = await authFetch(`${ADMIN_URL}/subscriptions/${subscriptionId}`, {
-  //   method: "PATCH",
-  //   headers: { "Content-Type": "application/json" },
-  //   body: JSON.stringify(payload),
-  // });
-  // if (!res.ok) throw new Error("Failed to update subscription");
 }
 
 // ─── HR Lifecycle RBAC ────────────────────────────────────────────────────────
@@ -297,7 +254,7 @@ export interface LifecycleModule {
 export async function getLifecyclePermissions(): Promise<LifecycleModule[]> {
   const res = await authFetch(`${API_BASE_URL}/users/hr-lifecycle/permissions`);
   const data = await res.json().catch(() => ([]));
-  if (!res.ok) throw new Error((data as any)?.message || "Failed to fetch lifecycle permissions");
+  if (!res.ok) throw new Error((data as { message?: string })?.message || "Failed to fetch lifecycle permissions");
   return data as LifecycleModule[];
 }
 
@@ -311,15 +268,12 @@ export async function saveLifecyclePermissions(
     body: JSON.stringify(modules),
   });
   const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error((data as any)?.message || "Failed to save permissions");
+  if (!res.ok) throw new Error((data as { message?: string })?.message || "Failed to save permissions");
 }
 
 // ─── Departments ──────────────────────────────────────────────────────────────
 
 // GET /admin/departments
 export async function getDepartments(): Promise<string[]> {
-  // const res = await authFetch(`${ADMIN_URL}/departments`);
-  // if (!res.ok) throw new Error("Failed to fetch departments");
-  // return res.json();
   return ["Human Resources", "Engineering", "Operations", "Finance", "Marketing", "Sales", "Legal"];
 }

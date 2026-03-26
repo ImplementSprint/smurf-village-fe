@@ -33,6 +33,10 @@ function formatDate(dateStr: string) {
   });
 }
 
+function isNewJob(postedAt: string): boolean {
+  return (Date.now() - new Date(postedAt).getTime()) < 7 * 24 * 60 * 60 * 1000;
+}
+
 // ─── Application Form ─────────────────────────────────────────────────────────
 
 function ApplicationForm({
@@ -97,7 +101,7 @@ function ApplicationForm({
       const answerPayload = questions.map((q) => {
         let answer_value = answers[q.question_id] ?? "";
         if (q.question_type === "multiple_choice" && answer_value !== "") {
-          const idx = parseInt(answer_value, 10);
+          const idx = Number.parseInt(answer_value, 10);
           answer_value = q.options?.[idx] ?? answer_value;
         }
         if (q.question_type === "checkbox" && answer_value) {
@@ -123,7 +127,7 @@ function ApplicationForm({
   const totalSteps = hasQuestions ? 2 : 1;
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm">
+    <div className="fixed inset-0 z-60 flex items-center justify-center bg-black/60 backdrop-blur-sm">
       <div className="bg-card border border-border rounded-2xl shadow-2xl w-full max-w-lg mx-4 max-h-[90vh] flex flex-col overflow-hidden">
         {/* Modal gradient header */}
         <div className="relative bg-[linear-gradient(135deg,#0f172a_0%,#1e3a8a_60%,#134e4a_100%)] px-6 py-5 shrink-0">
@@ -135,12 +139,11 @@ function ApplicationForm({
               <h3 className="font-bold text-lg text-white leading-tight">{job.title}</h3>
               <p className="text-xs text-white/50 mt-0.5">Complete the form below to submit your application</p>
             </div>
-            <button onClick={onClose} className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 border border-white/15 transition-colors shrink-0 mt-0.5">
+            <button onClick={onClose} className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 border border-white/15 transition-colors shrink-0 mt-0.5 cursor-pointer">
               <X className="h-4 w-4 text-white/70" />
             </button>
           </div>
 
-          {/* Step progress indicator */}
           {hasQuestions && (
             <div className="relative mt-4 flex items-center gap-2">
               {[
@@ -329,30 +332,21 @@ export default function ApplicantJobsPage() {
   };
 
   const isApplied = displayedJob ? appliedJobIds.has(displayedJob.job_posting_id) : false;
-
   const activeFilters = (typeFilter !== "All Types" ? 1 : 0) + (locationFilter !== "All Locations" ? 1 : 0);
-
-  // Whether any search/filter is active — to show match counter
   const hasActiveFilter = search.trim().length > 0 || activeFilters > 0;
 
   return (
-    <div className="space-y-0 max-w-[1200px] mx-auto animate-in fade-in duration-500">
+    <div className="space-y-0 max-w-300 mx-auto animate-in fade-in duration-500">
 
       {/* ── Hero Banner ─────────────────────────────────────────────────────── */}
       <div className="relative overflow-hidden rounded-2xl bg-[linear-gradient(135deg,#0f172a_0%,#172554_45%,#134e4a_100%)] mb-5">
-        {/* Decorative dot-grid */}
         <div className="absolute inset-0 opacity-[0.03] pointer-events-none"
-          style={{
-            backgroundImage: "radial-gradient(circle, white 1px, transparent 1px)",
-            backgroundSize: "24px 24px",
-          }} />
-        {/* Glow blobs */}
+          style={{ backgroundImage: "radial-gradient(circle, white 1px, transparent 1px)", backgroundSize: "24px 24px" }} />
         <div className="absolute -top-16 -right-16 h-64 w-64 rounded-full bg-blue-500 blur-[80px] opacity-20 pointer-events-none" />
         <div className="absolute bottom-0 left-1/3 h-40 w-40 rounded-full bg-teal-400 blur-[80px] opacity-15 pointer-events-none" />
         <div className="absolute top-1/2 right-1/4 h-32 w-32 rounded-full bg-indigo-400 blur-[80px] opacity-10 pointer-events-none" />
 
         <div className="relative px-8 pt-8 pb-6">
-          {/* Top row */}
           <div className="flex items-start justify-between gap-6 mb-6">
             <div>
               <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/8 border border-white/12 mb-3">
@@ -361,29 +355,30 @@ export default function ApplicantJobsPage() {
               </div>
               <h1 className="text-3xl font-bold text-white leading-tight">
                 Find Your Next<br />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-300 to-teal-300">Great Role</span>
+                <span className="text-transparent bg-clip-text bg-linear-to-r from-blue-300 to-teal-300">Great Role</span>
               </h1>
               <p className="text-sm text-white/50 mt-2 max-w-sm">
                 Browse open positions and take the next step in your career journey.
               </p>
             </div>
 
-            {/* Stats — show match counter when filtering, otherwise total */}
             {!loading && (
               <div className="flex gap-3 shrink-0">
-                {hasActiveFilter ? (
-                  <div className="flex flex-col items-center justify-center rounded-xl border border-white/12 bg-white/6 px-5 py-3.5 text-center backdrop-blur-sm">
-                    <p className="text-2xl font-bold text-white">{filtered.length}</p>
-                    <p className="text-[10px] font-semibold text-white/40 uppercase tracking-wide mt-0.5">
-                      {filtered.length === 1 ? "Match" : "Matches"}
-                    </p>
-                  </div>
-                ) : (
-                  <div className="flex flex-col items-center justify-center rounded-xl border border-white/12 bg-white/6 px-5 py-3.5 text-center backdrop-blur-sm">
-                    <p className="text-2xl font-bold text-white">{jobs.length}</p>
-                    <p className="text-[10px] font-semibold text-white/40 uppercase tracking-wide mt-0.5">Open Roles</p>
-                  </div>
-                )}
+                <div className="flex flex-col items-center justify-center rounded-xl border border-white/12 bg-white/6 px-5 py-3.5 text-center backdrop-blur-sm">
+                  {hasActiveFilter ? (
+                    <>
+                      <p className="text-2xl font-bold text-white">{filtered.length}</p>
+                      <p className="text-[10px] font-semibold text-white/40 uppercase tracking-wide mt-0.5">
+                        {filtered.length === 1 ? "Match" : "Matches"}
+                      </p>
+                    </>
+                  ) : (
+                    <>
+                      <p className="text-2xl font-bold text-white">{jobs.length}</p>
+                      <p className="text-[10px] font-semibold text-white/40 uppercase tracking-wide mt-0.5">Open Roles</p>
+                    </>
+                  )}
+                </div>
                 {appliedJobIds.size > 0 && (
                   <div className="flex flex-col items-center justify-center rounded-xl border border-green-400/20 bg-green-500/10 px-5 py-3.5 text-center backdrop-blur-sm">
                     <p className="text-2xl font-bold text-green-300">{appliedJobIds.size}</p>
@@ -405,7 +400,7 @@ export default function ApplicantJobsPage() {
               className="w-full h-12 pl-11 pr-4 rounded-xl bg-white/8 border border-white/15 text-white placeholder:text-white/30 text-sm focus:outline-none focus:border-white/30 focus:bg-white/12 transition-all"
             />
             {search && (
-              <button onClick={() => setSearch("")} className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-lg hover:bg-white/10 transition-colors">
+              <button onClick={() => setSearch("")} className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-lg hover:bg-white/10 transition-colors cursor-pointer">
                 <X className="h-3.5 w-3.5 text-white/40" />
               </button>
             )}
@@ -418,7 +413,6 @@ export default function ApplicantJobsPage() {
 
         {/* ── Filter Sidebar ──────────────────────────────────────────────── */}
         <div className="w-48 shrink-0 space-y-3">
-
           <div className="rounded-xl border border-border bg-card shadow-sm overflow-hidden">
             <div className="flex items-center gap-2 px-4 py-3 border-b border-border bg-muted/20">
               <SlidersHorizontal className="h-3.5 w-3.5 text-muted-foreground" />
@@ -438,7 +432,7 @@ export default function ApplicantJobsPage() {
                     <button
                       key={t}
                       onClick={() => setTypeFilter(t)}
-                      className={`w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
+                      className={`w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all cursor-pointer ${
                         typeFilter === t
                           ? "bg-primary text-primary-foreground border-primary shadow-sm"
                           : "bg-transparent text-muted-foreground border-transparent hover:border-border hover:bg-muted/40 hover:text-foreground"
@@ -462,7 +456,7 @@ export default function ApplicantJobsPage() {
                     <button
                       key={l}
                       onClick={() => setLocationFilter(l)}
-                      className={`w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
+                      className={`w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all cursor-pointer ${
                         locationFilter === l
                           ? "bg-primary text-primary-foreground border-primary shadow-sm"
                           : "bg-transparent text-muted-foreground border-transparent hover:border-border hover:bg-muted/40 hover:text-foreground"
@@ -481,7 +475,7 @@ export default function ApplicantJobsPage() {
               <div className="px-3 pb-3">
                 <button
                   onClick={() => { setTypeFilter("All Types"); setLocationFilter("All Locations"); }}
-                  className="w-full h-7 rounded-lg text-[11px] font-semibold text-muted-foreground border border-border hover:bg-muted/40 hover:text-foreground transition-colors"
+                  className="w-full h-7 rounded-lg text-[11px] font-semibold text-muted-foreground border border-border hover:bg-muted/40 hover:text-foreground transition-colors cursor-pointer"
                 >
                   Clear filters
                 </button>
@@ -502,8 +496,7 @@ export default function ApplicantJobsPage() {
         </div>
 
         {/* ── Job List ────────────────────────────────────────────────────── */}
-        <div className="w-[300px] shrink-0 space-y-2">
-          {/* List header */}
+        <div className="w-75 shrink-0 space-y-2">
           <div className="flex items-center justify-between px-1 pb-1">
             <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
               {loading ? "Loading…" : `${filtered.length} position${filtered.length !== 1 ? "s" : ""}`}
@@ -527,7 +520,7 @@ export default function ApplicantJobsPage() {
               </div>
               <div className="text-center">
                 <p className="text-sm font-semibold text-foreground">{jobs.length === 0 ? "No openings yet" : "No matches"}</p>
-                <p className="text-xs text-muted-foreground mt-0.5 max-w-[180px]">
+                <p className="text-xs text-muted-foreground mt-0.5 max-w-45">
                   {jobs.length === 0 ? "Check back soon for new opportunities" : "Try adjusting your search or filters"}
                 </p>
               </div>
@@ -537,6 +530,7 @@ export default function ApplicantJobsPage() {
               const isSelected = selectedJob?.job_posting_id === job.job_posting_id;
               const applied = appliedJobIds.has(job.job_posting_id);
               const isBookmarked = bookmarked.has(job.job_posting_id);
+              const isNew = isNewJob(job.posted_at);
 
               return (
                 <div
@@ -554,39 +548,41 @@ export default function ApplicantJobsPage() {
                 >
                   {/* Selected indicator */}
                   {isSelected && (
-                    <div className="absolute left-0 top-3 bottom-3 w-[3px] rounded-full bg-primary" />
+                    <div className="absolute left-0 top-3 bottom-3 w-0.75 rounded-full bg-linear-to-b from-primary to-teal-500" />
                   )}
-
-                  {/* Hover left accent */}
                   {!isSelected && (
-                    <div className="absolute left-0 top-3 bottom-3 w-[3px] rounded-full bg-transparent group-hover:bg-primary/50 transition-colors duration-200" />
+                    <div className="absolute left-0 top-3 bottom-3 w-0.75 rounded-full bg-transparent group-hover:bg-primary/50 transition-colors duration-200" />
                   )}
 
                   <div className="flex items-start gap-3">
-                    {/* Icon */}
                     <div className={`h-10 w-10 rounded-xl border flex items-center justify-center shrink-0 transition-all ${
                       isSelected
                         ? "bg-primary/15 border-primary/30"
                         : "bg-muted/40 border-border group-hover:bg-primary/8 group-hover:border-primary/20"
                     }`}>
-                      <Building2 className={`h-4.5 w-4.5 transition-colors ${isSelected ? "text-primary" : "text-muted-foreground group-hover:text-primary/70"}`} />
+                      <Building2 className={`h-4 w-4 transition-colors ${isSelected ? "text-primary" : "text-muted-foreground group-hover:text-primary/70"}`} />
                     </div>
 
                     <div className="flex-1 min-w-0">
-                      {/* Title + bookmark */}
                       <div className="flex items-start justify-between gap-1.5">
-                        <h3 className={`font-bold text-sm leading-tight ${isSelected ? "text-primary" : "text-foreground"}`}>
+                        <h3 className={`font-bold text-sm leading-tight truncate ${isSelected ? "text-primary" : "text-foreground"}`}>
                           {job.title}
                         </h3>
-                        <button
-                          onClick={(e) => toggleBookmark(job.job_posting_id, e)}
-                          className="shrink-0 p-0.5 rounded-md hover:bg-muted/60 transition-colors -mt-0.5"
-                        >
-                          <Bookmark className={`h-3.5 w-3.5 transition-all ${isBookmarked ? "fill-amber-400 text-amber-400" : "text-muted-foreground/40 hover:text-muted-foreground"}`} />
-                        </button>
+                        <div className="flex items-center gap-1 shrink-0">
+                          {isNew && (
+                            <span className="text-[9px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded-md bg-green-500/15 text-green-600 border border-green-500/20">
+                              New
+                            </span>
+                          )}
+                          <button
+                            onClick={(e) => toggleBookmark(job.job_posting_id, e)}
+                            className="p-0.5 rounded-md hover:bg-muted/60 transition-colors cursor-pointer"
+                          >
+                            <Bookmark className={`h-3.5 w-3.5 transition-all ${isBookmarked ? "fill-amber-400 text-amber-400" : "text-muted-foreground/40 hover:text-muted-foreground"}`} />
+                          </button>
+                        </div>
                       </div>
 
-                      {/* Tags */}
                       <div className="flex flex-wrap gap-1 mt-1.5">
                         {job.employment_type && (
                           <span className={`inline-block text-[10px] font-bold px-2 py-0.5 rounded-md ${
@@ -600,7 +596,6 @@ export default function ApplicantJobsPage() {
                             <CheckCircle className="h-2.5 w-2.5" /> Applied
                           </span>
                         )}
-                        {/* Salary chip */}
                         {job.salary_range && (
                           <span className="inline-flex items-center gap-0.5 text-[10px] font-medium px-2 py-0.5 rounded-md bg-muted/40 text-muted-foreground">
                             <DollarSign className="h-2.5 w-2.5" />{job.salary_range}
@@ -608,12 +603,11 @@ export default function ApplicantJobsPage() {
                         )}
                       </div>
 
-                      {/* Meta */}
                       <div className="flex items-center gap-2.5 mt-2">
                         {job.location && (
                           <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
                             <MapPin className="h-2.5 w-2.5 shrink-0" />
-                            <span className="truncate max-w-[90px]">{job.location}</span>
+                            <span className="truncate max-w-22.5">{job.location}</span>
                           </span>
                         )}
                       </div>
@@ -621,7 +615,6 @@ export default function ApplicantJobsPage() {
                     </div>
                   </div>
 
-                  {/* Hover arrow */}
                   <div className={`absolute right-3 bottom-3 transition-all duration-200 ${isSelected ? "opacity-100" : "opacity-0 group-hover:opacity-60"}`}>
                     <ChevronRight className="h-3.5 w-3.5 text-primary" />
                   </div>
@@ -634,11 +627,10 @@ export default function ApplicantJobsPage() {
         {/* ── Detail Panel ────────────────────────────────────────────────── */}
         <div className="flex-1 min-w-0">
 
-          {/* Empty state */}
           {!displayedJob && (
             <div className="flex flex-col items-center justify-center py-28 gap-5 text-muted-foreground">
               <div className="relative">
-                <div className="h-20 w-20 rounded-3xl bg-gradient-to-br from-muted/60 to-muted/20 border border-border flex items-center justify-center">
+                <div className="h-20 w-20 rounded-3xl bg-linear-to-br from-muted/60 to-muted/20 border border-border flex items-center justify-center">
                   <Briefcase className="h-9 w-9 opacity-20" />
                 </div>
                 <div className="absolute -top-1.5 -right-1.5 h-6 w-6 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center">
@@ -647,7 +639,7 @@ export default function ApplicantJobsPage() {
               </div>
               <div className="text-center">
                 <p className="text-base font-bold text-foreground">Select a position</p>
-                <p className="text-sm text-muted-foreground mt-1 max-w-[200px]">Click any job to view the full details and apply</p>
+                <p className="text-sm text-muted-foreground mt-1 max-w-50">Click any job to view the full details and apply</p>
               </div>
             </div>
           )}
@@ -659,17 +651,12 @@ export default function ApplicantJobsPage() {
 
                 {/* ─── Gradient Header ─────────────────────────────────── */}
                 <div className="relative bg-[linear-gradient(135deg,#0f172a_0%,#1e3a8a_55%,#134e4a_100%)] px-6 py-7 overflow-hidden">
-                  {/* Decorative dots */}
                   <div className="absolute inset-0 opacity-[0.03] pointer-events-none"
-                    style={{
-                      backgroundImage: "radial-gradient(circle, white 1px, transparent 1px)",
-                      backgroundSize: "24px 24px",
-                    }} />
+                    style={{ backgroundImage: "radial-gradient(circle, white 1px, transparent 1px)", backgroundSize: "24px 24px" }} />
                   <div className="absolute -top-12 -right-12 h-52 w-52 rounded-full bg-blue-500 blur-[70px] opacity-20 pointer-events-none" />
                   <div className="absolute bottom-0 left-12 h-36 w-36 rounded-full bg-teal-400 blur-[50px] opacity-12 pointer-events-none" />
 
                   <div className="relative flex items-start gap-4">
-                    {/* Company icon */}
                     <div className="h-14 w-14 rounded-2xl bg-white/10 border border-white/20 flex items-center justify-center shrink-0 shadow-inner">
                       <Building2 className="h-7 w-7 text-white/50" />
                     </div>
@@ -692,12 +679,17 @@ export default function ApplicantJobsPage() {
                             <MapPin className="h-3 w-3" />{displayedJob.location}
                           </span>
                         )}
+                        {isNewJob(displayedJob.posted_at) && (
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-500/20 border border-amber-400/30 text-[10px] font-bold text-amber-300 uppercase tracking-wide">
+                            Recently Posted
+                          </span>
+                        )}
                       </div>
                     </div>
 
                     <button
                       onClick={(e) => toggleBookmark(displayedJob.job_posting_id, e)}
-                      className="h-9 w-9 rounded-xl bg-white/10 hover:bg-white/20 border border-white/15 flex items-center justify-center transition-all shrink-0"
+                      className="h-9 w-9 rounded-xl bg-white/10 hover:bg-white/20 border border-white/15 flex items-center justify-center transition-all shrink-0 cursor-pointer"
                     >
                       <Bookmark className={`h-4 w-4 transition-all ${bookmarked.has(displayedJob.job_posting_id) ? "fill-amber-300 text-amber-300 scale-110" : "text-white/50"}`} />
                     </button>
@@ -733,7 +725,7 @@ export default function ApplicantJobsPage() {
                     ) : (
                       <button
                         onClick={() => setApplyingJob(displayedJob)}
-                        className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-white text-slate-900 font-bold text-sm hover:bg-white/92 transition-all shadow-lg shadow-black/25 hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 active:shadow-md"
+                        className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-white text-slate-900 font-bold text-sm hover:bg-white/92 transition-all shadow-lg shadow-black/25 hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 active:shadow-md cursor-pointer"
                       >
                         <Zap className="h-4 w-4" />
                         Apply Now
@@ -749,7 +741,7 @@ export default function ApplicantJobsPage() {
                   {/* Description */}
                   {displayedJob.description && (
                     <div className="p-6">
-                      <div className="flex items-center gap-3 mb-4">
+                      <div className="flex items-center gap-2.5 mb-4">
                         <div className="h-7 w-7 rounded-lg bg-primary/8 border border-primary/15 flex items-center justify-center shrink-0">
                           <Briefcase className="h-3.5 w-3.5 text-primary/70" />
                         </div>
@@ -763,7 +755,7 @@ export default function ApplicantJobsPage() {
 
                   {/* Quick Summary grid */}
                   <div className="p-6">
-                    <div className="flex items-center gap-3 mb-4">
+                    <div className="flex items-center gap-2.5 mb-4">
                       <div className="h-7 w-7 rounded-lg bg-primary/8 border border-primary/15 flex items-center justify-center shrink-0">
                         <TrendingUp className="h-3.5 w-3.5 text-primary/70" />
                       </div>
@@ -786,16 +778,16 @@ export default function ApplicantJobsPage() {
                     </div>
                   </div>
 
-                  {/* Bottom CTA strip — more prominent */}
+                  {/* Bottom CTA strip */}
                   {!isApplied && (
-                    <div className="px-6 py-4 bg-muted/20 border-t border-border flex items-center justify-between gap-4">
+                    <div className="px-6 py-4 bg-linear-to-r from-primary/4 to-teal-500/3 border-t border-border flex items-center justify-between gap-4">
                       <div className="flex items-center gap-2 text-muted-foreground">
                         <Users className="h-4 w-4" />
                         <span className="text-xs">Interested? Submit your application today.</span>
                       </div>
                       <button
                         onClick={() => setApplyingJob(displayedJob)}
-                        className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-primary text-primary-foreground font-semibold text-xs hover:bg-primary/90 transition-all hover:-translate-y-px shadow-sm hover:shadow"
+                        className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-primary text-primary-foreground font-semibold text-xs hover:bg-primary/90 transition-all hover:-translate-y-px shadow-sm hover:shadow cursor-pointer"
                       >
                         Apply Now <ArrowRight className="h-3.5 w-3.5" />
                       </button>

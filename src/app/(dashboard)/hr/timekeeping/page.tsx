@@ -85,7 +85,7 @@ function computeHoursDecimal(timeIn: string | null, timeOut: string | null): num
 }
 
 function isLate(timeIn: string): boolean {
-  const hourPST = parseInt(
+  const hourPST = Number.parseInt(
     parseTs(timeIn).toLocaleString("en-US", {
       hour: "numeric", hour12: false, timeZone: "Asia/Manila",
     }), 10
@@ -160,7 +160,7 @@ const STATUS_CONFIG: Record<RosterEntry["status"], { label: string; className: s
   "absent":     { label: "Absent",     className: "bg-red-100 text-red-700 border border-red-200" },
 };
 
-function StatusBadge({ status }: { status: RosterEntry["status"] }) {
+function StatusBadge({ status }: Readonly<{ status: RosterEntry["status"] }>) {
   const cfg = STATUS_CONFIG[status];
   return (
     <span className={`px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wide ${cfg.className}`}>
@@ -173,9 +173,9 @@ function StatusBadge({ status }: { status: RosterEntry["status"] }) {
 
 function StatCard({
   icon: Icon, label, value, sub, colorClass,
-}: {
+}: Readonly<{
   icon: any; label: string; value: string; sub: string; colorClass: string;
-}) {
+}>) {
   return (
     <Card className="p-5 border-border">
       <div className="flex items-center gap-3 mb-3">
@@ -224,9 +224,9 @@ export default function HRTimekeepingPage() {
 
     Promise.all([
       authFetch(`${API_BASE_URL}/timekeeping/employees`)
-        .then(r => { if (!r.ok) throw new Error(); return r.json() as Promise<UserRow[]>; }),
+        .then(r => { if (!r.ok) { throw new Error('Unexpected error'); } return r.json() as Promise<UserRow[]>; }),
       authFetch(`${API_BASE_URL}/timekeeping/timesheets?from=${dateStr}&to=${dateStr}`)
-        .then(r => { if (!r.ok) throw new Error(); return r.json() as Promise<PunchRow[]>; }),
+        .then(r => { if (!r.ok) { throw new Error('Unexpected error'); } return r.json() as Promise<PunchRow[]>; }),
     ])
       .then(([users, punches]) => setRoster(buildFullRoster(users, punches)))
       .catch(() => setFetchError(true))
@@ -251,6 +251,50 @@ export default function HRTimekeepingPage() {
   function goToPrev()  { setSelectedDate(d => { const n = new Date(d); n.setDate(n.getDate() - 1); return n; }); }
   function goToNext()  { setSelectedDate(d => { const n = new Date(d); n.setDate(n.getDate() + 1); return n; }); }
   function goToToday() { setSelectedDate(new Date()); }
+
+  const tableBodyPlaceholder = loading ? (
+    <tr><td colSpan={6} className="px-6 py-10 text-center text-muted-foreground text-sm">Loading timekeeping data...</td></tr>
+  ) : fetchError ? (
+    <tr><td colSpan={6} className="px-6 py-10 text-center text-destructive text-sm">Failed to load data. Please refresh or contact support.</td></tr>
+  ) : (
+    <tr><td colSpan={6} className="px-6 py-10 text-center text-muted-foreground text-sm">
+      {search || statusFilter !== "all" ? "No records match your search." : "No entries found for this date."}
+    </td></tr>
+  );
+  const tableBody = loading || fetchError || paged.length === 0 ? tableBodyPlaceholder : paged.map(log => (
+    <tr key={log.employee_id} className="hover:bg-muted/30 transition-colors">
+      <td className="px-6 py-4">
+        <div className="flex items-center gap-3">
+          <div className="h-9 w-9 bg-primary/10 text-primary rounded-full flex items-center justify-center font-bold text-xs border border-primary/5 shrink-0">
+            {log.first_name.charAt(0).toUpperCase()}
+          </div>
+          <div>
+            <p className="font-semibold">{`${log.first_name} ${log.last_name}`.trim()}</p>
+            <p className="text-[10px] text-muted-foreground font-mono">{log.employee_id}</p>
+          </div>
+        </div>
+      </td>
+      <td className="px-6 py-4 text-xs font-medium">{formatTime(log.time_in)}</td>
+      <td className="px-6 py-4 text-xs font-medium">{formatTime(log.time_out)}</td>
+      <td className="px-6 py-4 text-xs font-medium">{formatHours(log.time_in, log.time_out)}</td>
+      <td className="px-6 py-4"><StatusBadge status={log.status} /></td>
+      <td className="px-6 py-4">
+        {log.status === "absent" ? (
+          <span className="text-muted-foreground text-xs">—</span>
+        ) : log.gps_verified ? (
+          <div className="flex items-center gap-1.5 text-green-600">
+            <MapPin className="h-3.5 w-3.5" />
+            <span className="text-[10px] font-bold uppercase tracking-wide">Verified</span>
+          </div>
+        ) : (
+          <div className="flex items-center gap-1.5 text-muted-foreground">
+            <MapPinOff className="h-3.5 w-3.5" />
+            <span className="text-[10px] font-bold uppercase tracking-wide">No GPS</span>
+          </div>
+        )}
+      </td>
+    </tr>
+  ));
 
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
@@ -277,7 +321,7 @@ export default function HRTimekeepingPage() {
           >
             {isToday(selectedDate) ? "Today" : "Go to Today"}
           </Button>
-          <div className="h-9 px-4 flex items-center border border-border rounded-md text-sm font-medium bg-background min-w-[160px] justify-center">
+          <div className="h-9 px-4 flex items-center border border-border rounded-md text-sm font-medium bg-background min-w-40 justify-center">
             {formatDisplayDate(selectedDate)}
           </div>
           <Button
@@ -339,48 +383,7 @@ export default function HRTimekeepingPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
-              {loading ? (
-                <tr><td colSpan={6} className="px-6 py-10 text-center text-muted-foreground text-sm">Loading timekeeping data...</td></tr>
-              ) : fetchError ? (
-                <tr><td colSpan={6} className="px-6 py-10 text-center text-destructive text-sm">Failed to load data. Please refresh or contact support.</td></tr>
-              ) : paged.length === 0 ? (
-                <tr><td colSpan={6} className="px-6 py-10 text-center text-muted-foreground text-sm">
-                  {search || statusFilter !== "all" ? "No records match your search." : "No entries found for this date."}
-                </td></tr>
-              ) : paged.map(log => (
-                <tr key={log.employee_id} className="hover:bg-muted/30 transition-colors">
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-3">
-                      <div className="h-9 w-9 bg-primary/10 text-primary rounded-full flex items-center justify-center font-bold text-xs border border-primary/5 shrink-0">
-                        {log.first_name.charAt(0).toUpperCase()}
-                      </div>
-                      <div>
-                        <p className="font-semibold">{`${log.first_name} ${log.last_name}`.trim()}</p>
-                        <p className="text-[10px] text-muted-foreground font-mono">{log.employee_id}</p>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 text-xs font-medium">{formatTime(log.time_in)}</td>
-                  <td className="px-6 py-4 text-xs font-medium">{formatTime(log.time_out)}</td>
-                  <td className="px-6 py-4 text-xs font-medium">{formatHours(log.time_in, log.time_out)}</td>
-                  <td className="px-6 py-4"><StatusBadge status={log.status} /></td>
-                  <td className="px-6 py-4">
-                    {log.status === "absent" ? (
-                      <span className="text-muted-foreground text-xs">—</span>
-                    ) : log.gps_verified ? (
-                      <div className="flex items-center gap-1.5 text-green-600">
-                        <MapPin className="h-3.5 w-3.5" />
-                        <span className="text-[10px] font-bold uppercase tracking-wide">Verified</span>
-                      </div>
-                    ) : (
-                      <div className="flex items-center gap-1.5 text-muted-foreground">
-                        <MapPinOff className="h-3.5 w-3.5" />
-                        <span className="text-[10px] font-bold uppercase tracking-wide">No GPS</span>
-                      </div>
-                    )}
-                  </td>
-                </tr>
-              ))}
+              {tableBody}
             </tbody>
           </table>
         </div>

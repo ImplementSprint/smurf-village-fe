@@ -98,7 +98,7 @@ export function isToday(date: Date): boolean {
 
 export function deriveStatus(timeIn: string | null): TimekeepingStatus {
   if (!timeIn) return "absent";
-  const hourPST = parseInt(
+  const hourPST = Number.parseInt(
     parseTs(timeIn).toLocaleString("en-US", {
       hour: "numeric", hour12: false, timeZone: "Asia/Manila",
     }),

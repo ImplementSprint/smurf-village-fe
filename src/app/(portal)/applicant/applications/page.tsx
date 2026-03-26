@@ -68,16 +68,16 @@ function StageProgress({ status }: { status: string }) {
         return (
           <div key={stage.key} className="flex items-center flex-1 min-w-0">
             <div className="flex flex-col items-center shrink-0">
-              <div className={`h-7 w-7 rounded-full border-2 flex items-center justify-center transition-all
-                ${done    ? "bg-primary border-primary"                         : ""}
-                ${current ? "bg-background border-primary ring-[3px] ring-primary/15" : ""}
-                ${!done && !current ? "bg-muted/30 border-border"              : ""}
+              <div className={`h-8 w-8 rounded-full border-2 flex items-center justify-center transition-all
+                ${done    ? "bg-primary border-primary shadow-sm shadow-primary/20"           : ""}
+                ${current ? "bg-background border-primary ring-[3px] ring-primary/15 shadow-sm" : ""}
+                ${!done && !current ? "bg-muted/30 border-border"                            : ""}
               `}>
                 {done    && <CheckCircle2 className="h-3.5 w-3.5 text-white" />}
                 {current && <Icon className="h-3 w-3 text-primary" />}
                 {!done && !current && <Icon className="h-3 w-3 text-muted-foreground/30" />}
               </div>
-              <span className={`mt-1 text-[9px] font-bold uppercase tracking-[0.06em] text-center leading-tight max-w-[44px]
+              <span className={`mt-1 text-[9px] font-bold uppercase tracking-[0.06em] text-center leading-tight max-w-11
                 ${done || current ? "text-foreground" : "text-muted-foreground/35"}
               `}>{stage.short}</span>
             </div>
@@ -91,12 +91,12 @@ function StageProgress({ status }: { status: string }) {
       <div className="flex items-center flex-1 min-w-0">
         <div className={`h-0.5 flex-1 -mt-4 mx-0.5 rounded-full ${terminal ? "bg-primary" : "bg-border"}`} />
         <div className="flex flex-col items-center shrink-0">
-          <div className={`h-7 w-7 rounded-full border-2 flex items-center justify-center transition-all
-            ${terminal ? (status === "hired" ? "bg-green-500 border-green-500" : "bg-red-400 border-red-400") : "bg-muted/30 border-border"}
+          <div className={`h-8 w-8 rounded-full border-2 flex items-center justify-center transition-all
+            ${terminal ? (status === "hired" ? "bg-green-500 border-green-500 shadow-sm shadow-green-500/20" : "bg-red-400 border-red-400") : "bg-muted/30 border-border"}
           `}>
             {terminal ? <CheckCircle2 className="h-3.5 w-3.5 text-white" /> : <Trophy className="h-3 w-3 text-muted-foreground/30" />}
           </div>
-          <span className={`mt-1 text-[9px] font-bold uppercase tracking-[0.06em] text-center leading-tight max-w-[44px]
+          <span className={`mt-1 text-[9px] font-bold uppercase tracking-[0.06em] text-center leading-tight max-w-11
             ${terminal ? (status === "hired" ? "text-green-600" : "text-red-500") : "text-muted-foreground/35"}
           `}>{status === "hired" ? "Hired" : status === "rejected" ? "Out" : "Result"}</span>
         </div>
@@ -112,16 +112,25 @@ function ApplicationCard({ app, onView }: { app: MyApplication; onView: (id: str
   const terminal = isTerminal(app.status);
 
   return (
-    <div className={`bg-card border rounded-2xl shadow-sm overflow-hidden hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 ${
-      app.status === "hired" ? "border-green-200" : app.status === "rejected" ? "border-red-200/60" : "border-border"
+    <div className={`bg-card border rounded-2xl shadow-sm overflow-hidden hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-pointer ${
+      app.status === "hired" ? "border-green-200 dark:border-green-800/50" : app.status === "rejected" ? "border-red-200/60 dark:border-red-800/30" : "border-border"
     }`}>
-      {/* Top color bar */}
-      <div className={`h-1 w-full ${cfg.dot}`} />
+      {/* Status color bar — thicker + gradient for hired/rejected */}
+      <div className={`h-1.5 w-full ${
+        app.status === "hired" ? "bg-linear-to-r from-green-400 to-emerald-500" :
+        app.status === "rejected" ? "bg-linear-to-r from-red-400 to-rose-500" :
+        cfg.dot
+      }`} />
+
       <div className="p-5 space-y-3.5">
         {/* Header */}
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-start gap-3 min-w-0">
-            <div className="h-10 w-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+            <div className={`h-10 w-10 rounded-xl flex items-center justify-center shrink-0 ${
+              app.status === "hired" ? "bg-green-500/10 text-green-600 border border-green-200/60 dark:border-green-700/40" :
+              app.status === "rejected" ? "bg-red-500/10 text-red-500 border border-red-200/60 dark:border-red-700/40" :
+              "bg-primary/10 text-primary border border-primary/15"
+            }`}>
               <Briefcase className="h-5 w-5" />
             </div>
             <div className="min-w-0">
@@ -158,8 +167,8 @@ function ApplicationCard({ app, onView }: { app: MyApplication; onView: (id: str
         {terminal ? (
           <div className={`flex items-center gap-2 px-3.5 py-2.5 rounded-xl border text-sm font-semibold ${
             app.status === "hired"
-              ? "bg-green-50 border-green-200 text-green-700"
-              : "bg-red-50/60 border-red-200/70 text-red-600"
+              ? "bg-green-50 border-green-200 text-green-700 dark:bg-green-900/20 dark:border-green-700/40 dark:text-green-300"
+              : "bg-red-50/60 border-red-200/70 text-red-600 dark:bg-red-900/10 dark:border-red-700/30 dark:text-red-400"
           }`}>
             <CheckCircle2 className="h-4 w-4 shrink-0" />
             {app.status === "hired" ? "Congratulations! You've been hired." : "This application was not selected."}
@@ -176,7 +185,7 @@ function ApplicationCard({ app, onView }: { app: MyApplication; onView: (id: str
           </div>
           <Button
             size="sm" variant="ghost"
-            className="h-8 px-3 gap-1.5 text-xs font-semibold text-muted-foreground border border-transparent hover:bg-primary/5 hover:border-primary/30 hover:text-primary transition-all"
+            className="h-8 px-3 gap-1.5 text-xs font-semibold text-muted-foreground border border-transparent hover:bg-primary/5 hover:border-primary/30 hover:text-primary transition-all cursor-pointer"
             onClick={() => onView(app.application_id)}
           >
             View Details <ChevronRight className="h-3.5 w-3.5" />
@@ -209,7 +218,7 @@ function DetailModal({ detail, onClose }: { detail: DetailWithJob; onClose: () =
   const sorted = [...detail.answers].sort((a, b) => a.application_questions.sort_order - b.application_questions.sort_order);
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 animate-in fade-in duration-200 p-4" onClick={onClose}>
+    <div className="fixed inset-0 z-60 flex items-center justify-center bg-black/40 animate-in fade-in duration-200 p-4" onClick={onClose}>
       <div className="bg-card border border-border rounded-2xl shadow-2xl w-full max-w-lg max-h-[92vh] overflow-hidden flex flex-col animate-in zoom-in-95 duration-200" onClick={(e) => e.stopPropagation()}>
 
         {/* Gradient header */}
@@ -219,11 +228,10 @@ function DetailModal({ detail, onClose }: { detail: DetailWithJob; onClose: () =
           <div className="absolute -top-8 -right-8 h-40 w-40 rounded-full bg-blue-500 blur-3xl opacity-15 pointer-events-none" />
           <div className="absolute bottom-0 left-0 right-0 h-px bg-white/10" />
 
-          {/* Top row: icon + title + close */}
           <div className="relative flex items-start justify-between gap-3 mb-4">
             <div className="flex items-start gap-3 min-w-0">
               <div className="h-10 w-10 rounded-xl bg-white/10 border border-white/15 flex items-center justify-center shrink-0 mt-0.5">
-                <Briefcase className="h-4.5 w-4.5 text-white/70" />
+                <Briefcase className="h-5 w-5 text-white/70" />
               </div>
               <div className="min-w-0">
                 <div className="flex items-center gap-2 flex-wrap mb-1">
@@ -250,16 +258,15 @@ function DetailModal({ detail, onClose }: { detail: DetailWithJob; onClose: () =
                 </div>
               </div>
             </div>
-            <button onClick={onClose} className="h-7 w-7 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors border border-white/10 shrink-0 mt-0.5">
+            <button onClick={onClose} className="h-7 w-7 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors border border-white/10 shrink-0 mt-0.5 cursor-pointer">
               <X className="h-3.5 w-3.5 text-white/60" />
             </button>
           </div>
 
-          {/* Tab switcher flush to bottom of header */}
           <div className="relative flex items-center gap-0">
             <button
               onClick={() => setTab("job")}
-              className={`px-4 py-2.5 text-xs font-semibold border-b-2 transition-all ${
+              className={`px-4 py-2.5 text-xs font-semibold border-b-2 transition-all cursor-pointer ${
                 tab === "job"
                   ? "border-white text-white"
                   : "border-transparent text-white/45 hover:text-white/75"
@@ -269,7 +276,7 @@ function DetailModal({ detail, onClose }: { detail: DetailWithJob; onClose: () =
             </button>
             <button
               onClick={() => setTab("answers")}
-              className={`px-4 py-2.5 text-xs font-semibold border-b-2 transition-all flex items-center gap-1.5 ${
+              className={`px-4 py-2.5 text-xs font-semibold border-b-2 transition-all flex items-center gap-1.5 cursor-pointer ${
                 tab === "answers"
                   ? "border-white text-white"
                   : "border-transparent text-white/45 hover:text-white/75"
@@ -291,15 +298,14 @@ function DetailModal({ detail, onClose }: { detail: DetailWithJob; onClose: () =
           {/* ── JOB DETAILS TAB ── */}
           {tab === "job" && (
             <>
-              {/* Quick meta chips */}
               <div className="flex flex-wrap gap-2">
                 {job?.salary_range && (
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-green-50 border border-green-200 text-green-700 text-xs font-semibold shadow-sm">
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-green-50 border border-green-200 text-green-700 text-xs font-semibold shadow-sm dark:bg-green-900/20 dark:border-green-700/40 dark:text-green-300">
                     <DollarSign className="h-3.5 w-3.5" />{job.salary_range}
                   </span>
                 )}
                 {job?.employment_type && (
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-blue-50 border border-blue-200 text-blue-700 text-xs font-semibold shadow-sm">
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-blue-50 border border-blue-200 text-blue-700 text-xs font-semibold shadow-sm dark:bg-blue-900/20 dark:border-blue-700/40 dark:text-blue-300">
                     <Clock className="h-3.5 w-3.5" />{job.employment_type}
                   </span>
                 )}
@@ -309,13 +315,12 @@ function DetailModal({ detail, onClose }: { detail: DetailWithJob; onClose: () =
                   </span>
                 )}
                 {job?.closes_at && (
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-50 border border-amber-200 text-amber-700 text-xs font-semibold shadow-sm">
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-50 border border-amber-200 text-amber-700 text-xs font-semibold shadow-sm dark:bg-amber-900/20 dark:border-amber-700/40 dark:text-amber-300">
                     <AlarmClock className="h-3.5 w-3.5" />Closes {fmtDate(job.closes_at)}
                   </span>
                 )}
               </div>
 
-              {/* Description */}
               {job?.description ? (
                 <div>
                   <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground mb-2">Job Description</p>
@@ -330,7 +335,6 @@ function DetailModal({ detail, onClose }: { detail: DetailWithJob; onClose: () =
                 </div>
               )}
 
-              {/* Application stage */}
               <div>
                 <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground mb-2">Your Application Status</p>
                 <div className="rounded-xl border border-border bg-muted/20 px-4 py-4">
@@ -342,7 +346,9 @@ function DetailModal({ detail, onClose }: { detail: DetailWithJob; onClose: () =
                   <StageProgress status={detail.status} />
                   {isTerminal(detail.status) && (
                     <div className={`mt-3 flex items-center gap-2 px-3 py-2.5 rounded-xl border text-sm font-semibold ${
-                      detail.status === "hired" ? "bg-green-50 border-green-200 text-green-700" : "bg-red-50/60 border-red-200/70 text-red-600"
+                      detail.status === "hired"
+                        ? "bg-green-50 border-green-200 text-green-700 dark:bg-green-900/20 dark:border-green-700/40 dark:text-green-300"
+                        : "bg-red-50/60 border-red-200/70 text-red-600 dark:bg-red-900/10 dark:border-red-700/30 dark:text-red-400"
                     }`}>
                       <CheckCircle2 className="h-4 w-4 shrink-0" />
                       {detail.status === "hired" ? "Congratulations! You've been hired." : "This application was not selected."}
@@ -360,14 +366,11 @@ function DetailModal({ detail, onClose }: { detail: DetailWithJob; onClose: () =
                 <p className="text-xs text-muted-foreground">These are the answers you submitted with your application.</p>
                 {sorted.map((ans, i) => (
                   <div key={ans.answer_id} className="rounded-xl border border-border bg-muted/15 overflow-hidden">
-                    {/* Question */}
                     <div className="flex items-start gap-2.5 px-4 pt-3 pb-2.5">
                       <span className="h-5 w-5 rounded-full bg-primary/10 text-primary flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">{i + 1}</span>
                       <p className="text-xs font-semibold text-foreground leading-snug">{ans.application_questions.question_text}</p>
                     </div>
-                    {/* Divider */}
                     <div className="h-px bg-border mx-4" />
-                    {/* Answer */}
                     <div className="px-4 pb-3 pt-2.5 pl-11">
                       <p className="text-sm text-foreground leading-relaxed">
                         {ans.answer_value || <span className="text-muted-foreground italic text-xs">No answer provided</span>}
@@ -414,7 +417,6 @@ export default function ApplicantApplicationsPage() {
     setDetailLoading(true);
     try {
       const d = await getMyApplicationDetail(appId);
-      // Attach job_postings from list data since the detail endpoint returns it too
       setDetail(d);
     } catch (err: any) {
       toast.error(err.message || "Failed to load application details");
@@ -436,12 +438,10 @@ export default function ApplicantApplicationsPage() {
   const filtered = useMemo(() => {
     let list = [...applications];
 
-    // Status filter
     if (filterStatus === "active")   list = list.filter((a) => isActive(a.status));
     if (filterStatus === "hired")    list = list.filter((a) => a.status === "hired");
     if (filterStatus === "rejected") list = list.filter((a) => a.status === "rejected");
 
-    // Search
     if (search.trim()) {
       const q = search.toLowerCase();
       list = list.filter((a) =>
@@ -450,7 +450,6 @@ export default function ApplicantApplicationsPage() {
       );
     }
 
-    // Sort
     if (sort === "date_desc") list.sort((a, b) => new Date(b.applied_at).getTime() - new Date(a.applied_at).getTime());
     if (sort === "date_asc")  list.sort((a, b) => new Date(a.applied_at).getTime() - new Date(b.applied_at).getTime());
     if (sort === "status") {
@@ -473,10 +472,8 @@ export default function ApplicantApplicationsPage() {
 
       {/* ── Hero ── */}
       <div className="rounded-[26px] border border-white/10 bg-[linear-gradient(135deg,#0f172a_0%,#172554_52%,#134e4a_100%)] px-6 py-7 md:px-7 md:py-7 relative overflow-hidden">
-        {/* Dot-grid overlay */}
         <div className="absolute inset-0 opacity-[0.03] pointer-events-none"
           style={{ backgroundImage: "radial-gradient(circle, white 1px, transparent 1px)", backgroundSize: "24px 24px" }} />
-        {/* Glow blobs */}
         <div className="absolute -top-10 -right-10 h-48 w-48 rounded-full bg-blue-500 blur-[80px] opacity-20 pointer-events-none" />
         <div className="absolute -bottom-8 left-16 h-32 w-32 rounded-full bg-teal-500 blur-[80px] opacity-20 pointer-events-none" />
         <div className="absolute top-1/2 right-1/3 h-28 w-28 rounded-full bg-indigo-400 blur-[80px] opacity-10 pointer-events-none" />
@@ -485,28 +482,31 @@ export default function ApplicantApplicationsPage() {
           <div>
             <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-white/50 mb-1.5">Candidate Portal</p>
             <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-white leading-tight flex items-center gap-3">
-              <FileText className="h-7 w-7 text-white/70" /> My Applications
+              <div className="h-9 w-9 rounded-xl bg-white/10 border border-white/15 flex items-center justify-center">
+                <FileText className="h-5 w-5 text-white/70" />
+              </div>
+              My Applications
             </h1>
-            <p className="text-sm text-white/60 mt-1.5">Track your progress across all roles you've applied to</p>
+            <p className="text-sm text-white/55 mt-1.5">Track your progress across all roles you&apos;ve applied to</p>
           </div>
           {/* Stat chips */}
           <div className="flex items-center gap-2.5 flex-wrap">
-            <div className="bg-white/10 border border-white/15 rounded-xl px-4 py-2.5 text-center min-w-[60px]">
+            <div className="bg-white/10 border border-white/15 rounded-xl px-4 py-2.5 text-center min-w-15">
               <p className="text-xl font-bold text-white leading-none">{total}</p>
               <p className="text-[10px] text-white/50 uppercase tracking-widest mt-0.5">Total</p>
             </div>
-            <div className="bg-white/10 border border-white/15 rounded-xl px-4 py-2.5 text-center min-w-[60px]">
+            <div className="bg-white/10 border border-white/15 rounded-xl px-4 py-2.5 text-center min-w-15">
               <p className="text-xl font-bold text-white leading-none">{active}</p>
               <p className="text-[10px] text-white/50 uppercase tracking-widest mt-0.5">Active</p>
             </div>
             {inInterview > 0 && (
-              <div className="bg-purple-500/20 border border-purple-400/30 rounded-xl px-4 py-2.5 text-center min-w-[60px]">
+              <div className="bg-purple-500/20 border border-purple-400/30 rounded-xl px-4 py-2.5 text-center min-w-15">
                 <p className="text-xl font-bold text-purple-200 leading-none">{inInterview}</p>
                 <p className="text-[10px] text-purple-300/70 uppercase tracking-widest mt-0.5">Interview</p>
               </div>
             )}
             {hired > 0 && (
-              <div className="bg-green-500/20 border border-green-400/30 rounded-xl px-4 py-2.5 text-center min-w-[60px]">
+              <div className="bg-green-500/20 border border-green-400/30 rounded-xl px-4 py-2.5 text-center min-w-15">
                 <p className="text-xl font-bold text-green-300 leading-none">{hired}</p>
                 <p className="text-[10px] text-green-400/70 uppercase tracking-widest mt-0.5">Hired</p>
               </div>
@@ -515,18 +515,21 @@ export default function ApplicantApplicationsPage() {
         </div>
       </div>
 
-      {/* ── Dashboard stats row ── */}
+      {/* ── Stats row ── */}
       {!loading && total > 0 && (
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
-            { label: "Applied",     value: total,       sub: "total submitted",      color: "text-foreground",  bg: "bg-blue-50 border-blue-100"    },
-            { label: "In Progress", value: active,      sub: "awaiting response",    color: "text-primary",     bg: "bg-primary/5 border-primary/10" },
-            { label: "Interviews",  value: inInterview, sub: "rounds scheduled",     color: "text-purple-700",  bg: "bg-purple-50 border-purple-100" },
-            { label: "Hired",       value: hired,       sub: "offers received",      color: "text-green-700",   bg: "bg-green-50 border-green-100"   },
+            { label: "Applied",     value: total,       sub: "total submitted",      dotColor: "bg-blue-500",   borderColor: "border-l-blue-400"   },
+            { label: "In Progress", value: active,      sub: "awaiting response",    dotColor: "bg-primary",    borderColor: "border-l-primary"    },
+            { label: "Interviews",  value: inInterview, sub: "rounds scheduled",     dotColor: "bg-purple-500", borderColor: "border-l-purple-400" },
+            { label: "Hired",       value: hired,       sub: "offers received",      dotColor: "bg-green-500",  borderColor: "border-l-green-400"  },
           ].map((s) => (
-            <div key={s.label} className={`rounded-xl border px-4 py-3.5 ${s.bg}`}>
-              <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground mb-1">{s.label}</p>
-              <p className={`text-2xl font-bold tracking-tight ${s.color}`}>{s.value}</p>
+            <div key={s.label} className={`rounded-xl border border-l-4 ${s.borderColor} border-border bg-card px-4 py-3.5 shadow-sm`}>
+              <div className="flex items-center gap-2 mb-1.5">
+                <div className={`h-2 w-2 rounded-full shrink-0 ${s.dotColor}`} />
+                <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">{s.label}</p>
+              </div>
+              <p className="text-2xl font-bold tracking-tight text-foreground">{s.value}</p>
               <p className="text-xs text-muted-foreground mt-0.5">{s.sub}</p>
             </div>
           ))}
@@ -536,7 +539,6 @@ export default function ApplicantApplicationsPage() {
       {/* ── Filters + search ── */}
       {!loading && total > 0 && (
         <div className="space-y-3">
-          {/* Filter tab pills with count badges */}
           <div className="flex items-center gap-1.5 flex-wrap">
             {filterTabs.map((f) => {
               const Icon = f.icon;
@@ -545,7 +547,7 @@ export default function ApplicantApplicationsPage() {
                 <button
                   key={f.key}
                   onClick={() => setFilterStatus(f.key)}
-                  className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold border transition-all ${
+                  className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold border transition-all cursor-pointer ${
                     isActive
                       ? "bg-primary text-primary-foreground border-primary shadow-sm"
                       : "bg-background text-muted-foreground border-border hover:border-primary/40 hover:text-foreground"
@@ -553,7 +555,7 @@ export default function ApplicantApplicationsPage() {
                 >
                   <Icon className="h-3 w-3" />
                   {f.label}
-                  <span className={`text-[10px] font-bold min-w-[18px] px-1.5 py-0.5 rounded-full text-center ${
+                  <span className={`text-[10px] font-bold min-w-4.5 px-1.5 py-0.5 rounded-full text-center ${
                     isActive ? "bg-white/25 text-white" : "bg-muted text-muted-foreground"
                   }`}>
                     {f.count}
@@ -563,7 +565,6 @@ export default function ApplicantApplicationsPage() {
             })}
           </div>
 
-          {/* Search + sort row */}
           <div className="flex items-center gap-2">
             <div className="relative flex-1 max-w-xs">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
@@ -574,13 +575,12 @@ export default function ApplicantApplicationsPage() {
                 className="h-9 w-full pl-9 pr-3 rounded-lg border border-border bg-card text-sm shadow-xs focus:outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] transition-all"
               />
               {search && (
-                <button onClick={() => setSearch("")} className="absolute right-2 top-1/2 -translate-y-1/2 h-5 w-5 flex items-center justify-center rounded hover:bg-muted/60">
+                <button onClick={() => setSearch("")} className="absolute right-2 top-1/2 -translate-y-1/2 h-5 w-5 flex items-center justify-center rounded hover:bg-muted/60 cursor-pointer">
                   <X className="h-3 w-3 text-muted-foreground" />
                 </button>
               )}
             </div>
 
-            {/* Sort */}
             <div className="flex items-center gap-1 bg-muted/40 border border-border rounded-lg p-0.5">
               {([
                 { key: "date_desc", icon: SortDesc, label: "Newest" },
@@ -593,7 +593,7 @@ export default function ApplicantApplicationsPage() {
                     key={s.key}
                     onClick={() => setSort(s.key)}
                     title={s.label}
-                    className={`inline-flex items-center gap-1 px-2.5 py-1.5 rounded-md text-[11px] font-semibold transition-all ${
+                    className={`inline-flex items-center gap-1 px-2.5 py-1.5 rounded-md text-[11px] font-semibold transition-all cursor-pointer ${
                       sort === s.key
                         ? "bg-card text-foreground shadow-sm border border-border"
                         : "text-muted-foreground hover:text-foreground"
@@ -605,11 +605,10 @@ export default function ApplicantApplicationsPage() {
               })}
             </div>
 
-            {/* Reset */}
             {(search || filterStatus !== "all" || sort !== "date_desc") && (
               <button
                 onClick={() => { setSearch(""); setFilterStatus("all"); setSort("date_desc"); }}
-                className="inline-flex items-center gap-1.5 h-9 px-3 rounded-lg border border-border text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-all"
+                className="inline-flex items-center gap-1.5 h-9 px-3 rounded-lg border border-border text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-all cursor-pointer"
               >
                 <RotateCcw className="h-3.5 w-3.5" /> Reset
               </button>
@@ -624,10 +623,9 @@ export default function ApplicantApplicationsPage() {
           <Loader2 className="h-7 w-7 animate-spin text-primary/40" />
         </div>
       ) : total === 0 ? (
-        /* Empty state */
         <div className="flex flex-col items-center justify-center py-24 gap-5 text-muted-foreground">
           <div className="relative">
-            <div className="h-20 w-20 rounded-3xl bg-gradient-to-br from-primary/10 to-muted/30 border border-border flex items-center justify-center">
+            <div className="h-20 w-20 rounded-3xl bg-linear-to-br from-primary/10 to-muted/30 border border-border flex items-center justify-center">
               <FileText className="h-9 w-9 opacity-25" />
             </div>
             <div className="absolute -top-2 -right-2 h-7 w-7 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center">
@@ -636,7 +634,7 @@ export default function ApplicantApplicationsPage() {
           </div>
           <div className="text-center space-y-1">
             <p className="text-base font-bold text-foreground">No applications yet</p>
-            <p className="text-sm text-muted-foreground max-w-[240px]">Browse open positions and submit your first application to get started.</p>
+            <p className="text-sm text-muted-foreground max-w-60">Browse open positions and submit your first application to get started.</p>
           </div>
         </div>
       ) : filtered.length === 0 ? (
@@ -660,7 +658,7 @@ export default function ApplicantApplicationsPage() {
 
       {/* Loading overlay */}
       {detailLoading && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/30 animate-in fade-in duration-150">
+        <div className="fixed inset-0 z-60 flex items-center justify-center bg-black/30 animate-in fade-in duration-150">
           <div className="bg-card border border-border rounded-2xl shadow-2xl p-8 flex flex-col items-center gap-3">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
             <p className="text-sm text-muted-foreground">Loading details…</p>

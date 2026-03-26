@@ -44,7 +44,7 @@ export default function EmployeeLoginPage() {
       if (!payload) throw new Error("Invalid token received from server.");
       const rolePath = roleToPath(payload.role_name);
       if (rolePath === "/login") throw new Error(`Unknown role: ${payload.role_name}`);
-      const role = rolePath.replace("/", "");
+      const role = rolePath.replaceAll("/", "");
       if (role === "applicant") {
         setError("Applicants must use the Candidate Portal.");
         setIsLoading(false);
@@ -75,8 +75,8 @@ export default function EmployeeLoginPage() {
         style={{ background: "linear-gradient(135deg, #0f172a 0%, #172554 52%, #134e4a 100%)" }}>
         <div className="absolute -top-32 -right-32 h-96 w-96 rounded-full bg-white/5 blur-3xl" />
         <div className="absolute bottom-0 left-0 h-80 w-80 rounded-full bg-emerald-500/10 blur-3xl" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[500px] w-[500px] rounded-full border border-white/5" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[700px] w-[700px] rounded-full border border-white/[0.03]" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-125 w-125 rounded-full border border-white/5" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-175 w-175 rounded-full border border-white/3" />
 
         <div className="mb-auto relative z-10">
           <div className="flex items-center gap-3 mb-14">
