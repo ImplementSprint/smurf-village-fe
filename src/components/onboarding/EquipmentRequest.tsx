@@ -1,23 +1,24 @@
 import { useState } from "react";
-import { CheckCircle, XCircle, Clock, AlertCircle, Upload, FileText, Eye, MapPin, Truck, MessageSquare } from "lucide-react";
+import { CheckCircle, AlertCircle, Upload, FileText, Eye, MapPin, Truck } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { EquipmentItem, FileUpload, Remark } from "@/types/onboarding.types";
+import { EquipmentItem, FileUpload } from "@/types/onboarding.types";
+import { StatusIcon } from "./shared/StatusIcon";
+import { StatusBadge } from "./shared/StatusBadge";
+import { RemarksSection } from "./shared/RemarksSection";
+import { formatFileSize, validateFile as validateFileUtil } from "./shared/utils";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface EquipmentRequestProps {
   equipment: EquipmentItem[];
   onUpdateEquipment: (equipment: EquipmentItem[]) => void;
 }
 
-const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 const ALLOWED_FILE_TYPES = new Set([
   "application/pdf",
   "image/jpeg",
@@ -33,61 +34,6 @@ export function EquipmentRequest({ equipment, onUpdateEquipment }: Readonly<Equi
   const [deliveryMethod, setDeliveryMethod] = useState<"office" | "delivery">("office");
   const [deliveryAddress, setDeliveryAddress] = useState("");
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
-
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case "approved":
-        return <CheckCircle className="size-4 text-green-600" />;
-      case "rejected":
-        return <XCircle className="size-4 text-red-600" />;
-      case "for-review":
-        return <Clock className="size-4 text-orange-600" />;
-      case "submitted":
-        return <Clock className="size-4 text-blue-600" />;
-      case "issued":
-        return <AlertCircle className="size-4 text-purple-600" />;
-      default:
-        return <AlertCircle className="size-4 text-slate-400" />;
-    }
-  };
-
-  const getStatusBadge = (status: string) => {
-    const variants: { [key: string]: "default" | "secondary" | "destructive" | "outline" } = {
-      approved: "default",
-      rejected: "destructive",
-      "for-review": "secondary",
-      submitted: "outline",
-      issued: "secondary",
-      pending: "secondary",
-    };
-    
-    const labels: { [key: string]: string } = {
-      "for-review": "For Review",
-      issued: "Issued",
-      pending: "Pending",
-      submitted: "Submitted",
-      approved: "Approved",
-      rejected: "Rejected",
-    };
-    
-    return (
-      <Badge variant={variants[status] || "secondary"} className="whitespace-nowrap">
-        {labels[status] || status.charAt(0).toUpperCase() + status.slice(1)}
-      </Badge>
-    );
-  };
-
-  const validateFile = (file: File): string | null => {
-    if (file.size > MAX_FILE_SIZE) {
-      return `File size exceeds 10MB limit. Your file is ${(file.size / (1024 * 1024)).toFixed(2)}MB.`;
-    }
-
-    if (!ALLOWED_FILE_TYPES.has(file.type)) {
-      return "Invalid file type. Only PDF, JPG, PNG, DOC, and DOCX files are allowed.";
-    }
-
-    return null;
-  };
 
   const handleCheckboxChange = (equipmentId: string, checked: boolean) => {
     if (checked) {
@@ -141,7 +87,7 @@ export function EquipmentRequest({ equipment, onUpdateEquipment }: Readonly<Equi
     const file = event.target.files?.[0];
     if (!file) return;
 
-    const error = validateFile(file);
+    const error = validateFileUtil(file, ALLOWED_FILE_TYPES, "Invalid file type. Only PDF, JPG, PNG, DOC, and DOCX files are allowed.");
     if (error) {
       setUploadErrors({ ...uploadErrors, [equipmentId]: error });
       return;
@@ -181,12 +127,6 @@ export function EquipmentRequest({ equipment, onUpdateEquipment }: Readonly<Equi
       return item;
     });
     onUpdateEquipment(updatedEquipment);
-  };
-
-  const formatFileSize = (bytes: number) => {
-    if (bytes < 1024) return bytes + " B";
-    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(2) + " KB";
-    return (bytes / (1024 * 1024)).toFixed(2) + " MB";
   };
 
   const pendingSelectedCount = equipment.filter(
@@ -262,8 +202,8 @@ export function EquipmentRequest({ equipment, onUpdateEquipment }: Readonly<Equi
               </TableCell>
               <TableCell>
                 <div className="flex items-center gap-2">
-                  {getStatusIcon(item.status)}
-                  {getStatusBadge(item.status)}
+                  <StatusIcon status={item.status} />
+                  <StatusBadge status={item.status} />
                 </div>
               </TableCell>
               <TableCell>
@@ -470,48 +410,7 @@ export function EquipmentRequest({ equipment, onUpdateEquipment }: Readonly<Equi
       )}
 
       {/* Remarks Section */}
-      {(() => {
-        const allRemarks: Remark[] = [];
-        equipment.forEach(item => {
-          if (item.remarksHistory && item.remarksHistory.length > 0) {
-            allRemarks.push(...item.remarksHistory);
-          }
-        });
-        const sortedRemarks = allRemarks.toSorted((a, b) => b.date.getTime() - a.date.getTime());
-        
-        return sortedRemarks.length > 0 ? (
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <MessageSquare className="size-5" />
-                Remarks & Feedback
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ScrollArea className="max-h-75">
-                <div className="space-y-3">
-                  {sortedRemarks.map((remark) => (
-                    <div key={remark.id} className="p-3 bg-slate-50 rounded-lg border">
-                      <div className="flex items-center justify-between mb-1">
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm font-medium text-slate-700">{remark.author}</span>
-                          <Badge variant="outline" className="text-xs">
-                            {remark.category}
-                          </Badge>
-                        </div>
-                        <span className="text-xs text-slate-500">
-                          {remark.date.toLocaleString()}
-                        </span>
-                      </div>
-                      <p className="text-sm text-slate-600">{remark.message}</p>
-                    </div>
-                  ))}
-                </div>
-              </ScrollArea>
-            </CardContent>
-          </Card>
-        ) : null;
-      })()}
+      <RemarksSection items={equipment} />
 
       {/* Submit Selected Items Button */}
       {pendingSelectedCount > 0 && (

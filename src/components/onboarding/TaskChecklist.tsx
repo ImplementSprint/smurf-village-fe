@@ -1,14 +1,16 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle, XCircle, Clock, AlertCircle, Video, MessageSquare } from "lucide-react";
-import { TaskItem, Remark } from "@/types/onboarding.types";
+import { CheckCircle, Clock, AlertCircle, Video } from "lucide-react";
+import { TaskItem } from "@/types/onboarding.types";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { StatusIcon } from "./shared/StatusIcon";
+import { StatusBadge } from "./shared/StatusBadge";
+import { RemarksSection } from "./shared/RemarksSection";
 
 interface TaskChecklistProps {
   tasks: TaskItem[];
@@ -22,36 +24,6 @@ export function TaskChecklist({ tasks, onUpdateTasks }: Readonly<TaskChecklistPr
   const [videoWatched, setVideoWatched] = useState(false);
   const [formData, setFormData] = useState<{ [key: string]: string }>({});
   const [acknowledged, setAcknowledged] = useState(false);
-
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case "approved":
-        return <CheckCircle className="size-4 text-green-600" />;
-      case "rejected":
-        return <XCircle className="size-4 text-red-600" />;
-      case "for-review":
-        return <Clock className="size-4 text-orange-600" />;
-      case "submitted":
-        return <Clock className="size-4 text-blue-600" />;
-      default:
-        return <AlertCircle className="size-4 text-slate-400" />;
-    }
-  };
-
-  const getStatusBadge = (status: string) => {
-    const variants: { [key: string]: "default" | "secondary" | "destructive" | "outline" } = {
-      approved: "default",
-      rejected: "destructive",
-      "for-review": "secondary",
-      submitted: "outline",
-      pending: "secondary",
-    };
-    return (
-      <Badge variant={variants[status] || "secondary"} className="whitespace-nowrap">
-        {status === "for-review" ? "For Review" : status.charAt(0).toUpperCase() + status.slice(1)}
-      </Badge>
-    );
-  };
 
   const handleOpenDialog = (task: TaskItem) => {
     setSelectedTask(task);
@@ -163,8 +135,8 @@ export function TaskChecklist({ tasks, onUpdateTasks }: Readonly<TaskChecklistPr
               </TableCell>
               <TableCell>
                 <div className="flex items-center gap-2">
-                  {getStatusIcon(task.status)}
-                  {getStatusBadge(task.status)}
+                  <StatusIcon status={task.status} />
+                  <StatusBadge status={task.status} />
                 </div>
               </TableCell>
             </TableRow>
@@ -173,48 +145,7 @@ export function TaskChecklist({ tasks, onUpdateTasks }: Readonly<TaskChecklistPr
       </Table>
 
       {/* Remarks Section */}
-      {(() => {
-        const allRemarks: Remark[] = [];
-        tasks.forEach(task => {
-          if (task.remarksHistory && task.remarksHistory.length > 0) {
-            allRemarks.push(...task.remarksHistory);
-          }
-        });
-        const sortedRemarks = allRemarks.toSorted((a, b) => b.date.getTime() - a.date.getTime());
-        
-        return sortedRemarks.length > 0 ? (
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <MessageSquare className="size-5" />
-                Remarks & Feedback
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ScrollArea className="max-h-75">
-                <div className="space-y-3">
-                  {sortedRemarks.map((remark) => (
-                    <div key={remark.id} className="p-3 bg-slate-50 rounded-lg border">
-                      <div className="flex items-center justify-between mb-1">
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm font-medium text-slate-700">{remark.author}</span>
-                          <Badge variant="outline" className="text-xs">
-                            {remark.category}
-                          </Badge>
-                        </div>
-                        <span className="text-xs text-slate-500">
-                          {remark.date.toLocaleString()}
-                        </span>
-                      </div>
-                      <p className="text-sm text-slate-600">{remark.message}</p>
-                    </div>
-                  ))}
-                </div>
-              </ScrollArea>
-            </CardContent>
-          </Card>
-        ) : null;
-      })()}
+      <RemarksSection items={tasks} />
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-w-2xl">

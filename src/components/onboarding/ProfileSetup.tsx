@@ -4,10 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Badge } from "@/components/ui/badge";
-import { CheckCircle, XCircle, AlertCircle } from "lucide-react";
+import { CheckCircle, XCircle } from "lucide-react";
 import { ProfileData } from "@/types/onboarding.types";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { DetailedStatusBadge } from "./shared/StatusBadge";
 
 interface ProfileSetupProps {
   profile: ProfileData;
@@ -57,23 +57,6 @@ export function ProfileSetup({ profile, onUpdate }: Readonly<ProfileSetupProps>)
     alert("Profile submitted successfully!");
   };
 
-  const getStatusBadge = () => {
-    switch (profile.status) {
-      case "pending":
-        return <Badge variant="outline" className="bg-slate-100 text-slate-700"><AlertCircle className="size-3 mr-1" />Incomplete</Badge>;
-      case "submitted":
-        return <Badge variant="outline" className="bg-slate-900 text-white"><CheckCircle className="size-3 mr-1" />Submitted</Badge>;
-      case "for-review":
-        return <Badge variant="outline" className="bg-amber-100 text-amber-800"><AlertCircle className="size-3 mr-1" />For Review</Badge>;
-      case "approved":
-        return <Badge variant="outline" className="bg-teal-100 text-teal-800"><CheckCircle className="size-3 mr-1" />Approved</Badge>;
-      case "rejected":
-        return <Badge variant="outline" className="bg-red-100 text-red-800"><XCircle className="size-3 mr-1" />Rejected</Badge>;
-      default:
-        return null;
-    }
-  };
-
   const isSubmitted = profile.status !== "pending";
 
   return (
@@ -83,7 +66,7 @@ export function ProfileSetup({ profile, onUpdate }: Readonly<ProfileSetupProps>)
           <h3 className="font-semibold">Create Your Profile</h3>
           <p className="text-sm text-gray-600">Complete your profile information</p>
         </div>
-        {getStatusBadge()}
+        <DetailedStatusBadge status={profile.status} pendingLabel="Incomplete" />
       </div>
 
       {profile.status === "rejected" && profile.remarksHistory && profile.remarksHistory.length > 0 && (

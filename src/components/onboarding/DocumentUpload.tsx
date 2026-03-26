@@ -1,79 +1,38 @@
 import { useState } from "react";
-import { CheckCircle, XCircle, Clock, AlertCircle, Upload, FileText, ExternalLink, X, MessageSquare, History, FileUp, MoreVertical } from "lucide-react";
+import { AlertCircle, Upload, FileText, ExternalLink, X, History, FileUp, MoreVertical } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { DocumentItem, FileUpload, Remark } from "@/types/onboarding.types";
+import { DocumentItem, FileUpload } from "@/types/onboarding.types";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { StatusIcon } from "./shared/StatusIcon";
+import { StatusBadge } from "./shared/StatusBadge";
+import { RemarksSection } from "./shared/RemarksSection";
+import { formatFileSize, validateFile } from "./shared/utils";
 
 interface DocumentUploadProps {
   documents: DocumentItem[];
   onUpdate: (docs: DocumentItem[]) => void;
 }
 
-const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 const ALLOWED_FILE_TYPES = new Set(["application/pdf"]);
 
 export function DocumentUpload({ documents, onUpdate }: Readonly<DocumentUploadProps>) {
   const [uploadErrors, setUploadErrors] = useState<{ [key: string]: string }>({});
   const [viewingSample, setViewingSample] = useState<{ title: string; url: string } | null>(null);
 
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case "approved":
-        return <CheckCircle className="size-4 text-green-600" />;
-      case "rejected":
-        return <XCircle className="size-4 text-red-600" />;
-      case "for-review":
-        return <Clock className="size-4 text-orange-600" />;
-      case "submitted":
-        return <Clock className="size-4 text-blue-600" />;
-      default:
-        return <AlertCircle className="size-4 text-slate-400" />;
-    }
-  };
-
-  const getStatusBadge = (status: string) => {
-    const variants: { [key: string]: "default" | "secondary" | "destructive" | "outline" } = {
-      approved: "default",
-      rejected: "destructive",
-      "for-review": "secondary",
-      submitted: "outline",
-      pending: "secondary",
-    };
-    return (
-      <Badge variant={variants[status] || "secondary"} className="whitespace-nowrap">
-        {status === "for-review" ? "For Review" : status.charAt(0).toUpperCase() + status.slice(1)}
-      </Badge>
-    );
-  };
-
-  const validateFile = (file: File): string | null => {
-    if (file.size > MAX_FILE_SIZE) {
-      return `File size exceeds 10MB limit. Your file is ${(file.size / (1024 * 1024)).toFixed(2)}MB.`;
-    }
-
-    if (!ALLOWED_FILE_TYPES.has(file.type)) {
-      return "Invalid file type. Only PDF files are allowed.";
-    }
-
-    return null;
-  };
-
   const handleFileUpload = (documentId: string, event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    const error = validateFile(file);
+    const error = validateFile(file, ALLOWED_FILE_TYPES, "Invalid file type. Only PDF files are allowed.");
     if (error) {
       setUploadErrors({ ...uploadErrors, [documentId]: error });
       event.target.value = ""; // Reset input
@@ -135,26 +94,6 @@ export function DocumentUpload({ documents, onUpdate }: Readonly<DocumentUploadP
     onUpdate(updatedDocuments);
   };
 
-  const formatFileSize = (bytes: number) => {
-    if (bytes < 1024) return bytes + " B";
-    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(2) + " KB";
-    return (bytes / (1024 * 1024)).toFixed(2) + " MB";
-  };
-
-  // Get all remarks from all documents
-  const getAllRemarks = (): Remark[] => {
-    const allRemarks: Remark[] = [];
-    documents.forEach(doc => {
-      if (doc.remarksHistory && doc.remarksHistory.length > 0) {
-        allRemarks.push(...doc.remarksHistory);
-      }
-    });
-    // Sort by date, most recent first
-    return allRemarks.sort((a, b) => b.date.getTime() - a.date.getTime());
-  };
-
-  const allRemarks = getAllRemarks();
-
   return (
     <div className="space-y-4">
       <Table>
@@ -195,8 +134,8 @@ export function DocumentUpload({ documents, onUpdate }: Readonly<DocumentUploadP
               </TableCell>
               <TableCell>
                 <div className="flex items-center gap-2">
-                  {getStatusIcon(doc.status)}
-                  {getStatusBadge(doc.status)}
+                  <StatusIcon status={doc.status} />
+                  <StatusBadge status={doc.status} />
                 </div>
               </TableCell>
               <TableCell>
@@ -307,7 +246,7 @@ export function DocumentUpload({ documents, onUpdate }: Readonly<DocumentUploadP
                                         {formatFileSize(file.size)} • {file.uploadDate.toLocaleString()}
                                       </p>
                                     </div>
-                                    {getStatusBadge(file.status)}
+                                    <StatusBadge status={file.status} />
                                   </div>
                                 ))}
                               </div>
@@ -335,38 +274,7 @@ export function DocumentUpload({ documents, onUpdate }: Readonly<DocumentUploadP
       )}
 
       {/* Remarks Section */}
-      {allRemarks.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <MessageSquare className="size-5" />
-              Remarks & Feedback
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ScrollArea className="max-h-75">
-              <div className="space-y-3">
-                {allRemarks.map((remark) => (
-                  <div key={remark.id} className="p-3 bg-slate-50 rounded-lg border">
-                    <div className="flex items-center justify-between mb-1">
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-medium text-slate-700">{remark.author}</span>
-                        <Badge variant="outline" className="text-xs">
-                          {remark.category}
-                        </Badge>
-                      </div>
-                      <span className="text-xs text-slate-500">
-                        {remark.date.toLocaleString()}
-                      </span>
-                    </div>
-                    <p className="text-sm text-slate-600">{remark.message}</p>
-                  </div>
-                ))}
-              </div>
-            </ScrollArea>
-          </CardContent>
-        </Card>
-      )}
+      <RemarksSection items={documents} />
 
       <div className="text-xs text-slate-500 bg-slate-50 p-3 rounded border">
         <strong>File Requirements:</strong> PDF format only. Maximum file size: 10MB. Only one file per document.
