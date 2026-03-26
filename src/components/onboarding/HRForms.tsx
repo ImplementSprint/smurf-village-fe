@@ -22,7 +22,7 @@ export function HRForms({ forms, onUpdate }: Readonly<HRFormsProps>) {
     setFormDataState(prev => ({
       ...prev,
       [formId]: {
-        ...(prev[formId] || {}),
+        ...prev[formId],
         [field]: value,
       },
     }));
@@ -161,7 +161,7 @@ export function HRForms({ forms, onUpdate }: Readonly<HRFormsProps>) {
                     <Alert className="bg-red-50 border-red-200">
                       <XCircle className="size-4 text-red-600" />
                       <AlertDescription className="text-red-800">
-                        <strong>Rejected:</strong> {form.remarksHistory[form.remarksHistory.length - 1].message}
+                        <strong>Rejected:</strong> {form.remarksHistory.at(-1)!.message}
                       </AlertDescription>
                     </Alert>
                   )}

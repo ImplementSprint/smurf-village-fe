@@ -18,14 +18,14 @@ interface EquipmentRequestProps {
 }
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
-const ALLOWED_FILE_TYPES = [
+const ALLOWED_FILE_TYPES = new Set([
   "application/pdf",
   "image/jpeg",
   "image/jpg",
   "image/png",
   "application/msword",
   "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-];
+]);
 
 export function EquipmentRequest({ equipment, onUpdateEquipment }: Readonly<EquipmentRequestProps>) {
   const [uploadErrors, setUploadErrors] = useState<{ [key: string]: string }>({});
@@ -82,7 +82,7 @@ export function EquipmentRequest({ equipment, onUpdateEquipment }: Readonly<Equi
       return `File size exceeds 10MB limit. Your file is ${(file.size / (1024 * 1024)).toFixed(2)}MB.`;
     }
 
-    if (!ALLOWED_FILE_TYPES.includes(file.type)) {
+    if (!ALLOWED_FILE_TYPES.has(file.type)) {
       return "Invalid file type. Only PDF, JPG, PNG, DOC, and DOCX files are allowed.";
     }
 

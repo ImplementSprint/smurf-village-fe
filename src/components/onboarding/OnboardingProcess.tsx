@@ -123,7 +123,7 @@ export function OnboardingProcess({
         <Alert className="border-orange-500 bg-orange-50">
           <AlertCircle className="size-4 text-orange-600" />
           <AlertDescription className="text-orange-800">
-            <strong>Urgent!</strong> Only {daysRemaining} day{daysRemaining !== 1 ? 's' : ''} remaining until your deadline.
+            <strong>Urgent!</strong> Only {daysRemaining} day{daysRemaining === 1 ? '' : 's'} remaining until your deadline.
           </AlertDescription>
         </Alert>
       );

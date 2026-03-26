@@ -21,9 +21,7 @@ interface DocumentUploadProps {
 }
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
-const ALLOWED_FILE_TYPES = [
-  "application/pdf",
-];
+const ALLOWED_FILE_TYPES = new Set(["application/pdf"]);
 
 export function DocumentUpload({ documents, onUpdate }: Readonly<DocumentUploadProps>) {
   const [uploadErrors, setUploadErrors] = useState<{ [key: string]: string }>({});
@@ -64,7 +62,7 @@ export function DocumentUpload({ documents, onUpdate }: Readonly<DocumentUploadP
       return `File size exceeds 10MB limit. Your file is ${(file.size / (1024 * 1024)).toFixed(2)}MB.`;
     }
 
-    if (!ALLOWED_FILE_TYPES.includes(file.type)) {
+    if (!ALLOWED_FILE_TYPES.has(file.type)) {
       return "Invalid file type. Only PDF files are allowed.";
     }
 

@@ -90,7 +90,7 @@ export function ProfileSetup({ profile, onUpdate }: Readonly<ProfileSetupProps>)
         <Alert className="bg-red-50 border-red-200">
           <XCircle className="size-4 text-red-600" />
           <AlertDescription className="text-red-800">
-            <strong>Rejected:</strong> {profile.remarksHistory[profile.remarksHistory.length - 1].message}
+            <strong>Rejected:</strong> {profile.remarksHistory.at(-1)!.message}
           </AlertDescription>
         </Alert>
       )}

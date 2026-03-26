@@ -437,7 +437,7 @@ export default function HROnboardingOfficerView() {
               </TableHeader>
               <TableBody>
                 {filteredEmployees.map((employee) => {
-                  const daysLeft = Math.ceil((employee.deadline.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
+                  const daysLeft = Math.ceil((employee.deadline.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
                   return (
                     <TableRow key={employee.id}>
                       <TableCell className="font-medium">{employee.name}</TableCell>
@@ -456,8 +456,8 @@ export default function HROnboardingOfficerView() {
                           {employee.deadline.toLocaleDateString()}
                           {employee.status !== "approved" && (() => {
                             const absDays = Math.abs(daysLeft);
-                            const leftPlural = daysLeft !== 1 ? "s" : "";
-                            const overPlural = absDays !== 1 ? "s" : "";
+                            const leftPlural = daysLeft === 1 ? "" : "s";
+                            const overPlural = absDays === 1 ? "" : "s";
                             const label = daysLeft >= 0
                               ? `${daysLeft} day${leftPlural} left`
                               : `${absDays} day${overPlural} overdue`;

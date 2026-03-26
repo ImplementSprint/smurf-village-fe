@@ -179,7 +179,7 @@ export default function SystemAdminView() {
       name: newTemplateName,
       department: newTemplateDepartment,
       position: newTemplatePosition,
-      deadlineDays: parseInt(newTemplateDeadline),
+      deadlineDays: Number.parseInt(newTemplateDeadline),
       documents: [],
       tasks: [],
       equipment: [],
