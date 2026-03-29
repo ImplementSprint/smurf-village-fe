@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button"
 
 function AlertDialog({
   ...props
-}: Readonly<React.ComponentProps<typeof AlertDialogPrimitive.Root>>) {
+}: React.ComponentProps<typeof AlertDialogPrimitive.Root>) {
   return <AlertDialogPrimitive.Root data-slot="alert-dialog" {...props} />
 }
 
@@ -22,7 +22,7 @@ function AlertDialogTrigger({
 
 function AlertDialogPortal({
   ...props
-}: Readonly<React.ComponentProps<typeof AlertDialogPrimitive.Portal>>) {
+}: React.ComponentProps<typeof AlertDialogPrimitive.Portal>) {
   return (
     <AlertDialogPrimitive.Portal data-slot="alert-dialog-portal" {...props} />
   )

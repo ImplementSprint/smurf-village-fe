@@ -8,13 +8,13 @@ import { cn } from "@/lib/utils"
 
 function DropdownMenu({
   ...props
-}: Readonly<React.ComponentProps<typeof DropdownMenuPrimitive.Root>>) {
+}: React.ComponentProps<typeof DropdownMenuPrimitive.Root>) {
   return <DropdownMenuPrimitive.Root data-slot="dropdown-menu" {...props} />
 }
 
 function DropdownMenuPortal({
   ...props
-}: Readonly<React.ComponentProps<typeof DropdownMenuPrimitive.Portal>>) {
+}: React.ComponentProps<typeof DropdownMenuPrimitive.Portal>) {
   return (
     <DropdownMenuPrimitive.Portal data-slot="dropdown-menu-portal" {...props} />
   )
@@ -61,7 +61,7 @@ function DropdownMenuGroup({
 
 function DropdownMenuSub({
   ...props
-}: Readonly<React.ComponentProps<typeof DropdownMenuPrimitive.Sub>>) {
+}: React.ComponentProps<typeof DropdownMenuPrimitive.Sub>) {
   return <DropdownMenuPrimitive.Sub data-slot="dropdown-menu-sub" {...props} />
 }
 
