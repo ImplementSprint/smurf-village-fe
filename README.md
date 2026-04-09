@@ -12,7 +12,7 @@ npm run lint
 npm run build
 ```
 
-## CI/CD Setup Require
+## CI/CD Setup Required
 
 This repository does **not** contain its own workflow definitions.  
 Instead, `.github/workflows/master-pipeline-fe-single.yml` calls the reusable workflows hosted in `CICD-Fe_Single-test`.
