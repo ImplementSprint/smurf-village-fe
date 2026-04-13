@@ -8,8 +8,10 @@
     "start": "next start",
     "lint": "eslint",
     "test": "jest --coverage",
+    "posttest": "npm run coverage:normalize",
     "test:watch": "jest --watch",
-    "test:e2e": "tsx tests/e2e/playwright-e2e.ts"
+    "test:e2e": "tsx tests/e2e/playwright-e2e.ts",
+    "coverage:normalize": "node scripts/normalize-lcov.mjs"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
