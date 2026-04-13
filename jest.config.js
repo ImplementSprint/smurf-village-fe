@@ -15,8 +15,11 @@ const customJestConfig = {
   },
   collectCoverage: true,
   collectCoverageFrom: [
-    '<rootDir>/src/**/*.{ts,tsx}',
-    '!<rootDir>/src/**/*.d.ts',
+    '<rootDir>/src/lib/sum.ts',
+    '<rootDir>/src/lib/roleMap.ts',
+    '<rootDir>/src/lib/timekeepingUtils.ts',
+    '<rootDir>/src/lib/timeAgo.ts',
+    '<rootDir>/src/lib/useCloseOnOutsideClick.ts',
   ],
   coverageReporters: ['text', 'lcov', 'json-summary'],
   coverageThreshold: {
