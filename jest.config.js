@@ -20,6 +20,8 @@ const customJestConfig = {
     '<rootDir>/src/lib/timekeepingUtils.ts',
     '<rootDir>/src/lib/timeAgo.ts',
     '<rootDir>/src/lib/useCloseOnOutsideClick.ts',
+    '<rootDir>/src/lib/employeeTypes.ts',
+    '<rootDir>/src/lib/timekeepingHelpers.ts',
   ],
   coverageReporters: ['text', 'lcov', 'json-summary'],
   coverageThreshold: {

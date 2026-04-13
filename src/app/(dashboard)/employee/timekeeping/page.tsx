@@ -528,7 +528,6 @@ export default function EmployeeTimekeepingPage() {
   const [actionLoading, setActionLoading]   = useState(false);
   const [actionError, setActionError]       = useState<string | null>(null);
   const [location, setLocation]             = useState<{ latitude: number; longitude: number } | null>(null);
-  const [locationError, setLocationError]   = useState<string | null>(null);
 
   // Modal state
   const [modal, setModal] = useState<null | "time-in" | "time-out" | "absence">(null);
@@ -554,18 +553,20 @@ export default function EmployeeTimekeepingPage() {
     return () => clearInterval(t);
   }, []);
 
-  // GPS on mount
-  useEffect(() => {
+  // Request geolocation only when the user confirms a punch action.
+  async function getCurrentLocation(): Promise<{ latitude: number; longitude: number }> {
     if (!navigator.geolocation) {
-      setLocationError("Geolocation is not supported by your browser.");
-      return;
+      throw new Error("Geolocation is not supported by your browser.");
     }
-    // Geolocation is required to verify employee clock-in/out location against the assigned worksite.
-    navigator.geolocation.getCurrentPosition(
-      pos => setLocation({ latitude: pos.coords.latitude, longitude: pos.coords.longitude }),
-      () => setLocationError("Location access denied. Please allow location to clock in or out.")
-    );
-  }, []);
+
+    return await new Promise((resolve, reject) => {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => resolve({ latitude: pos.coords.latitude, longitude: pos.coords.longitude }),
+        () => reject(new Error("Location access denied. Please allow location to clock in or out.")),
+        { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+      );
+    });
+  }
 
   // Fetch status + timesheet
   useEffect(() => {
@@ -599,15 +600,14 @@ export default function EmployeeTimekeepingPage() {
   }
 
   async function handleConfirmPunch(type: "time-in" | "time-out", signOut = false) {
-    if (!location) {
-      setActionError(locationError || "Location not available. Please allow location access.");
-      setModal(null);
-      return;
-    }
     setActionLoading(true);
     setActionError(null);
     try {
-      await executePunch(type, location);
+      // Geolocation is required to verify employee clock-in/out location against the assigned worksite.
+      const coords = await getCurrentLocation();
+      setLocation(coords);
+
+      await executePunch(type, coords);
       setModal(null);
       if (signOut) {
         await logoutApi();
@@ -910,7 +910,7 @@ export default function EmployeeTimekeepingPage() {
               <div className="flex justify-between py-2 border-b border-slate-100">
                 <span className="text-muted-foreground">Location</span>
                 <span className="font-medium text-xs">
-                  {location ? `${location.latitude.toFixed(4)}, ${location.longitude.toFixed(4)}` : "Not available"}
+                  {location ? `${location.latitude.toFixed(4)}, ${location.longitude.toFixed(4)}` : "Will request on confirm"}
                 </span>
               </div>
             </div>
@@ -955,7 +955,7 @@ export default function EmployeeTimekeepingPage() {
               <div className="flex justify-between py-2 border-b border-slate-100">
                 <span className="text-muted-foreground">Location</span>
                 <span className="font-medium text-xs">
-                  {location ? `${location.latitude.toFixed(4)}, ${location.longitude.toFixed(4)}` : "Not available"}
+                  {location ? `${location.latitude.toFixed(4)}, ${location.longitude.toFixed(4)}` : "Will request on confirm"}
                 </span>
               </div>
             </div>
@@ -1002,7 +1002,7 @@ export default function EmployeeTimekeepingPage() {
                 {location ? (
                   <span className="text-white/90">{location.latitude.toFixed(4)}, {location.longitude.toFixed(4)}</span>
                 ) : (
-                  <span className="text-white/50">{locationError ?? "Acquiring location..."}</span>
+                  <span className="text-white/50">Location is requested when you clock in/out.</span>
                 )}
               </div>
 
