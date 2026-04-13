@@ -12,6 +12,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { authFetch } from "@/lib/authApi";
 import { API_BASE_URL } from "@/lib/api";
+import {
+  parseTs, toDateString, formatDisplayDate, isToday, formatTime,
+  computeHoursDecimal, isLate,
+} from "@/lib/timekeepingHelpers";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -92,50 +96,12 @@ type ViewMode = "day" | "week" | "month" | "custom";
 type StatusFilter = RosterEntry["status"] | "all";
 type TabMode = "today" | "schedule" | "attendance";
 
-// ─── Date helpers ─────────────────────────────────────────────────────────────
-
-function parseTs(ts: string): Date {
-  return new Date(ts.includes("Z") || ts.includes("+") ? ts : ts + "Z");
-}
-
-function toDateString(date: Date): string {
-  return date.toLocaleDateString("en-CA", { timeZone: "Asia/Manila" });
-}
-
-function formatDisplayDate(date: Date): string {
-  return date.toLocaleDateString("en-US", {
-    weekday: "short", month: "long", day: "numeric", year: "numeric",
-    timeZone: "Asia/Manila",
-  });
-}
-
-function isToday(date: Date): boolean {
-  return toDateString(date) === toDateString(new Date());
-}
-
-function formatTime(timestamp: string | null): string {
-  if (!timestamp) return "—";
-  return parseTs(timestamp).toLocaleTimeString("en-US", {
-    hour: "2-digit", minute: "2-digit", timeZone: "Asia/Manila",
-  });
-}
+// ─── Date helpers (hr/timekeeping-specific) ──────────────────────────────────
 
 function formatHoursLabel(timeIn: string | null, timeOut: string | null): string {
   if (!timeIn || !timeOut) return "—";
   const diff = (parseTs(timeOut).getTime() - parseTs(timeIn).getTime()) / 3600000;
   return `${diff.toFixed(2)}h`;
-}
-
-function computeHoursDecimal(timeIn: string | null, timeOut: string | null): number | null {
-  if (!timeIn || !timeOut) return null;
-  return (parseTs(timeOut).getTime() - parseTs(timeIn).getTime()) / 3600000;
-}
-
-function isLate(timeIn: string): boolean {
-  const h = Number.parseInt(
-    parseTs(timeIn).toLocaleString("en-US", { hour: "numeric", hour12: false, timeZone: "Asia/Manila" }), 10
-  );
-  return h >= 9;
 }
 
 function getWeekRange(): { from: string; to: string; label: string } {

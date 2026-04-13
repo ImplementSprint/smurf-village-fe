@@ -560,6 +560,7 @@ export default function EmployeeTimekeepingPage() {
       setLocationError("Geolocation is not supported by your browser.");
       return;
     }
+    // Geolocation is required to verify employee clock-in/out location against the assigned worksite.
     navigator.geolocation.getCurrentPosition(
       pos => setLocation({ latitude: pos.coords.latitude, longitude: pos.coords.longitude }),
       () => setLocationError("Location access denied. Please allow location to clock in or out.")

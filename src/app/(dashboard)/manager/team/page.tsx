@@ -8,6 +8,12 @@ import { API_BASE_URL } from "@/lib/api";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { EmployeeStatusBadge } from "@/components/ui/employee-status-badge";
+import { EmployeeStatCard } from "@/components/ui/employee-stat-card";
+import {
+  type Employee, type Role, type Department, type Stats,
+  STATUS_STYLES, apiFetch, formatDate, formatDateTime, formatInviteCountdown,
+} from "@/lib/employeeTypes";
 import {
   Search, MoreHorizontal, X,
   ChevronLeft, ChevronRight, UserX, UserCheck,
@@ -18,126 +24,11 @@ import {
 import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
 
-// ─── Types ────────────────────────────────────────────────────────────────────
-
-interface Role {
-  role_id: string;
-  role_name: string;
-}
-
-interface Department {
-  department_id: string;
-  department_name: string;
-}
-
-interface Employee {
-  user_id: string;
-  employee_id: string;
-  username: string;
-  first_name: string;
-  last_name: string;
-  email: string;
-  company_id: string | null;
-  role_id: string | null;
-  department_id: string | null;
-  start_date: string | null;
-  account_status: "Active" | "Inactive" | "Pending";
-  last_login: string | null;
-  invite_expires_at: string | null;
-}
-
-interface Stats {
-  total: number;
-}
-
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const ITEMS_PER_PAGE = 8;
 
-const STATUS_STYLES: Record<string, string> = {
-  Active:   "bg-green-100 text-green-700 border-green-200",
-  Inactive: "bg-red-100 text-red-700 border-red-200",
-  Pending:  "bg-amber-100 text-amber-700 border-amber-200",
-};
-
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-
-async function apiFetch<T>(path: string, init: RequestInit = {}): Promise<T> {
-  const res = await authFetch(`${API_BASE_URL}${path}`, {
-    headers: { "Content-Type": "application/json" },
-    ...init,
-  });
-  const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error((data as Record<string, unknown>)?.message as string || "Request failed");
-  return data as T;
-}
-
 // ─── Sub-components ───────────────────────────────────────────────────────────
-
-function StatCard({ label, value, sub, color }: { readonly label: string; readonly value: number; readonly sub: string; readonly color: string }) {
-  return (
-    <Card className="border-border shadow-sm">
-      <CardContent className="p-5">
-        <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">{label}</p>
-        <p className={`text-2xl font-bold ${color}`}>{value}</p>
-        <p className="text-xs text-muted-foreground mt-0.5">{sub}</p>
-      </CardContent>
-    </Card>
-  );
-}
-
-function StatusBadge({ status }: { readonly status: string }) {
-  const style = STATUS_STYLES[status] ?? "bg-gray-100 text-gray-700 border-gray-200";
-  return (
-    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase border ${style}`}>
-      {status}
-    </span>
-  );
-}
-
-function formatLastLogin(value: string | null) {
-  if (!value) return "Never";
-  const parsed = new Date(value);
-  if (Number.isNaN(parsed.getTime())) return "Unknown";
-  return parsed.toLocaleString("en-US", {
-    year: "numeric", month: "short", day: "numeric",
-    hour: "numeric", minute: "2-digit",
-  });
-}
-
-function formatInviteDeadline(value: string | null) {
-  if (!value) return "No active invite";
-  const parsed = new Date(value);
-  if (Number.isNaN(parsed.getTime())) return "Unknown";
-  return parsed.toLocaleString("en-US", {
-    year: "numeric", month: "short", day: "numeric",
-    hour: "numeric", minute: "2-digit",
-  });
-}
-
-function formatDate(value: string | null) {
-  if (!value) return "—";
-  const parsed = new Date(value);
-  if (Number.isNaN(parsed.getTime())) return "Unknown";
-  return parsed.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
-}
-
-function formatInviteCountdown(expiresAt: string | null, now: number) {
-  if (!expiresAt) return "No active invite";
-  const expiry = new Date(expiresAt).getTime();
-  if (Number.isNaN(expiry)) return "Unknown";
-  const diff = expiry - now;
-  if (diff <= 0) return "Expired";
-  const totalSeconds = Math.floor(diff / 1000);
-  const days = Math.floor(totalSeconds / 86400);
-  const hours = Math.floor((totalSeconds % 86400) / 3600);
-  const minutes = Math.floor((totalSeconds % 3600) / 60);
-  const seconds = totalSeconds % 60;
-  if (days > 0) return `${days}d ${hours}h ${minutes}m`;
-  if (hours > 0) return `${hours}h ${minutes}m ${seconds}s`;
-  if (minutes > 0) return `${minutes}m ${seconds}s`;
-  return `${seconds}s`;
-}
 
 // Row action dropdown
 function MenuRow({ icon: Icon, label, onClick, color }: {
@@ -354,7 +245,7 @@ function ViewProfileSheet({
             </div>
             <div>
               <p className="font-bold text-lg leading-tight">{employee.first_name} {employee.last_name}</p>
-              <StatusBadge status={employee.account_status} />
+              <EmployeeStatusBadge status={employee.account_status} />
             </div>
           </div>
 
@@ -364,12 +255,12 @@ function ViewProfileSheet({
           <ProfileField icon={Shield}    label="Role"        value={roleName} />
           <ProfileField icon={Building2} label="Department"  value={deptName} />
           <ProfileField icon={Calendar}  label="Start Date"  value={formatDate(employee.start_date)} />
-          <ProfileField icon={Calendar}  label="Last Login"  value={formatLastLogin(employee.last_login)} />
+          <ProfileField icon={Calendar}  label="Last Login"  value={formatDateTime(employee.last_login)} />
 
           {employee.account_status === "Pending" && employee.invite_expires_at && (
             <div className="mt-4 p-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg">
               <p className="text-xs font-bold text-amber-700 dark:text-amber-400 uppercase tracking-widest mb-0.5">Invite Expiry</p>
-              <p className="text-sm text-amber-800 dark:text-amber-300">{formatInviteDeadline(employee.invite_expires_at)}</p>
+              <p className="text-sm text-amber-800 dark:text-amber-300">{formatDateTime(employee.invite_expires_at, "No active invite")}</p>
             </div>
           )}
         </div>
@@ -750,10 +641,10 @@ export default function ManagerTeamPage() {
 
       {/* Stats */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <StatCard label="Total Members" value={stats?.total ?? 0}  sub="All accounts"         color="text-foreground" />
-        <StatCard label="Active"        value={activeCount}         sub="Currently active"     color="text-green-600" />
-        <StatCard label="Pending"       value={pendingCount}        sub="Awaiting activation"  color="text-amber-600" />
-        <StatCard label="Inactive"      value={inactiveCount}       sub="Deactivated accounts" color="text-red-600" />
+        <EmployeeStatCard label="Total Members" value={stats?.total ?? 0}  sub="All accounts"         color="text-foreground" />
+        <EmployeeStatCard label="Active"        value={activeCount}         sub="Currently active"     color="text-green-600" />
+        <EmployeeStatCard label="Pending"       value={pendingCount}        sub="Awaiting activation"  color="text-amber-600" />
+        <EmployeeStatCard label="Inactive"      value={inactiveCount}       sub="Deactivated accounts" color="text-red-600" />
       </div>
 
       {/* Table Card */}
@@ -907,7 +798,7 @@ export default function ManagerTeamPage() {
                     <span className="text-xs text-muted-foreground">{departmentNameById(e.department_id)}</span>
                   </td>
                   <td className="px-5 py-4">
-                    <StatusBadge status={e.account_status} />
+                    <EmployeeStatusBadge status={e.account_status} />
                   </td>
                   <td className="px-5 py-4 min-w-35">
                     {onboardingMap[e.user_id] ? (
@@ -936,7 +827,7 @@ export default function ManagerTeamPage() {
                           {formatInviteCountdown(e.invite_expires_at, now)}
                         </p>
                         <p className="text-[11px] text-muted-foreground mt-0.5">
-                          {formatInviteDeadline(e.invite_expires_at)}
+                          {formatDateTime(e.invite_expires_at, "No active invite")}
                         </p>
                       </div>
                     ) : (
@@ -944,7 +835,7 @@ export default function ManagerTeamPage() {
                     )}
                   </td>
                   <td className="px-5 py-4">
-                    <span className="text-xs text-muted-foreground">{formatLastLogin(e.last_login)}</span>
+                    <span className="text-xs text-muted-foreground">{formatDateTime(e.last_login)}</span>
                   </td>
                   <td className="px-5 py-4 text-right">
                     <RowMenu

@@ -9,6 +9,11 @@ import { getUserInfo, getAccessToken, parseJwt } from "@/lib/authStorage";
 import { authFetch, getHRInterviewNotifications, HRInterviewNotification } from "@/lib/authApi";
 import { API_BASE_URL } from "@/lib/api";
 import { toast } from "sonner";
+import { timeAgo } from "@/lib/timeAgo";
+import {
+  type Employee, type Role, type Department,
+  STATUS_STYLES, apiFetch,
+} from "@/lib/employeeTypes";
 import {
   MoreHorizontal, Filter, Download,
   Search, ChevronLeft, ChevronRight, UserX,
@@ -17,39 +22,24 @@ import {
   ArrowRight, Clock,
 } from "lucide-react";
 
-// ─── Types ────────────────────────────────────────────────────────────────────
+// ─── Constants ────────────────────────────────────────────────────────────────
 
-interface Employee {
-  user_id: string;
-  employee_id: string | null;
-  username: string | null;
-  first_name: string | null;
-  last_name: string | null;
-  email: string;
-  role_id: string | null;
-  department_id: string | null;
-  start_date: string | null;
-  account_status: string | null;
-  last_login: string | null;
-  invite_expires_at: string | null;
-};
+const ITEMS_PER_PAGE = 10;
 
-type Role = { role_id: string; role_name: string };
-type Department = { department_id: string; department_name: string };
+// ─── Page-specific Types ──────────────────────────────────────────────────────
 
 interface JobSummary {
   job_posting_id: string;
   title: string;
-  status: "open" | "closed" | "draft";
   posted_at: string;
   applicant_count?: number;
+  status: string;
 }
 
 interface TodayPunch {
   employee_id: string;
   log_type: string;
-  timestamp: string;
-  clock_type?: string | null;
+  clock_type: string;
 }
 
 interface AttendanceStats {
@@ -60,36 +50,7 @@ interface AttendanceStats {
   rate: number;
 }
 
-// ─── Constants ────────────────────────────────────────────────────────────────
-
-const ITEMS_PER_PAGE = 10;
-
-const STATUS_STYLES: Record<string, string> = {
-  Active:   "bg-green-100 text-green-700 border-green-200",
-  Inactive: "bg-red-100 text-red-700 border-red-200",
-  Pending:  "bg-amber-100 text-amber-700 border-amber-200",
-};
-
-// ─── API helpers ──────────────────────────────────────────────────────────────
-
-async function apiFetch<T = unknown>(path: string, init?: RequestInit): Promise<T> {
-  const res = await authFetch(`${API_BASE_URL}${path}`, init);
-  const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error((data as { message?: string })?.message || "Request failed");
-  return data as T;
-}
-
 // ─── Utilities ────────────────────────────────────────────────────────────────
-
-function timeAgo(dateStr: string): string {
-  const diff = Date.now() - new Date(dateStr).getTime();
-  const d = Math.floor(diff / 86400000);
-  if (d === 0) return "today";
-  if (d === 1) return "yesterday";
-  if (d < 7) return `${d}d ago`;
-  if (d < 30) return `${Math.floor(d / 7)}w ago`;
-  return `${Math.floor(d / 30)}mo ago`;
-}
 
 function computeTodayAttendance(punches: TodayPunch[], employees: Employee[]): AttendanceStats {
   const byEmployee: Record<string, TodayPunch[]> = {};

@@ -9,6 +9,12 @@ import { API_BASE_URL } from "@/lib/api";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { EmployeeStatusBadge } from "@/components/ui/employee-status-badge";
+import { EmployeeStatCard } from "@/components/ui/employee-stat-card";
+import {
+  type Employee, type Role, type Department, type Stats,
+  STATUS_STYLES, apiFetch, formatDate, formatDateTime,
+} from "@/lib/employeeTypes";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem,
   DropdownMenuSeparator, DropdownMenuTrigger,
@@ -21,89 +27,11 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 
-// ─── Types ────────────────────────────────────────────────────────────────────
-
-interface Role {
-  role_id: string;
-  role_name: string;
-}
-
-interface Department {
-  department_id: string;
-  department_name: string;
-}
-
-interface Employee {
-  user_id: string;
-  employee_id: string;
-  username: string;
-  first_name: string;
-  last_name: string;
-  email: string;
-  company_id: string | null;
-  role_id: string | null;
-  department_id: string | null;
-  start_date: string | null;
-  account_status: "Active" | "Inactive" | "Pending";
-  last_login: string | null;
-  invite_expires_at: string | null;
-}
-
-interface Stats {
-  total: number;
-}
-
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const ITEMS_PER_PAGE = 8;
 
-const STATUS_STYLES: Record<string, string> = {
-  Active:   "bg-green-100 text-green-700 border-green-200",
-  Inactive: "bg-red-100 text-red-700 border-red-200",
-  Pending:  "bg-amber-100 text-amber-700 border-amber-200",
-};
-
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-
-async function apiFetch<T>(path: string, init: RequestInit = {}): Promise<T> {
-  const res = await authFetch(`${API_BASE_URL}${path}`, {
-    headers: { "Content-Type": "application/json" },
-    ...init,
-  });
-  const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error((data as Record<string, unknown>)?.message as string || "Request failed");
-  return data as T;
-}
-
-function formatDate(value: string | null) {
-  if (!value) return "Never";
-  const d = new Date(value);
-  return Number.isNaN(d.getTime()) ? "Unknown"
-    : d.toLocaleString("en-US", { year: "numeric", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
-}
-
 // ─── Sub-components ───────────────────────────────────────────────────────────
-
-function StatCard({ label, value, sub, color }: Readonly<{ label: string; value: number; sub: string; color: string }>) {
-  return (
-    <Card className="border-border shadow-sm">
-      <CardContent className="p-5">
-        <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">{label}</p>
-        <p className={`text-2xl font-bold ${color}`}>{value}</p>
-        <p className="text-xs text-muted-foreground mt-0.5">{sub}</p>
-      </CardContent>
-    </Card>
-  );
-}
-
-function StatusBadge({ status }: Readonly<{ status: string }>) {
-  const style = STATUS_STYLES[status] ?? "bg-gray-100 text-gray-700 border-gray-200";
-  return (
-    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase border ${style}`}>
-      {status}
-    </span>
-  );
-}
 
 // ── Row action dropdown ───────────────────────────────────────────────────────
 
@@ -193,7 +121,7 @@ function ViewProfileSheet({
             <div>
               <p className="font-bold text-xl">{name}</p>
               <p className="text-sm text-muted-foreground">{employee.email}</p>
-              <div className="mt-1.5"><StatusBadge status={employee.account_status} /></div>
+              <div className="mt-1.5"><EmployeeStatusBadge status={employee.account_status} /></div>
             </div>
           </div>
           <div className="space-y-3">
@@ -253,7 +181,7 @@ function AddUserPanel({ roles, onClose, onCreated }: Readonly<{
     if (!form.username.trim()) e.username = "Required";
     else if (/\s/.test(form.username)) e.username = "Username must not contain spaces";
     if (!form.email.trim()) e.email = "Required";
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) e.email = "Invalid email";
+    else if (!/^[^\s@]+@[^@\s.]+\.[^@\s]+$/.test(form.email)) e.email = "Invalid email";
     if (!form.role_id) e.role_id = "Required";
     return e;
   };
@@ -979,7 +907,7 @@ export default function AdminUsersPage() {
           <td className="px-5 py-4"><span className="font-mono text-xs text-muted-foreground">{e.employee_id}</span></td>
           <td className="px-5 py-4"><span className="text-xs font-semibold text-foreground">{roles.find(r => r.role_id === e.role_id)?.role_name ?? "—"}</span></td>
           <td className="px-5 py-4"><span className="text-xs text-muted-foreground">{departments.find(d => d.department_id === e.department_id)?.department_name ?? (e.department_id ?? "—")}</span></td>
-          <td className="px-5 py-4"><StatusBadge status={e.account_status} /></td>
+          <td className="px-5 py-4"><EmployeeStatusBadge status={e.account_status} /></td>
           <td className="px-5 py-4"><span className="text-xs text-muted-foreground">{formatDate(e.invite_expires_at)}</span></td>
           <td className="px-5 py-4"><span className="text-xs text-muted-foreground">{formatDate(e.last_login)}</span></td>
           <td className="px-5 py-4 text-right">
@@ -1027,10 +955,10 @@ export default function AdminUsersPage() {
       </section>
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <StatCard label="Total Users"  value={stats?.total ?? 0}  sub="All accounts"         color="text-foreground" />
-        <StatCard label="Active"       value={activeCount}         sub="Currently active"     color="text-green-600" />
-        <StatCard label="Pending"      value={pendingCount}        sub="Awaiting activation"  color="text-amber-600" />
-        <StatCard label="Inactive"     value={inactiveCount}       sub="Deactivated accounts" color="text-red-600" />
+        <EmployeeStatCard label="Total Users"  value={stats?.total ?? 0}  sub="All accounts"         color="text-foreground" />
+        <EmployeeStatCard label="Active"       value={activeCount}         sub="Currently active"     color="text-green-600" />
+        <EmployeeStatCard label="Pending"      value={pendingCount}        sub="Awaiting activation"  color="text-amber-600" />
+        <EmployeeStatCard label="Inactive"     value={inactiveCount}       sub="Deactivated accounts" color="text-red-600" />
       </div>
 
       <div className="bg-card border border-border rounded-xl shadow-sm overflow-hidden">
