@@ -7,6 +7,8 @@ import {
   Mic, Cpu, Trophy, RotateCcw,
 } from "lucide-react";
 import { getMyInterviewSchedules, type MyInterviewSchedule } from "@/lib/authApi";
+import { timeAgo } from "@/lib/timeAgo";
+import { useCloseOnOutsideClick } from "@/lib/useCloseOnOutsideClick";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -27,18 +29,6 @@ const STAGE_ICONS: Record<string, React.ComponentType<{ className?: string }>> =
   technical_interview: Cpu,
   final_interview:     Trophy,
 };
-
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-
-function timeAgo(iso: string) {
-  const diff = Date.now() - new Date(iso).getTime();
-  const d = Math.floor(diff / 86_400_000);
-  if (d === 0) return "Today";
-  if (d === 1) return "Yesterday";
-  if (d < 7)  return `${d}d ago`;
-  if (d < 30) return `${Math.floor(d / 7)}w ago`;
-  return `${Math.floor(d / 30)}mo ago`;
-}
 
 // ─── NotificationBell ─────────────────────────────────────────────────────────
 
@@ -61,19 +51,11 @@ export function NotificationBell() {
     return () => { alive = false; };
   }, []);
 
-  // Close on outside click
-  useEffect(() => {
-    if (!open) return;
-    const handler = (e: MouseEvent) => {
-      if (
-        dropdownRef.current?.contains(e.target as Node) ||
-        btnRef.current?.contains(e.target as Node)
-      ) return;
-      setOpen(false);
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, [open]);
+  useCloseOnOutsideClick({
+    open,
+    refs: [dropdownRef, btnRef],
+    onClose: () => setOpen(false),
+  });
 
   // "Unread" = schedule has no applicant response yet (pending action required)
   const unreadCount = schedules.filter((s) => s.applicant_response === null).length;

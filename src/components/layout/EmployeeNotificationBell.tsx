@@ -11,6 +11,8 @@ import {
   markAllNotificationsRead,
   type AppNotification,
 } from "@/lib/notificationsApi";
+import { timeAgo } from "@/lib/timeAgo";
+import { useCloseOnOutsideClick } from "@/lib/useCloseOnOutsideClick";
 
 // ─── Config ───────────────────────────────────────────────────────────────────
 
@@ -42,18 +44,6 @@ const DEFAULT_CONFIG = {
   navPath: "/employee",
 };
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-
-function timeAgo(iso: string) {
-  const diff = Date.now() - new Date(iso).getTime();
-  const d = Math.floor(diff / 86_400_000);
-  if (d === 0) return "Today";
-  if (d === 1) return "Yesterday";
-  if (d < 7) return `${d}d ago`;
-  if (d < 30) return `${Math.floor(d / 7)}w ago`;
-  return `${Math.floor(d / 30)}mo ago`;
-}
-
 // ─── EmployeeNotificationBell ─────────────────────────────────────────────────
 
 export function EmployeeNotificationBell() {
@@ -75,19 +65,11 @@ export function EmployeeNotificationBell() {
     return () => { alive = false; };
   }, []);
 
-  // Close on outside click
-  useEffect(() => {
-    if (!open) return;
-    const handler = (e: MouseEvent) => {
-      if (
-        dropdownRef.current?.contains(e.target as Node) ||
-        btnRef.current?.contains(e.target as Node)
-      ) return;
-      setOpen(false);
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, [open]);
+  useCloseOnOutsideClick({
+    open,
+    refs: [dropdownRef, btnRef],
+    onClose: () => setOpen(false),
+  });
 
   const unreadCount = items.filter((n) => !n.is_read).length;
 

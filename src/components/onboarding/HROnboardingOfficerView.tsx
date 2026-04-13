@@ -718,7 +718,7 @@ export default function HROnboardingOfficerView() {
                                     <FileText className="size-4 text-slate-400 shrink-0" />
                                     <span className="text-sm text-slate-600 truncate">{doc.files[0].file_name}</span>
                                     <Button variant="outline" size="sm" asChild className="shrink-0 h-7">
-                                      <a href={doc.files[0].file_url} target="_blank" rel="noreferrer">
+                                      <a href={doc.files[0].file_url} target="_blank" rel="noopener noreferrer">
                                         <Download className="size-3 mr-1" />View
                                       </a>
                                     </Button>
@@ -855,7 +855,7 @@ export default function HROnboardingOfficerView() {
                                     <FileText className="size-4 text-purple-500 shrink-0" />
                                     <span className="text-sm text-slate-600 truncate">{equip.proof_of_receipt[0].file_name}</span>
                                     <Button variant="outline" size="sm" asChild className="shrink-0 h-7">
-                                      <a href={equip.proof_of_receipt[0].file_url} target="_blank" rel="noreferrer">
+                                      <a href={equip.proof_of_receipt[0].file_url} target="_blank" rel="noopener noreferrer">
                                         <Download className="size-3 mr-1" />View
                                       </a>
                                     </Button>

@@ -2299,7 +2299,7 @@ function ApplicationDetailModal({
                   variant="outline"
                   size="sm"
                   className="w-full h-8 gap-1.5 justify-start text-xs font-medium"
-                  onClick={() => window.open(detail.applicant_profile.resume_url!, "_blank")}
+                  onClick={() => window.open(detail.applicant_profile.resume_url!, "_blank", "noopener,noreferrer")}
                 >
                   <FileText className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
                   View Resume

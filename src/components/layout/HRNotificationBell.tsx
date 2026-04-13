@@ -14,6 +14,8 @@ import {
   markAllNotificationsRead,
   type AppNotification,
 } from "@/lib/notificationsApi";
+import { timeAgo } from "@/lib/timeAgo";
+import { useCloseOnOutsideClick } from "@/lib/useCloseOnOutsideClick";
 
 const HR_NOTIF_TYPES = new Set(['ONBOARDING_SUBMITTED', 'PROFILE_CHANGE_SUBMITTED']);
 
@@ -61,19 +63,6 @@ function persistReadIds(email: string, ids: Set<string>) {
   localStorage.setItem(storageKey(email), JSON.stringify([...ids]));
 }
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-
-function timeAgo(iso: string | null) {
-  if (!iso) return "";
-  const diff = Date.now() - new Date(iso).getTime();
-  const d = Math.floor(diff / 86_400_000);
-  if (d === 0) return "Today";
-  if (d === 1) return "Yesterday";
-  if (d < 7)  return `${d}d ago`;
-  if (d < 30) return `${Math.floor(d / 7)}w ago`;
-  return `${Math.floor(d / 30)}mo ago`;
-}
-
 // ─── HRNotificationBell ───────────────────────────────────────────────────────
 
 export function HRNotificationBell() {
@@ -107,19 +96,11 @@ export function HRNotificationBell() {
     return () => { alive = false; };
   }, [userEmail]);
 
-  // Close on outside click
-  useEffect(() => {
-    if (!open) return;
-    const handler = (e: MouseEvent) => {
-      if (
-        dropdownRef.current?.contains(e.target as Node) ||
-        btnRef.current?.contains(e.target as Node)
-      ) return;
-      setOpen(false);
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, [open]);
+  useCloseOnOutsideClick({
+    open,
+    refs: [dropdownRef, btnRef],
+    onClose: () => setOpen(false),
+  });
 
   const interviewUnread = items.filter((n) => !readIds.has(n.schedule_id)).length;
   const dbUnread = dbNotifs.filter((n) => !n.is_read).length;

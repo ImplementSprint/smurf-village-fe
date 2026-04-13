@@ -185,7 +185,7 @@ export function DocumentUpload({ documents, remarks, onUpdate }: Readonly<Docume
                       <a
                         href={fileUrl}
                         target="_blank"
-                        rel="noreferrer"
+                        rel="noopener noreferrer"
                         className="shrink-0 inline-flex items-center gap-1 text-xs font-medium text-blue-600 hover:text-blue-800 hover:underline transition-colors ml-1"
                       >
                         <ExternalLink className="size-3" />View
@@ -283,7 +283,7 @@ export function DocumentUpload({ documents, remarks, onUpdate }: Readonly<Docume
                               <div className="flex items-center gap-2 shrink-0">
                                 <StatusBadge status={file.status} />
                                 {file.file_url && (
-                                  <a href={file.file_url} target="_blank" rel="noreferrer"
+                                  <a href={file.file_url} target="_blank" rel="noopener noreferrer"
                                     className="text-blue-600 hover:text-blue-800">
                                     <ExternalLink className="size-3.5" />
                                   </a>
