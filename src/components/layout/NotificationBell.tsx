@@ -76,18 +76,119 @@ export function NotificationBell() {
 
   // "Unread" = schedule has no applicant response yet (pending action required)
   const unreadCount = schedules.filter((s) => s.applicant_response === null).length;
+  const notificationsLabel = unreadCount > 0
+    ? `Notifications (${unreadCount} pending)`
+    : "Notifications";
+
+  let headerSummary = "All caught up";
+  if (loading) {
+    headerSummary = "Loading…";
+  } else if (unreadCount > 0) {
+    const suffix = unreadCount > 1 ? "s" : "";
+    headerSummary = `${unreadCount} pending response${suffix}`;
+  }
 
   const handleViewApplication = useCallback((schedule: MyInterviewSchedule) => {
     setOpen(false);
     router.push(`/applicant/applications?open=${schedule.application_id}`);
   }, [router]);
 
+  let dropdownBody: React.ReactNode;
+  if (loading) {
+    dropdownBody = (
+      <div className="flex items-center justify-center py-10">
+        <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+      </div>
+    );
+  } else if (schedules.length === 0) {
+    dropdownBody = (
+      <div className="flex flex-col items-center justify-center py-10 gap-2 px-4">
+        <div className="h-12 w-12 rounded-full bg-muted/30 flex items-center justify-center">
+          <Bell className="h-5 w-5 text-muted-foreground/30" />
+        </div>
+        <p className="text-sm font-semibold text-foreground">No notifications</p>
+        <p className="text-xs text-muted-foreground text-center">
+          Interview invites will appear here once your application advances.
+        </p>
+      </div>
+    );
+  } else {
+    dropdownBody = (
+      <div className="divide-y divide-border/50">
+        {schedules.map((sched) => {
+          const isPending  = sched.applicant_response === null;
+          const stage      = sched.stage ?? "first_interview";
+          const StageIcon  = STAGE_ICONS[stage] ?? Calendar;
+          const respondedAt = sched.applicant_responded_at ?? sched.created_at ?? "";
+          const isRescheduleRequested = sched.applicant_response === "reschedule_requested";
+
+          let itemTitle = "Reschedule Requested";
+          if (isPending) {
+            itemTitle = STAGE_LABELS[stage] ?? "Interview Update";
+          } else if (sched.applicant_response === "accepted") {
+            itemTitle = "Interview Accepted";
+          } else if (sched.applicant_response === "declined") {
+            itemTitle = "Interview Declined";
+          }
+
+          const detailText = isPending
+            ? `${STAGE_DETAIL[stage] ?? "Interview stage"} · Response needed`
+            : `${STAGE_DETAIL[stage] ?? ""} · ${timeAgo(respondedAt)}`;
+
+          return (
+            <button
+              key={sched.schedule_id ?? sched.application_id}
+              onClick={() => handleViewApplication(sched)}
+              className={`w-full flex items-start gap-3 px-4 py-3.5 text-left transition-colors cursor-pointer group ${
+                isPending
+                  ? "hover:bg-primary/5"
+                  : "opacity-60 hover:opacity-80 hover:bg-muted/20"
+              }`}
+            >
+              {/* Stage icon */}
+              <div
+                className={`h-9 w-9 rounded-xl flex items-center justify-center shrink-0 mt-0.5 transition-colors ${
+                  isPending
+                    ? "bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400"
+                    : "bg-muted/40 text-muted-foreground"
+                }`}
+              >
+                {isRescheduleRequested
+                  ? <RotateCcw className="h-4 w-4" />
+                  : <StageIcon className="h-4 w-4" />
+                }
+              </div>
+
+              {/* Text */}
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-foreground leading-tight truncate">
+                  {itemTitle}
+                </p>
+                <p className="text-xs text-muted-foreground truncate mt-0.5">
+                  {sched.job_title}
+                </p>
+                <p className="text-[10px] text-muted-foreground/60 mt-1 font-medium uppercase tracking-wide">
+                  {detailText}
+                </p>
+              </div>
+
+              {/* Pending dot */}
+              {isPending && (
+                <span className="h-2 w-2 rounded-full bg-blue-500 shrink-0 mt-2 group-hover:scale-110 transition-transform" />
+              )}
+            </button>
+          );
+        })}
+      </div>
+    );
+  }
+
   return (
     <div className="relative">
       {/* Bell button */}
       <button
         ref={btnRef}
-        aria-label={`Notifications${unreadCount > 0 ? ` (${unreadCount} pending)` : ""}`}
+        aria-label={notificationsLabel}
         onClick={() => setOpen((v) => !v)}
         className="relative h-9 w-9 rounded-lg flex items-center justify-center text-muted-foreground hover:text-primary hover:bg-primary/5 transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
@@ -112,11 +213,7 @@ export function NotificationBell() {
                 Notifications
               </p>
               <p className="text-sm font-bold text-foreground mt-0.5">
-                {loading
-                  ? "Loading…"
-                  : unreadCount > 0
-                  ? `${unreadCount} pending response${unreadCount > 1 ? "s" : ""}`
-                  : "All caught up"}
+                {headerSummary}
               </p>
             </div>
             <button
@@ -132,82 +229,7 @@ export function NotificationBell() {
 
           {/* Body */}
           <div className="max-h-72 overflow-y-auto">
-            {loading ? (
-              <div className="flex items-center justify-center py-10">
-                <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-              </div>
-            ) : schedules.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-10 gap-2 px-4">
-                <div className="h-12 w-12 rounded-full bg-muted/30 flex items-center justify-center">
-                  <Bell className="h-5 w-5 text-muted-foreground/30" />
-                </div>
-                <p className="text-sm font-semibold text-foreground">No notifications</p>
-                <p className="text-xs text-muted-foreground text-center">
-                  Interview invites will appear here once your application advances.
-                </p>
-              </div>
-            ) : (
-              <div className="divide-y divide-border/50">
-                {schedules.map((sched) => {
-                  const isPending  = sched.applicant_response === null;
-                  const stage      = sched.stage ?? "first_interview";
-                  const StageIcon  = STAGE_ICONS[stage] ?? Calendar;
-                  const respondedAt = sched.applicant_responded_at ?? sched.created_at ?? "";
-
-                  return (
-                    <button
-                      key={sched.schedule_id ?? sched.application_id}
-                      onClick={() => handleViewApplication(sched)}
-                      className={`w-full flex items-start gap-3 px-4 py-3.5 text-left transition-colors cursor-pointer group ${
-                        isPending
-                          ? "hover:bg-primary/5"
-                          : "opacity-60 hover:opacity-80 hover:bg-muted/20"
-                      }`}
-                    >
-                      {/* Stage icon */}
-                      <div
-                        className={`h-9 w-9 rounded-xl flex items-center justify-center shrink-0 mt-0.5 transition-colors ${
-                          isPending
-                            ? "bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400"
-                            : "bg-muted/40 text-muted-foreground"
-                        }`}
-                      >
-                        {sched.applicant_response === "reschedule_requested"
-                          ? <RotateCcw className="h-4 w-4" />
-                          : <StageIcon className="h-4 w-4" />
-                        }
-                      </div>
-
-                      {/* Text */}
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold text-foreground leading-tight truncate">
-                          {isPending
-                            ? STAGE_LABELS[stage] ?? "Interview Update"
-                            : sched.applicant_response === "accepted"
-                            ? "Interview Accepted"
-                            : sched.applicant_response === "declined"
-                            ? "Interview Declined"
-                            : "Reschedule Requested"}
-                        </p>
-                        <p className="text-xs text-muted-foreground truncate mt-0.5">
-                          {sched.job_title}
-                        </p>
-                        <p className="text-[10px] text-muted-foreground/60 mt-1 font-medium uppercase tracking-wide">
-                          {isPending
-                            ? `${STAGE_DETAIL[stage] ?? "Interview stage"} · Response needed`
-                            : `${STAGE_DETAIL[stage] ?? ""} · ${timeAgo(respondedAt)}`}
-                        </p>
-                      </div>
-
-                      {/* Pending dot */}
-                      {isPending && (
-                        <span className="h-2 w-2 rounded-full bg-blue-500 shrink-0 mt-2 group-hover:scale-110 transition-transform" />
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
-            )}
+            {dropdownBody}
           </div>
 
           {/* Footer */}

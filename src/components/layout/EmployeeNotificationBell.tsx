@@ -89,6 +89,16 @@ export function EmployeeNotificationBell() {
   }, [open]);
 
   const unreadCount = items.filter((n) => !n.is_read).length;
+  const notificationsLabel = unreadCount > 0
+    ? `Notifications (${unreadCount} unread)`
+    : "Notifications";
+
+  let headerSummary = "All caught up";
+  if (loading) {
+    headerSummary = "Loading…";
+  } else if (unreadCount > 0) {
+    headerSummary = `${unreadCount} unread`;
+  }
 
   const handleMarkAllRead = useCallback(async () => {
     await markAllNotificationsRead();
@@ -107,12 +117,87 @@ export function EmployeeNotificationBell() {
     router.push(cfg.navPath);
   }, [router]);
 
+  let dropdownBody: React.ReactNode;
+  if (loading) {
+    dropdownBody = (
+      <div className="flex items-center justify-center py-10">
+        <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+      </div>
+    );
+  } else if (items.length === 0) {
+    dropdownBody = (
+      <div className="flex flex-col items-center justify-center py-10 gap-2 px-4">
+        <div className="h-12 w-12 rounded-full bg-muted/30 flex items-center justify-center">
+          <Bell className="h-5 w-5 text-muted-foreground/30" />
+        </div>
+        <p className="text-sm font-semibold text-foreground">No notifications</p>
+        <p className="text-xs text-muted-foreground text-center">
+          Updates about your onboarding and profile changes will appear here.
+        </p>
+      </div>
+    );
+  } else {
+    dropdownBody = (
+      <div className="divide-y divide-border/50">
+        {items.map((notif) => {
+          const cfg = TYPE_CONFIG[notif.type] ?? DEFAULT_CONFIG;
+          const { Icon } = cfg;
+          const isApproved = notif.type === 'ONBOARDING_APPROVED' ||
+            (notif.metadata?.status === 'approved');
+          const isRejected = notif.metadata?.status === 'rejected';
+          let ItemIcon: React.ElementType = Icon;
+
+          if (isRejected) {
+            ItemIcon = XCircle;
+          } else if (isApproved) {
+            ItemIcon = CheckCircle2;
+          }
+
+          return (
+            <button
+              key={notif.notification_id}
+              onClick={() => handleItemClick(notif)}
+              className={`w-full flex items-start gap-3 px-4 py-3.5 text-left transition-colors cursor-pointer group ${
+                notif.is_read
+                  ? "opacity-60 hover:opacity-80 hover:bg-muted/20"
+                  : "hover:bg-primary/5"
+              }`}
+            >
+              {/* Icon */}
+              <div className={`h-9 w-9 rounded-xl flex items-center justify-center shrink-0 mt-0.5 ${notif.is_read ? "bg-muted/40 text-muted-foreground" : cfg.iconClass}`}>
+                <ItemIcon className="h-4 w-4" />
+              </div>
+
+              {/* Text */}
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-foreground leading-tight truncate">
+                  {notif.title}
+                </p>
+                <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">
+                  {notif.message}
+                </p>
+                <p className="text-[10px] text-muted-foreground/60 mt-1 font-medium uppercase tracking-wide">
+                  {timeAgo(notif.created_at)}
+                </p>
+              </div>
+
+              {/* Unread dot */}
+              {!notif.is_read && (
+                <span className="h-2 w-2 rounded-full bg-blue-500 shrink-0 mt-2 group-hover:scale-110 transition-transform" />
+              )}
+            </button>
+          );
+        })}
+      </div>
+    );
+  }
+
   return (
     <div className="relative">
       {/* Bell button */}
       <button
         ref={btnRef}
-        aria-label={`Notifications${unreadCount > 0 ? ` (${unreadCount} unread)` : ""}`}
+        aria-label={notificationsLabel}
         onClick={() => setOpen((v) => !v)}
         className="relative h-9 w-9 rounded-lg flex items-center justify-center text-muted-foreground hover:text-primary hover:bg-primary/5 transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
@@ -137,11 +222,7 @@ export function EmployeeNotificationBell() {
                 Notifications
               </p>
               <p className="text-sm font-bold text-foreground mt-0.5">
-                {loading
-                  ? "Loading…"
-                  : unreadCount > 0
-                  ? `${unreadCount} unread`
-                  : "All caught up"}
+                {headerSummary}
               </p>
             </div>
             <div className="flex items-center gap-1">
@@ -167,71 +248,7 @@ export function EmployeeNotificationBell() {
 
           {/* Body */}
           <div className="max-h-80 overflow-y-auto">
-            {loading ? (
-              <div className="flex items-center justify-center py-10">
-                <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-              </div>
-            ) : items.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-10 gap-2 px-4">
-                <div className="h-12 w-12 rounded-full bg-muted/30 flex items-center justify-center">
-                  <Bell className="h-5 w-5 text-muted-foreground/30" />
-                </div>
-                <p className="text-sm font-semibold text-foreground">No notifications</p>
-                <p className="text-xs text-muted-foreground text-center">
-                  Updates about your onboarding and profile changes will appear here.
-                </p>
-              </div>
-            ) : (
-              <div className="divide-y divide-border/50">
-                {items.map((notif) => {
-                  const cfg = TYPE_CONFIG[notif.type] ?? DEFAULT_CONFIG;
-                  const { Icon } = cfg;
-                  const isApproved = notif.type === 'ONBOARDING_APPROVED' ||
-                    (notif.metadata?.status === 'approved');
-                  const isRejected = notif.metadata?.status === 'rejected';
-
-                  return (
-                    <button
-                      key={notif.notification_id}
-                      onClick={() => handleItemClick(notif)}
-                      className={`w-full flex items-start gap-3 px-4 py-3.5 text-left transition-colors cursor-pointer group ${
-                        notif.is_read
-                          ? "opacity-60 hover:opacity-80 hover:bg-muted/20"
-                          : "hover:bg-primary/5"
-                      }`}
-                    >
-                      {/* Icon */}
-                      <div className={`h-9 w-9 rounded-xl flex items-center justify-center shrink-0 mt-0.5 ${notif.is_read ? "bg-muted/40 text-muted-foreground" : cfg.iconClass}`}>
-                        {isRejected
-                          ? <XCircle className="h-4 w-4" />
-                          : isApproved
-                          ? <CheckCircle2 className="h-4 w-4" />
-                          : <Icon className="h-4 w-4" />
-                        }
-                      </div>
-
-                      {/* Text */}
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold text-foreground leading-tight truncate">
-                          {notif.title}
-                        </p>
-                        <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">
-                          {notif.message}
-                        </p>
-                        <p className="text-[10px] text-muted-foreground/60 mt-1 font-medium uppercase tracking-wide">
-                          {timeAgo(notif.created_at)}
-                        </p>
-                      </div>
-
-                      {/* Unread dot */}
-                      {!notif.is_read && (
-                        <span className="h-2 w-2 rounded-full bg-blue-500 shrink-0 mt-2 group-hover:scale-110 transition-transform" />
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
-            )}
+            {dropdownBody}
           </div>
 
           {/* Footer */}

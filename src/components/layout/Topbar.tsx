@@ -34,12 +34,12 @@ export function Topbar({ persona = "applicant" }: { readonly persona?: PersonaTy
 
     syncUser();
 
-    window.addEventListener("user-info-updated", syncUser);
-    window.addEventListener("storage", syncUser);
+    globalThis.window.addEventListener("user-info-updated", syncUser);
+    globalThis.window.addEventListener("storage", syncUser);
 
     return () => {
-      window.removeEventListener("user-info-updated", syncUser);
-      window.removeEventListener("storage", syncUser);
+      globalThis.window.removeEventListener("user-info-updated", syncUser);
+      globalThis.window.removeEventListener("storage", syncUser);
     };
   }, []);
 
@@ -68,6 +68,22 @@ export function Topbar({ persona = "applicant" }: { readonly persona?: PersonaTy
   };
 
   const initial = user?.name?.charAt(0) || persona.charAt(0).toUpperCase();
+  let notificationNode: React.ReactNode = (
+    <button
+      aria-label="Notifications"
+      className="relative h-9 w-9 rounded-lg flex items-center justify-center text-muted-foreground hover:text-primary hover:bg-primary/5 transition-all cursor-pointer"
+    >
+      <Bell className="h-5 w-5" />
+    </button>
+  );
+
+  if (persona === "applicant") {
+    notificationNode = <NotificationBell />;
+  } else if (persona === "employee") {
+    notificationNode = <EmployeeNotificationBell />;
+  } else if (persona === "hr" || persona === "manager" || persona === "admin" || persona === "system-admin") {
+    notificationNode = <HRNotificationBell />;
+  }
 
   return (
     <header className="h-16 bg-background border-b border-border flex items-center justify-between px-8 shrink-0">
@@ -85,20 +101,7 @@ export function Topbar({ persona = "applicant" }: { readonly persona?: PersonaTy
       <div className="flex items-center gap-6">
 
         {/* Notifications */}
-        {persona === "applicant" ? (
-          <NotificationBell />
-        ) : persona === "employee" ? (
-          <EmployeeNotificationBell />
-        ) : persona === "hr" || persona === "manager" || persona === "admin" || persona === "system-admin" ? (
-          <HRNotificationBell />
-        ) : (
-          <button
-            aria-label="Notifications"
-            className="relative h-9 w-9 rounded-lg flex items-center justify-center text-muted-foreground hover:text-primary hover:bg-primary/5 transition-all cursor-pointer"
-          >
-            <Bell className="h-5 w-5" />
-          </button>
-        )}
+        {notificationNode}
 
         <button className="flex items-center gap-3 border-l border-border pl-6 cursor-pointer group">
           <div className="flex flex-col text-right transition-transform group-hover:-translate-x-1">

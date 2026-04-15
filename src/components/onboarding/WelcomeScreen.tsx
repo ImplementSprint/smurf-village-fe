@@ -20,7 +20,7 @@ export function WelcomeScreen({ sessionId, onStart }: Readonly<WelcomeScreenProp
     if (dontShowAgain) {
       localStorage.setItem(`onboarding_welcome_done_${sessionId}`, "1");
     }
-    await onStart(dontShowAgain);
+    await Promise.resolve(onStart(dontShowAgain));
   };
 
   return (
