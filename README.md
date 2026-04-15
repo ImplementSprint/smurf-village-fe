@@ -1,6 +1,6 @@
 # Call_Template_Single (Next.js)
 
-Minimal Next.js + TypeScript project that **calls reusable CI/CD workflows** from the `CICD-Fe_Single-test` repository.
+Minimal Next.js + TypeScript project that calls a reusable CI/CD workflow from a central workflow repository.
 
 ## Local Commands
 
@@ -15,7 +15,7 @@ npm run build
 ## CI/CD Setup Required
 
 This repository does **not** contain its own workflow definitions.  
-Instead, `.github/workflows/master-pipeline-fe-single.yml` calls the reusable workflows hosted in `CICD-Fe_Single-test`.
+Instead, `.github/workflows/fe-pipeline-caller.yml` calls the reusable workflow defined in the configured central workflow repository.
 
 ### 1) Required Branches
 
@@ -42,7 +42,13 @@ For PR auto-creation jobs, also provide one of:
 
 ### 4) Update Workflow Reference
 
-In `.github/workflows/master-pipeline-fe-single.yml`, replace `OWNER/CICD-Fe_Single-test` with the actual GitHub owner/org and repo name where the reusable workflows are hosted.
+In `.github/workflows/fe-pipeline-caller.yml`, verify the `uses:` reference points to your team's approved reusable workflow repository and branch/tag.
+
+Current reference in this template:
+
+- `ImplementSprint/central-workflow/.github/workflows/master-pipeline-fe.yml@main`
+
+If your API/DevOps team uses a different repo or pinned version, update this value before pushing.
 
 ### 5) Vercel Project Settings
 
@@ -53,3 +59,4 @@ In `.github/workflows/master-pipeline-fe-single.yml`, replace `OWNER/CICD-Fe_Sin
 
 - Unit tests generate `coverage/coverage-summary.json` for the test workflow.
 - `Dockerfile` is included so the existing Docker build workflow on `main` can run.
+- Keep `.github/workflows/fe-pipeline-caller.yml`, `Dockerfile`, and test config files (`jest.config.js`, `jest.setup.ts`) when replacing frontend source files.

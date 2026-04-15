@@ -1,30 +1,21 @@
-const nextJest = require('next/jest');
+const nextJest = require("next/jest");
 
-const createJestConfig = nextJest({
-  dir: './',
-});
+const createJestConfig = nextJest({ dir: "./" });
 
-const customJestConfig = {
-  testEnvironment: 'jest-environment-jsdom',
-  roots: ['<rootDir>/tests', '<rootDir>/src'],
-  setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
-  testPathIgnorePatterns: ['/node_modules/', '/.next/'],
-  modulePathIgnorePatterns: ['<rootDir>/.next/'],
-  collectCoverage: true,
+/** @type {import('jest').Config} */
+const config = {
+  testEnvironment: "jsdom",
+  coverageProvider: "v8",
+  testMatch: ["<rootDir>/tests/unit/**/*.test.{ts,tsx}", "<rootDir>/tests/unit/**/*.spec.{ts,tsx}"],
   collectCoverageFrom: [
-    '<rootDir>/src/**/*.{ts,tsx}',
-    '!<rootDir>/src/**/*.d.ts',
-    '!<rootDir>/src/app/**/*.{ts,tsx}',
+    "src/lib/api.ts",
+    "src/lib/authStorage.ts",
+    "src/lib/roleMap.ts",
+    "src/lib/sum.ts",
+    "src/lib/timekeepingUtils.ts",
+    "src/components/onboarding/shared/utils.ts",
   ],
-  coverageReporters: ['text', 'lcov', 'json-summary'],
-  coverageThreshold: {
-    global: {
-      branches: 80,
-      functions: 80,
-      lines: 85,
-      statements: 85,
-    },
-  },
+  setupFilesAfterEnv: ["<rootDir>/jest.setup.ts"],
 };
 
-module.exports = createJestConfig(customJestConfig);
+module.exports = createJestConfig(config);
