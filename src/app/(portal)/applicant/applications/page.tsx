@@ -856,7 +856,6 @@ export default function ApplicantApplicationsPage() {
     if (openId && !detail && !loading) {
       handleViewDetails(openId, "interview");
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loading, searchParams]);
 
   // ── Derived stats ──────────────────────────────────────────────────────────
