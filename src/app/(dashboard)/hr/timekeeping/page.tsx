@@ -5,7 +5,7 @@ import {
   Clock, Search, ChevronLeft, ChevronRight, X,
   Users, TrendingUp, Timer, BarChart2, MapPin, MapPinOff,
   FileX, CalendarDays, Download, AlertTriangle, Star,
-  LogIn, LogOut, CheckCircle2, Shield,
+  LogIn, LogOut,
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -289,7 +289,7 @@ function downloadCSV(entries: RosterEntry[] | PeriodEntry[], isDayView: boolean,
       r.gps_verified ? "Yes" : "No",
       r.absence_reason ?? "—",
     ]);
-    csv = [header, ...data].map(row => row.map(c => `"${String(c).replace(/"/g, '""')}"`).join(",")).join("\n");
+    csv = [header, ...data].map(row => row.map(c => `"${String(c).replaceAll('"', '""')}"`).join(",")).join("\n");
   } else {
     const rows = entries as PeriodEntry[];
     const header = ["Employee", "Employee ID", "Days Present", "Days Absent", "Days Late", "Total Hours", "Overtime Hours", "Compliance %", "Flagged"];
@@ -299,13 +299,13 @@ function downloadCSV(entries: RosterEntry[] | PeriodEntry[], isDayView: boolean,
       `${r.total_hours.toFixed(2)}h`, `${r.overtime_hours.toFixed(2)}h`,
       `${r.compliance_rate.toFixed(1)}%`, r.flagged ? "Yes" : "No",
     ]);
-    csv = [header, ...data].map(row => row.map(c => `"${String(c).replace(/"/g, '""')}"`).join(",")).join("\n");
+    csv = [header, ...data].map(row => row.map(c => `"${String(c).replaceAll('"', '""')}"`).join(",")).join("\n");
   }
 
   const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
   const url  = URL.createObjectURL(blob);
   const a    = Object.assign(document.createElement("a"), {
-    href: url, download: `timekeeping-${label.replace(/[\s/]/g, "-")}.csv`,
+    href: url, download: `timekeeping-${label.replaceAll(/[\s/]/g, "-")}.csv`,
   });
   document.body.appendChild(a);
   a.click();

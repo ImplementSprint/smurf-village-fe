@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { WelcomeScreen } from "@/components/onboarding/WelcomeScreen";
 import { OnboardingProcess } from "@/components/onboarding/OnboardingProcess";
@@ -13,7 +13,6 @@ type OnboardingStage = "loading" | "welcome" | "onboarding" | "review" | "comple
 
 export default function ApplicantOnboardingPage() {
   const router = useRouter();
-  const routerRef = useRef(router);
   const [stage, setStage] = useState<OnboardingStage>("loading");
   const [session, setSession] = useState<OnboardingSession | null>(null);
   const [error, setError] = useState<string | null>(null);

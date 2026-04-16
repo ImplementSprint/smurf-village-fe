@@ -135,12 +135,10 @@ function ApplicationCard({ app, onView }: { readonly app: MyApplication; readonl
   else if (app.status === "rejected") iconContainerClass = "bg-red-500/10 text-red-500 border border-red-200/60 dark:border-red-700/40";
 
   return (
-    <div
-      role="button"
-      tabIndex={0}
+    <button
+      type="button"
       onClick={() => onView(app.application_id)}
-      onKeyDown={(e) => e.key === "Enter" && onView(app.application_id)}
-      className={`bg-card border rounded-2xl shadow-sm overflow-hidden hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-pointer ${cardBorderClass}`}
+      className={`w-full text-left bg-card border rounded-2xl shadow-sm overflow-hidden hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-pointer ${cardBorderClass}`}
     >
       {/* Status color bar — thicker + gradient for hired/rejected */}
       <div className={`h-1.5 w-full ${statusBarClass}`} />
@@ -211,7 +209,7 @@ function ApplicationCard({ app, onView }: { readonly app: MyApplication; readonl
           </Button>
         </div>
       </div>
-    </div>
+    </button>
   );
 }
 

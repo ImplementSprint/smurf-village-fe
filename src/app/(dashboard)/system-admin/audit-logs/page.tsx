@@ -325,7 +325,6 @@ export default function AuditLogsPage() {
                 const cfg = SEV[s];
                 const count = sevCounts[s] ?? 0;
                 const active = selSev.includes(s as Severity);
-                const SevIcon = cfg.icon;
                 return (
                   <button
                     key={s}
@@ -432,7 +431,6 @@ export default function AuditLogsPage() {
                 const scfg = SEV[sev];
                 const ccfg = CAT[cat];
                 const CatIcon = ccfg.icon;
-                const SevIcon = scfg.icon;
                 return (
                   <div
                     key={log.log_id}

@@ -11,7 +11,7 @@ import { PasswordInput } from "@/components/ui/password-input";
 import { GoogleSignInButton } from "@/components/ui/google-sign-in-button";
 // TODO (Sprint 2): swap GoogleSignInButton for GoogleLogin once Client ID is available
 // import { GoogleLogin } from "@react-oauth/google";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Search, Briefcase, TrendingUp, AlertCircle, Loader2, Mail, UserCheck } from "lucide-react";
 
 function ApplicantPortalAuthInner() {
@@ -102,12 +102,6 @@ function ApplicantPortalAuthInner() {
       }
       setIsLoading(false);
     }
-  };
-
-  // TODO (Sprint 2 - Frontend): wire credentialResponse.credential to googleLoginApi()
-  // once backend endpoint POST /api/tribeX/auth/v1/auth/google is ready.
-  const handleGoogleSignIn = (_credentialResponse: any) => {
-    setError("Google sign-in is not enabled yet in this environment.");
   };
 
   return (

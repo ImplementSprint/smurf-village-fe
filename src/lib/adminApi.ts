@@ -132,7 +132,10 @@ export async function createUser(payload: CreateUserPayload): Promise<CreateUser
 // PATCH /admin/users/:id/status — body: { status: "active" | "locked" }
 export async function setUserStatus(userId: string, status: "active" | "locked"): Promise<void> {
   // TODO: implement PATCH /admin/users/:id/status
-  void userId; void status;
+  // Placeholder to keep API contract while backend endpoint is pending.
+  if (!userId || !status) {
+    return;
+  }
 }
 
 // PATCH /admin/users/:id — editable fields: role, department, start_date
@@ -141,7 +144,10 @@ export async function updateUser(
   payload: Partial<Pick<InternalUser, "role" | "department" | "start_date">>
 ): Promise<void> {
   // TODO: implement PATCH /admin/users/:id
-  void userId; void payload;
+  // Placeholder to keep API contract while backend endpoint is pending.
+  if (!userId || !payload) {
+    return;
+  }
 }
 
 // POST /admin/users/:id/resend-link — body: { link_expiry_hours }
@@ -229,7 +235,10 @@ export async function updateSubscription(
   payload: Partial<Pick<Subscription, "plan" | "status">>
 ): Promise<void> {
   // TODO: implement PATCH /admin/subscriptions/:id
-  void subscriptionId; void payload;
+  // Placeholder to keep API contract while backend endpoint is pending.
+  if (!subscriptionId || !payload) {
+    return;
+  }
 }
 
 // ─── HR Lifecycle RBAC ────────────────────────────────────────────────────────
