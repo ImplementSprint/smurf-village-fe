@@ -511,11 +511,12 @@ function InterviewTab({
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground flex items-center gap-1">
+            <label htmlFor="application-response-reason" className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground flex items-center gap-1">
               Reason
-              <span className="text-red-500">*</span>
+              <span className="ml-0.5 text-red-500" aria-hidden="true">*</span>
             </label>
             <Textarea
+              id="application-response-reason"
               value={reason}
               onChange={(e) => setReason(e.target.value)}
               placeholder={cfg.placeholder}
@@ -586,13 +587,28 @@ function DetailModal({ detail, onClose, initialTab }: { readonly detail: DetailW
     }
   }, [tab, fetchSchedule]);
 
+  useEffect(() => {
+    const onEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") onClose();
+    };
+
+    window.addEventListener("keydown", onEscape);
+    return () => window.removeEventListener("keydown", onEscape);
+  }, [onClose]);
+
   function handleResponded(updated: Partial<InterviewSchedule>) {
     setSchedule((prev) => prev ? { ...prev, ...updated } : prev);
   }
 
   return (
-    <div role="presentation" className="fixed inset-0 z-60 flex items-center justify-center bg-black/40 animate-in fade-in duration-200 p-4" onClick={onClose} onKeyDown={(e) => { if (e.key === "Escape") onClose(); }}>
-      <div role="dialog" aria-modal="true" className="bg-card border border-border rounded-2xl shadow-2xl w-full max-w-lg max-h-[92vh] overflow-hidden flex flex-col animate-in zoom-in-95 duration-200" onClick={(e) => e.stopPropagation()} onKeyDown={(e) => e.stopPropagation()}>
+    <div className="fixed inset-0 z-60 flex items-center justify-center animate-in fade-in duration-200 p-4">
+      <button
+        type="button"
+        aria-label="Close application details"
+        className="absolute inset-0 bg-black/40"
+        onClick={onClose}
+      />
+      <div role="dialog" aria-modal="true" className="relative bg-card border border-border rounded-2xl shadow-2xl w-full max-w-lg max-h-[92vh] overflow-hidden flex flex-col animate-in zoom-in-95 duration-200" onClick={(e) => e.stopPropagation()}>
 
         {/* Gradient header */}
         <div className="relative overflow-hidden rounded-t-2xl bg-[linear-gradient(135deg,#0f172a_0%,#172554_55%,#134e4a_100%)] px-6 pt-5 pb-0">
@@ -782,10 +798,9 @@ function DetailModal({ detail, onClose, initialTab }: { readonly detail: DetailW
           {/* ── MY ANSWERS TAB ── */}
           {tab === "answers" && (
             sorted.length > 0 ? (
-              <div className="space-y-4">
-                <p className="text-xs text-muted-foreground">These are the answers you submitted with your application.</p>
+              <div className="space-y-2">
                 {sorted.map((ans, i) => (
-                  <div key={ans.answer_id} className="rounded-xl border border-border bg-muted/15 overflow-hidden">
+                  <div key={`${ans.question_id}-${i}`} className="rounded-xl border border-border bg-muted/10 overflow-hidden">
                     <div className="flex items-start gap-2.5 px-4 pt-3 pb-2.5">
                       <span className="h-5 w-5 rounded-full bg-primary/10 text-primary flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">{i + 1}</span>
                       <p className="text-xs font-semibold text-foreground leading-snug">{ans.application_questions.question_text}</p>

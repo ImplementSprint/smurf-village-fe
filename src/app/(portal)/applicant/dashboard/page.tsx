@@ -152,22 +152,22 @@ function ApplicationForm({
             <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-3">Your Information</p>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
-                <label className="text-xs text-muted-foreground font-medium">First Name</label>
-                <Input value={autoFill.first_name} readOnly className="h-9 bg-muted/30 text-muted-foreground cursor-not-allowed" />
+                <label htmlFor="dashboard-apply-first-name" className="text-xs text-muted-foreground font-medium">First Name</label>
+                <Input id="dashboard-apply-first-name" value={autoFill.first_name} readOnly className="h-9 bg-muted/30 text-muted-foreground cursor-not-allowed" />
               </div>
               <div className="space-y-1">
-                <label className="text-xs text-muted-foreground font-medium">Last Name</label>
-                <Input value={autoFill.last_name} readOnly className="h-9 bg-muted/30 text-muted-foreground cursor-not-allowed" />
+                <label htmlFor="dashboard-apply-last-name" className="text-xs text-muted-foreground font-medium">Last Name</label>
+                <Input id="dashboard-apply-last-name" value={autoFill.last_name} readOnly className="h-9 bg-muted/30 text-muted-foreground cursor-not-allowed" />
               </div>
             </div>
             <div className="mt-3 space-y-1">
-              <label className="text-xs text-muted-foreground font-medium">Email</label>
-              <Input value={autoFill.email} readOnly className="h-9 bg-muted/30 text-muted-foreground cursor-not-allowed" />
+              <label htmlFor="dashboard-apply-email" className="text-xs text-muted-foreground font-medium">Email</label>
+              <Input id="dashboard-apply-email" value={autoFill.email} readOnly className="h-9 bg-muted/30 text-muted-foreground cursor-not-allowed" />
             </div>
             {autoFill.phone_number && (
               <div className="mt-3 space-y-1">
-                <label className="text-xs text-muted-foreground font-medium">Phone Number</label>
-                <Input value={autoFill.phone_number} readOnly className="h-9 bg-muted/30 text-muted-foreground cursor-not-allowed" />
+                <label htmlFor="dashboard-apply-phone" className="text-xs text-muted-foreground font-medium">Phone Number</label>
+                <Input id="dashboard-apply-phone" value={autoFill.phone_number} readOnly className="h-9 bg-muted/30 text-muted-foreground cursor-not-allowed" />
               </div>
             )}
             <p className="text-[10px] text-muted-foreground/60 mt-1.5">Pulled from your account.</p>
@@ -577,8 +577,17 @@ export default function ApplicantDashboardPage() {
                 return (
                   <div
                     key={job.job_posting_id}
+                    role="button"
+                    tabIndex={0}
+                    aria-label={`Open ${job.title} in jobs page`}
                     className="group relative bg-card border border-border rounded-xl shadow-sm hover:shadow-md hover:border-primary/30 hover:-translate-y-px transition-all cursor-pointer overflow-hidden"
                     onClick={() => router.push("/applicant/jobs")}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        router.push("/applicant/jobs");
+                      }
+                    }}
                   >
                     {/* Left accent */}
                     <div className="absolute left-0 top-0 bottom-0 w-0.75 bg-primary/0 group-hover:bg-primary/60 rounded-l-xl transition-colors duration-200" />
