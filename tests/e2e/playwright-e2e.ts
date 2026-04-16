@@ -4,10 +4,19 @@ import { chromium, firefox, webkit } from 'playwright';
 
 type BrowserName = 'chromium' | 'firefox' | 'webkit';
 
-const LOCAL_PAGE_MARKERS = ['Get started by editing', 'To get started, edit the page.tsx file.'];
+const LOCAL_PAGE_MARKERS = ['Staff Portal', 'Welcome back, please sign in', 'Applicant Portal'];
 
 function hasExpectedLandingMarker(text: string): boolean {
   return LOCAL_PAGE_MARKERS.some((marker) => text.includes(marker));
+}
+
+function isExpectedEntryUrl(url: string): boolean {
+  try {
+    const pathname = new URL(url).pathname;
+    return pathname === '/' || pathname === '/login' || pathname === '/applicant/login';
+  } catch {
+    return false;
+  }
 }
 
 function isProtectedPreview(status: number | undefined, text: string): boolean {
@@ -87,14 +96,17 @@ async function main() {
       const response = await page.goto(baseUrl, { waitUntil: 'domcontentloaded' });
       const status = response?.status();
       const text = (await page.textContent('body')) || '';
+      const currentUrl = page.url();
 
       if (isExternalTarget && isProtectedPreview(status, text)) {
         console.log(`Playwright smoke reached protected preview on ${browserName} (status: ${status ?? 'unknown'})`);
         return;
       }
 
-      if (!hasExpectedLandingMarker(text)) {
-        throw new Error(`Expected landing page content was not found (status: ${status ?? 'unknown'})`);
+      if (!isExpectedEntryUrl(currentUrl) || !hasExpectedLandingMarker(text)) {
+        throw new Error(
+          `Expected entry page content was not found (status: ${status ?? 'unknown'}, url: ${currentUrl})`,
+        );
       }
     } finally {
       await browser.close();
