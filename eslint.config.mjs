@@ -1,11 +1,17 @@
 import { defineConfig, globalIgnores } from "eslint/config";
 import nextVitals from "eslint-config-next/core-web-vitals";
 import nextTs from "eslint-config-next/typescript";
+import react from "eslint-plugin-react";
+import reactHooks from "eslint-plugin-react-hooks";
 
 const eslintConfig = defineConfig([
   ...nextVitals,
   ...nextTs,
   {
+    plugins: {
+      react,
+      "react-hooks": reactHooks,
+    },
     rules: {
       // Temporary migration relaxations to keep CI green while frontend code is being integrated.
       "@typescript-eslint/no-explicit-any": "warn",
@@ -26,6 +32,12 @@ const eslintConfig = defineConfig([
   // Jest config files must use CommonJS require() — disable the rule for them.
   {
     files: ["jest.config.js", "jest.setup.js"],
+    rules: {
+      "@typescript-eslint/no-require-imports": "off",
+    },
+  },
+  {
+    files: ["scripts/**/*.cjs"],
     rules: {
       "@typescript-eslint/no-require-imports": "off",
     },
