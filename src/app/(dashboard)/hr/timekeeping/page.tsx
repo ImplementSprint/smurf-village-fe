@@ -822,9 +822,7 @@ function EmployeeSlideOver({
   return (
     <>
       {/* Backdrop */}
-      <button
-        type="button"
-        aria-label="Close employee details panel"
+      <div
         className={`fixed inset-0 bg-black/40 z-40 backdrop-blur-sm transition-opacity duration-200 ${
           mounted ? "opacity-100" : "opacity-0"
         }`}

@@ -230,22 +230,22 @@ function ApplicationForm({
             <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-3">Your Information</p>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <label htmlFor="jobs-apply-first-name" className="text-xs text-muted-foreground font-medium">First Name</label>
-                <Input id="jobs-apply-first-name" value={autoFill.first_name} readOnly className="h-9 bg-muted/30 text-muted-foreground cursor-not-allowed text-xs" />
+                <label className="text-xs text-muted-foreground font-medium">First Name</label>
+                <Input value={autoFill.first_name} readOnly className="h-9 bg-muted/30 text-muted-foreground cursor-not-allowed text-xs" />
               </div>
               <div className="space-y-1.5">
-                <label htmlFor="jobs-apply-last-name" className="text-xs text-muted-foreground font-medium">Last Name</label>
-                <Input id="jobs-apply-last-name" value={autoFill.last_name} readOnly className="h-9 bg-muted/30 text-muted-foreground cursor-not-allowed text-xs" />
+                <label className="text-xs text-muted-foreground font-medium">Last Name</label>
+                <Input value={autoFill.last_name} readOnly className="h-9 bg-muted/30 text-muted-foreground cursor-not-allowed text-xs" />
               </div>
             </div>
             <div className="mt-3 space-y-1.5">
-              <label htmlFor="jobs-apply-email" className="text-xs text-muted-foreground font-medium">Email</label>
-              <Input id="jobs-apply-email" value={autoFill.email} readOnly className="h-9 bg-muted/30 text-muted-foreground cursor-not-allowed text-xs" />
+              <label className="text-xs text-muted-foreground font-medium">Email</label>
+              <Input value={autoFill.email} readOnly className="h-9 bg-muted/30 text-muted-foreground cursor-not-allowed text-xs" />
             </div>
             {autoFill.phone_number && (
               <div className="mt-3 space-y-1.5">
-                <label htmlFor="jobs-apply-phone" className="text-xs text-muted-foreground font-medium">Phone Number</label>
-                <Input id="jobs-apply-phone" value={autoFill.phone_number} readOnly className="h-9 bg-muted/30 text-muted-foreground cursor-not-allowed text-xs" />
+                <label className="text-xs text-muted-foreground font-medium">Phone Number</label>
+                <Input value={autoFill.phone_number} readOnly className="h-9 bg-muted/30 text-muted-foreground cursor-not-allowed text-xs" />
               </div>
             )}
             <p className="text-[10px] text-muted-foreground/50 mt-2">Pulled from your account profile.</p>
@@ -836,12 +836,12 @@ export default function ApplicantJobsPage() {
                         </span>
                         {displayedJob.employment_type && (
                           <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/10 border border-white/15 text-[10px] font-semibold text-white/75">
-                            <Briefcase className="h-3 w-3" /> {displayedJob.employment_type}
+                            <Briefcase className="h-3 w-3" />{displayedJob.employment_type}
                           </span>
                         )}
                         {displayedJob.location && (
                           <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/10 border border-white/15 text-[10px] font-semibold text-white/75">
-                            <MapPin className="h-3 w-3" /> {displayedJob.location}
+                            <MapPin className="h-3 w-3" />{displayedJob.location}
                           </span>
                         )}
                         {isNewJob(displayedJob.posted_at) && (

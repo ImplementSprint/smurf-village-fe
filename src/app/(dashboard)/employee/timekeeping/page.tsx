@@ -468,23 +468,17 @@ export default function EmployeeTimekeepingPage() {
     return () => clearInterval(t);
   }, []);
 
-  // Request GPS only when the user starts a punch flow.
-  // This keeps location collection purpose-limited to attendance actions.
+  // GPS on mount
   useEffect(() => {
-    const isPunchFlow = modal === "time-in" || modal === "time-out";
-    if (!isPunchFlow || location) return;
-
     if (!navigator.geolocation) {
       setLocationError("Geolocation is not supported by your browser.");
       return;
     }
-
-    setLocationError(null);
     navigator.geolocation.getCurrentPosition(
       pos => setLocation({ latitude: pos.coords.latitude, longitude: pos.coords.longitude }),
       () => setLocationError("Location access denied. Please allow location to clock in or out.")
     );
-  }, [modal, location]);
+  }, []);
 
   // Fetch status + timesheet
   useEffect(() => {
@@ -511,7 +505,6 @@ export default function EmployeeTimekeepingPage() {
   }
 
   async function handleConfirmPunch(type: "time-in" | "time-out", signOut = false) {
-    // Strict policy: location is mandatory to submit time-in/time-out.
     if (!location) {
       setActionError(locationError || "Location not available. Please allow location access.");
       setModal(null);
@@ -904,7 +897,7 @@ export default function EmployeeTimekeepingPage() {
                 {location ? (
                   <span className="text-white/90">{location.latitude.toFixed(4)}, {location.longitude.toFixed(4)}</span>
                 ) : (
-                  <span className="text-white/50">{locationError ?? "Location will be requested when you clock in/out."}</span>
+                  <span className="text-white/50">{locationError ?? "Acquiring location..."}</span>
                 )}
               </div>
 

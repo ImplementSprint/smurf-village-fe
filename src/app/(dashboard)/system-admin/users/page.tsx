@@ -82,18 +82,6 @@ function formatDate(value: string | null) {
     : d.toLocaleString("en-US", { year: "numeric", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
 }
 
-function isValidEmailInput(email: string): boolean {
-  const value = email.trim();
-  if (!value || value.includes(" ")) return false;
-
-  const atIndex = value.indexOf("@");
-  if (atIndex <= 0 || atIndex !== value.lastIndexOf("@")) return false;
-
-  const domain = value.slice(atIndex + 1);
-  const dotIndex = domain.indexOf(".");
-  return dotIndex > 0 && dotIndex < domain.length - 1 && !domain.includes("..");
-}
-
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
 function StatCard({ label, value, sub, color }: Readonly<{ label: string; value: number; sub: string; color: string }>) {
@@ -265,7 +253,7 @@ function AddUserPanel({ roles, onClose, onCreated }: Readonly<{
     if (!form.username.trim()) e.username = "Required";
     else if (/\s/.test(form.username)) e.username = "Username must not contain spaces";
     if (!form.email.trim()) e.email = "Required";
-    else if (!isValidEmailInput(form.email)) e.email = "Invalid email";
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) e.email = "Invalid email";
     if (!form.role_id) e.role_id = "Required";
     return e;
   };

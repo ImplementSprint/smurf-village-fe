@@ -234,20 +234,15 @@ export default function ApplicantProfilePage() {
           <div className="bg-card border rounded-xl shadow-sm p-5 space-y-4">
             {/* Avatar */}
             <div className="flex flex-col items-center gap-3">
-              <button
-                type="button"
-                aria-label="Upload profile photo"
-                className="relative group cursor-pointer rounded-full"
-                onClick={() => photoInputRef.current?.click()}
-              >
+              <div className="relative group cursor-pointer" onClick={() => photoInputRef.current?.click()}>
                 <div className="h-24 w-24 rounded-full border-4 border-primary/20 overflow-hidden bg-primary/10 flex items-center justify-center text-3xl font-bold text-primary">
                   {profilePhoto ? <img src={profilePhoto} alt="Profile" className="h-full w-full object-cover" /> : initials}
                 </div>
                 <div className="absolute inset-0 rounded-full bg-black/40 opacity-0 group-hover:opacity-100 transition-all duration-200 flex items-center justify-center">
-                  <Camera className="h-5 w-5 text-white" aria-hidden="true" />
+                  <Camera className="h-5 w-5 text-white" />
                 </div>
-              </button>
-              <input ref={photoInputRef} type="file" accept="image/*" className="hidden" onChange={handlePhotoChange} />
+                <input ref={photoInputRef} type="file" accept="image/*" className="hidden" onChange={handlePhotoChange} />
+              </div>
               <div className="text-center">
                 <p className="text-base font-bold tracking-tight">{displayName}</p>
                 <span className="inline-flex items-center mt-1 text-[10px] font-bold uppercase tracking-wide rounded-full px-2.5 py-0.5 bg-primary text-white">Applicant</span>

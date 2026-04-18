@@ -265,9 +265,8 @@ function ApplicantPortalAuthInner() {
               <>
                 <div className="flex gap-3">
                   <div className="space-y-2 flex-1">
-                    <label htmlFor="auth-first-name" className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground ml-1">First Name</label>
+                    <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground ml-1">First Name</label>
                     <Input
-                      id="auth-first-name"
                       type="text"
                       placeholder="John"
                       className="h-11 bg-background"
@@ -277,9 +276,8 @@ function ApplicantPortalAuthInner() {
                     />
                   </div>
                   <div className="space-y-2 flex-1">
-                    <label htmlFor="auth-last-name" className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground ml-1">Last Name</label>
+                    <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground ml-1">Last Name</label>
                     <Input
-                      id="auth-last-name"
                       type="text"
                       placeholder="Doe"
                       className="h-11 bg-background"
@@ -290,11 +288,10 @@ function ApplicantPortalAuthInner() {
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <label htmlFor="auth-phone" className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground ml-1">
+                  <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground ml-1">
                     Phone Number <span className="normal-case font-normal text-muted-foreground/60">(optional)</span>
                   </label>
                   <Input
-                    id="auth-phone"
                     type="tel"
                     placeholder="+63 917 123 4567"
                     className="h-11 bg-background"
@@ -306,9 +303,8 @@ function ApplicantPortalAuthInner() {
             )}
 
             <div className="space-y-2">
-              <label htmlFor="auth-email" className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground ml-1">Email Address</label>
+              <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground ml-1">Email Address</label>
               <Input
-                id="auth-email"
                 type="email"
                 placeholder="name@company.com"
                 className="h-11 bg-background"
@@ -319,9 +315,8 @@ function ApplicantPortalAuthInner() {
             </div>
 
             <div className="space-y-2">
-              <label htmlFor="auth-password" className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground ml-1">Security Password</label>
+              <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground ml-1">Security Password</label>
               <PasswordInput
-                id="auth-password"
                 placeholder="••••••••"
                 className="h-11 bg-background"
                 value={password}

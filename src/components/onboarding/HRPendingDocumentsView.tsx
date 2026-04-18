@@ -132,7 +132,7 @@ export default function HRPendingDocumentsView() {
                   <div className="rounded-xl bg-gray-50 border border-gray-200 px-4 py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                     <div>
                       <p className="text-sm font-medium text-gray-900 capitalize">
-                        {doc.document_type.replaceAll("-", " ")}
+                        {doc.document_type.replace(/-/g, " ")}
                       </p>
                       <p className="text-xs text-gray-500">
                         {doc.file_name}{doc.file_size ? ` • ${formatBytes(doc.file_size)}` : ""}
