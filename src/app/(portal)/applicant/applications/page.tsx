@@ -559,6 +559,123 @@ function InterviewTab({
   );
 }
 
+function getInterviewBadgeClass(response: string | undefined, isActiveTab: boolean, hasSchedule: boolean): string {
+  if (response === "accepted") return "bg-green-100 text-green-700 border-green-200";
+  if (response === "declined") return "bg-red-100 text-red-700 border-red-200";
+  if (response === "reschedule_requested") return "bg-amber-100 text-amber-700 border-amber-200";
+  if (hasSchedule) return isActiveTab ? "bg-primary/10 text-primary border-primary/20" : "bg-blue-100 text-blue-700 border-blue-200";
+  return "bg-muted text-muted-foreground border-border";
+}
+
+function getInterviewBadgeText(response: string | undefined, hasSchedule: boolean, status: string): string {
+  if (response === "accepted") return "Accepted";
+  if (response === "declined") return "Declined";
+  if (response === "reschedule_requested") return "Reschedule";
+  if (hasSchedule) return "Scheduled";
+  if (INTERVIEW_STAGES.has(status)) return "Pending";
+  return "—";
+}
+
+function DetailModalJobTab({
+  job, cfg, status,
+}: Readonly<{ job: DetailWithJob["job_postings"]; cfg: { badge: string; label: string }; status: string }>) {
+  return (
+    <>
+      <div className="flex flex-wrap gap-2">
+        {job?.salary_range && (
+          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-green-50 border border-green-200 text-green-700 text-xs font-semibold shadow-sm dark:bg-green-900/20 dark:border-green-700/40 dark:text-green-300">
+            <DollarSign className="h-3.5 w-3.5" />{job.salary_range}
+          </span>
+        )}
+        {job?.employment_type && (
+          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-blue-50 border border-blue-200 text-blue-700 text-xs font-semibold shadow-sm dark:bg-blue-900/20 dark:border-blue-700/40 dark:text-blue-300">
+            <Clock className="h-3.5 w-3.5" />{job.employment_type}
+          </span>
+        )}
+        {job?.location && (
+          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-muted border border-border text-muted-foreground text-xs font-semibold shadow-sm">
+            <MapPin className="h-3.5 w-3.5" />{job.location}
+          </span>
+        )}
+        {job?.closes_at && (
+          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-50 border border-amber-200 text-amber-700 text-xs font-semibold shadow-sm dark:bg-amber-900/20 dark:border-amber-700/40 dark:text-amber-300">
+            <AlarmClock className="h-3.5 w-3.5" />Closes {fmtDate(job.closes_at)}
+          </span>
+        )}
+      </div>
+
+      {job?.description ? (
+        <div>
+          <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground mb-2">Job Description</p>
+          <div className="rounded-xl border border-border bg-muted/20 px-4 py-4 shadow-inner">
+            <p className="text-sm text-foreground leading-relaxed whitespace-pre-wrap">{job.description}</p>
+          </div>
+        </div>
+      ) : (
+        <div className="flex flex-col items-center py-6 text-muted-foreground gap-2">
+          <FileText className="h-7 w-7 opacity-20" />
+          <p className="text-xs">No description available for this posting.</p>
+        </div>
+      )}
+
+      <div>
+        <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground mb-2">Your Application Status</p>
+        <div className="rounded-xl border border-border bg-muted/20 px-4 py-4">
+          <div className="mb-3">
+            <span className={`inline-flex items-center px-2.5 py-1 rounded-full border text-[10px] font-bold uppercase tracking-wide ${cfg.badge}`}>
+              {cfg.label}
+            </span>
+          </div>
+          <StageProgress status={status} />
+          {isTerminal(status) && (
+            <div className={`mt-3 flex items-center gap-2 px-3 py-2.5 rounded-xl border text-sm font-semibold ${
+              status === "hired"
+                ? "bg-green-50 border-green-200 text-green-700 dark:bg-green-900/20 dark:border-green-700/40 dark:text-green-300"
+                : "bg-red-50/60 border-red-200/70 text-red-600 dark:bg-red-900/10 dark:border-red-700/30 dark:text-red-400"
+            }`}>
+              <CheckCircle2 className="h-4 w-4 shrink-0" />
+              {status === "hired" ? "Congratulations! You've been hired." : "This application was not selected."}
+            </div>
+          )}
+        </div>
+      </div>
+    </>
+  );
+}
+
+function DetailModalAnswersTab({ sorted }: Readonly<{ sorted: ApplicationDetail["answers"] }>) {
+  if (sorted.length === 0) {
+    return (
+      <div className="flex flex-col items-center py-10 text-muted-foreground gap-3">
+        <ClipboardList className="h-8 w-8 opacity-20" />
+        <div className="text-center">
+          <p className="text-sm font-medium text-foreground">No questions were required</p>
+          <p className="text-xs mt-1">This job posting had no application form questions.</p>
+        </div>
+      </div>
+    );
+  }
+  return (
+    <div className="space-y-4">
+      <p className="text-xs text-muted-foreground">These are the answers you submitted with your application.</p>
+      {sorted.map((ans, i) => (
+        <div key={ans.answer_id} className="rounded-xl border border-border bg-muted/15 overflow-hidden">
+          <div className="flex items-start gap-2.5 px-4 pt-3 pb-2.5">
+            <span className="h-5 w-5 rounded-full bg-primary/10 text-primary flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">{i + 1}</span>
+            <p className="text-xs font-semibold text-foreground leading-snug">{ans.application_questions.question_text}</p>
+          </div>
+          <div className="h-px bg-border mx-4" />
+          <div className="px-4 pb-3 pt-2.5 pl-11">
+            <p className="text-sm text-foreground leading-relaxed">
+              {ans.answer_value || <span className="text-muted-foreground italic text-xs">No answer provided</span>}
+            </p>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 function DetailModal({ detail, onClose, initialTab }: { readonly detail: DetailWithJob; readonly onClose: () => void; readonly initialTab?: "job" | "answers" | "interview" }) {
   const [tab, setTab] = useState<"job" | "answers" | "interview">(initialTab ?? "job");
   // Prefer the schedule for the current application status (stage), fall back to latest
@@ -661,25 +778,8 @@ function DetailModal({ detail, onClose, initialTab }: { readonly detail: DetailW
           >
             <Calendar className="h-3.5 w-3.5" />
             Interview
-            <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full border ${
-              tab === "interview"
-                ? (schedule?.applicant_response === "accepted" ? "bg-green-100 text-green-700 border-green-200"
-                  : schedule?.applicant_response === "declined" ? "bg-red-100 text-red-700 border-red-200"
-                  : schedule?.applicant_response === "reschedule_requested" ? "bg-amber-100 text-amber-700 border-amber-200"
-                  : schedule ? "bg-primary/10 text-primary border-primary/20"
-                  : "bg-muted text-muted-foreground border-border")
-                : (schedule?.applicant_response === "accepted" ? "bg-green-100 text-green-700 border-green-200"
-                  : schedule?.applicant_response === "declined" ? "bg-red-100 text-red-700 border-red-200"
-                  : schedule?.applicant_response === "reschedule_requested" ? "bg-amber-100 text-amber-700 border-amber-200"
-                  : schedule ? "bg-blue-100 text-blue-700 border-blue-200"
-                  : "bg-muted text-muted-foreground border-border")
-            }`}>
-              {schedule?.applicant_response === "accepted" ? "Accepted"
-                : schedule?.applicant_response === "declined" ? "Declined"
-                : schedule?.applicant_response === "reschedule_requested" ? "Reschedule"
-                : schedule ? "Scheduled"
-                : INTERVIEW_STAGES.has(detail.status) ? "Pending"
-                : "—"}
+            <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full border ${getInterviewBadgeClass(schedule?.applicant_response, tab === "interview", !!schedule)}`}>
+              {getInterviewBadgeText(schedule?.applicant_response, !!schedule, detail.status)}
             </span>
           </button>
           <button
@@ -707,66 +807,7 @@ function DetailModal({ detail, onClose, initialTab }: { readonly detail: DetailW
 
           {/* ── JOB DETAILS TAB ── */}
           {tab === "job" && (
-            <>
-              <div className="flex flex-wrap gap-2">
-                {job?.salary_range && (
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-green-50 border border-green-200 text-green-700 text-xs font-semibold shadow-sm dark:bg-green-900/20 dark:border-green-700/40 dark:text-green-300">
-                    <DollarSign className="h-3.5 w-3.5" />{job.salary_range}
-                  </span>
-                )}
-                {job?.employment_type && (
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-blue-50 border border-blue-200 text-blue-700 text-xs font-semibold shadow-sm dark:bg-blue-900/20 dark:border-blue-700/40 dark:text-blue-300">
-                    <Clock className="h-3.5 w-3.5" />{job.employment_type}
-                  </span>
-                )}
-                {job?.location && (
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-muted border border-border text-muted-foreground text-xs font-semibold shadow-sm">
-                    <MapPin className="h-3.5 w-3.5" />{job.location}
-                  </span>
-                )}
-                {job?.closes_at && (
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-50 border border-amber-200 text-amber-700 text-xs font-semibold shadow-sm dark:bg-amber-900/20 dark:border-amber-700/40 dark:text-amber-300">
-                    <AlarmClock className="h-3.5 w-3.5" />Closes {fmtDate(job.closes_at)}
-                  </span>
-                )}
-              </div>
-
-              {job?.description ? (
-                <div>
-                  <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground mb-2">Job Description</p>
-                  <div className="rounded-xl border border-border bg-muted/20 px-4 py-4 shadow-inner">
-                    <p className="text-sm text-foreground leading-relaxed whitespace-pre-wrap">{job.description}</p>
-                  </div>
-                </div>
-              ) : (
-                <div className="flex flex-col items-center py-6 text-muted-foreground gap-2">
-                  <FileText className="h-7 w-7 opacity-20" />
-                  <p className="text-xs">No description available for this posting.</p>
-                </div>
-              )}
-
-              <div>
-                <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground mb-2">Your Application Status</p>
-                <div className="rounded-xl border border-border bg-muted/20 px-4 py-4">
-                  <div className="mb-3">
-                    <span className={`inline-flex items-center px-2.5 py-1 rounded-full border text-[10px] font-bold uppercase tracking-wide ${cfg.badge}`}>
-                      {cfg.label}
-                    </span>
-                  </div>
-                  <StageProgress status={detail.status} />
-                  {isTerminal(detail.status) && (
-                    <div className={`mt-3 flex items-center gap-2 px-3 py-2.5 rounded-xl border text-sm font-semibold ${
-                      detail.status === "hired"
-                        ? "bg-green-50 border-green-200 text-green-700 dark:bg-green-900/20 dark:border-green-700/40 dark:text-green-300"
-                        : "bg-red-50/60 border-red-200/70 text-red-600 dark:bg-red-900/10 dark:border-red-700/30 dark:text-red-400"
-                    }`}>
-                      <CheckCircle2 className="h-4 w-4 shrink-0" />
-                      {detail.status === "hired" ? "Congratulations! You've been hired." : "This application was not selected."}
-                    </div>
-                  )}
-                </div>
-              </div>
-            </>
+            <DetailModalJobTab job={job} cfg={cfg} status={detail.status} />
           )}
 
           {/* ── INTERVIEW TAB ── */}
@@ -781,33 +822,7 @@ function DetailModal({ detail, onClose, initialTab }: { readonly detail: DetailW
 
           {/* ── MY ANSWERS TAB ── */}
           {tab === "answers" && (
-            sorted.length > 0 ? (
-              <div className="space-y-4">
-                <p className="text-xs text-muted-foreground">These are the answers you submitted with your application.</p>
-                {sorted.map((ans, i) => (
-                  <div key={ans.answer_id} className="rounded-xl border border-border bg-muted/15 overflow-hidden">
-                    <div className="flex items-start gap-2.5 px-4 pt-3 pb-2.5">
-                      <span className="h-5 w-5 rounded-full bg-primary/10 text-primary flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">{i + 1}</span>
-                      <p className="text-xs font-semibold text-foreground leading-snug">{ans.application_questions.question_text}</p>
-                    </div>
-                    <div className="h-px bg-border mx-4" />
-                    <div className="px-4 pb-3 pt-2.5 pl-11">
-                      <p className="text-sm text-foreground leading-relaxed">
-                        {ans.answer_value || <span className="text-muted-foreground italic text-xs">No answer provided</span>}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="flex flex-col items-center py-10 text-muted-foreground gap-3">
-                <ClipboardList className="h-8 w-8 opacity-20" />
-                <div className="text-center">
-                  <p className="text-sm font-medium text-foreground">No questions were required</p>
-                  <p className="text-xs mt-1">This job posting had no application form questions.</p>
-                </div>
-              </div>
-            )
+            <DetailModalAnswersTab sorted={sorted} />
           )}
         </div>
       </div>

@@ -377,6 +377,27 @@ function ApplicationForm({
   );
 }
 
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+function filterJobs(
+  jobs: JobPosting[],
+  search: string,
+  typeFilter: string,
+  locationFilter: string,
+): JobPosting[] {
+  const q = search.toLowerCase();
+  return jobs.filter((job) => {
+    const matchesSearch = !q || job.title.toLowerCase().includes(q) || (job.description ?? "").toLowerCase().includes(q);
+    const matchesType = typeFilter === "All Types" || job.employment_type === typeFilter;
+    const matchesLocation = locationFilter === "All Locations" || job.location === locationFilter;
+    return matchesSearch && matchesType && matchesLocation;
+  });
+}
+
+function scheduleDetailOpen(setDetailVisible: (v: boolean) => void): void {
+  requestAnimationFrame(() => requestAnimationFrame(() => setDetailVisible(true)));
+}
+
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
 export default function ApplicantJobsPage() {
@@ -432,15 +453,10 @@ export default function ApplicantJobsPage() {
     return ["All Locations", ...Array.from(locs)];
   }, [jobs]);
 
-  const filtered = useMemo(() => {
-    const q = search.toLowerCase();
-    return jobs.filter((job) => {
-      const matchesSearch = !q || job.title.toLowerCase().includes(q) || (job.description ?? "").toLowerCase().includes(q);
-      const matchesType = typeFilter === "All Types" || job.employment_type === typeFilter;
-      const matchesLocation = locationFilter === "All Locations" || job.location === locationFilter;
-      return matchesSearch && matchesType && matchesLocation;
-    });
-  }, [jobs, search, typeFilter, locationFilter]);
+  const filtered = useMemo(
+    () => filterJobs(jobs, search, typeFilter, locationFilter),
+    [jobs, search, typeFilter, locationFilter],
+  );
 
   useEffect(() => {
     if (selectedJob && !filtered.find((j) => j.job_posting_id === selectedJob.job_posting_id)) {
@@ -455,11 +471,11 @@ export default function ApplicantJobsPage() {
       setDetailVisible(false);
       setTimeout(() => {
         setDisplayedJob(job);
-        requestAnimationFrame(() => requestAnimationFrame(() => setDetailVisible(true)));
+        scheduleDetailOpen(setDetailVisible);
       }, 150);
     } else {
       setDisplayedJob(job);
-      requestAnimationFrame(() => requestAnimationFrame(() => setDetailVisible(true)));
+      scheduleDetailOpen(setDetailVisible);
     }
   };
 

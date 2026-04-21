@@ -176,6 +176,98 @@ function ConfirmModal({ children, onClose }: Readonly<{ children: React.ReactNod
 
 // ─── Calendar Day Detail Modal ────────────────────────────────────────────────
 
+function CalendarDayModalBody({
+  entry, status, isFuture, absenceReasonCfg,
+}: Readonly<{
+  entry: TimesheetEntry | null;
+  status: string | null;
+  isFuture: boolean;
+  absenceReasonCfg: (typeof ABSENCE_REASONS)[number] | undefined;
+}>) {
+  if (isFuture) {
+    return <p className="text-sm text-muted-foreground text-center py-4">No records yet — this is a future date.</p>;
+  }
+  if (!entry || (!entry.time_in && !entry.absence)) {
+    return (
+      <div className="flex flex-col items-center py-4 gap-2">
+        <div className="h-10 w-10 rounded-full bg-red-50 flex items-center justify-center">
+          <AlertTriangle className="h-5 w-5 text-red-400" />
+        </div>
+        <p className="text-sm font-semibold text-foreground">No Attendance Recorded</p>
+        <p className="text-xs text-muted-foreground text-center">No clock-in or absence report was found for this day.</p>
+      </div>
+    );
+  }
+  if ((status === "excused" || status === "absent") && entry.absence) {
+    return (
+      <div className="space-y-3">
+        <div className={`flex items-center gap-3 p-3 rounded-xl border ${absenceReasonCfg ? `${absenceReasonCfg.bg} ${absenceReasonCfg.border}` : "bg-purple-50 border-purple-200"}`}>
+          {absenceReasonCfg && (
+            <div className="p-2 rounded-lg bg-white/60">
+              <absenceReasonCfg.icon className={`h-4 w-4 ${absenceReasonCfg.color}`} />
+            </div>
+          )}
+          <div>
+            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Absence Reason</p>
+            <p className="text-sm font-bold text-foreground">{entry.absence.absence_reason}</p>
+          </div>
+        </div>
+        {entry.absence.absence_notes && (
+          <div className="p-3 rounded-xl bg-slate-50 border border-slate-200">
+            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1">Notes</p>
+            <p className="text-sm text-foreground leading-relaxed">{entry.absence.absence_notes}</p>
+          </div>
+        )}
+        <div className="flex items-center gap-2 text-xs text-muted-foreground pt-1">
+          <Timer className="h-3.5 w-3.5" />
+          <span>Reported at {formatCellTime(entry.absence.timestamp)}</span>
+        </div>
+      </div>
+    );
+  }
+  return (
+    <div className="space-y-3">
+      {entry.time_in && (
+        <div className="p-3 rounded-xl bg-green-50 border border-green-200">
+          <div className="flex items-center gap-2 mb-2">
+            <LogIn className="h-4 w-4 text-green-600" />
+            <p className="text-[10px] font-bold text-green-700 uppercase tracking-wider">Clock In</p>
+          </div>
+          <p className="text-xl font-bold text-foreground tabular-nums">{formatCellTime(entry.time_in.timestamp)}</p>
+          <p className="text-[10px] text-muted-foreground mt-1 flex items-center gap-1">
+            <MapPin className="h-3 w-3" />
+            {formatCoordinates(entry.time_in.latitude, entry.time_in.longitude)}
+          </p>
+        </div>
+      )}
+      {entry.time_out ? (
+        <div className="p-3 rounded-xl bg-red-50 border border-red-200">
+          <div className="flex items-center gap-2 mb-2">
+            <LogOut className="h-4 w-4 text-red-500" />
+            <p className="text-[10px] font-bold text-red-600 uppercase tracking-wider">Clock Out</p>
+          </div>
+          <p className="text-xl font-bold text-foreground tabular-nums">{formatCellTime(entry.time_out.timestamp)}</p>
+          <p className="text-[10px] text-muted-foreground mt-1 flex items-center gap-1">
+            <MapPin className="h-3 w-3" />
+            {formatCoordinates(entry.time_out.latitude, entry.time_out.longitude)}
+          </p>
+        </div>
+      ) : (
+        <div className="p-3 rounded-xl bg-blue-50 border border-blue-200 flex items-center gap-2">
+          <div className="h-2 w-2 rounded-full bg-blue-500 animate-pulse" />
+          <p className="text-sm font-semibold text-blue-700">Shift still in progress</p>
+        </div>
+      )}
+      {entry.time_in && entry.time_out && (
+        <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-200">
+          <p className="text-xs font-semibold text-muted-foreground">Total Hours Worked</p>
+          <p className="text-sm font-bold">{formatHoursFromTimestamps(entry.time_in.timestamp, entry.time_out.timestamp)}</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function CalendarDayModal({
   dateStr, entry, onClose,
 }: Readonly<{ dateStr: string; entry: TimesheetEntry | null; onClose: () => void }>) {
@@ -213,88 +305,7 @@ function CalendarDayModal({
 
         {/* Body */}
         <div className="p-6 space-y-4">
-          {isFuture ? (
-            <p className="text-sm text-muted-foreground text-center py-4">No records yet — this is a future date.</p>
-          ) : !entry || (!entry.time_in && !entry.absence) ? (
-            <div className="flex flex-col items-center py-4 gap-2">
-              <div className="h-10 w-10 rounded-full bg-red-50 flex items-center justify-center">
-                <AlertTriangle className="h-5 w-5 text-red-400" />
-              </div>
-              <p className="text-sm font-semibold text-foreground">No Attendance Recorded</p>
-              <p className="text-xs text-muted-foreground text-center">No clock-in or absence report was found for this day.</p>
-            </div>
-          ) : (status === "excused" || status === "absent") && entry.absence ? (
-            /* ── Absence / Excused ───────────────────────────────────────── */
-            <div className="space-y-3">
-              <div className={`flex items-center gap-3 p-3 rounded-xl border ${absenceReasonCfg ? `${absenceReasonCfg.bg} ${absenceReasonCfg.border}` : "bg-purple-50 border-purple-200"}`}>
-                {absenceReasonCfg && (
-                  <div className={`p-2 rounded-lg bg-white/60`}>
-                    <absenceReasonCfg.icon className={`h-4 w-4 ${absenceReasonCfg.color}`} />
-                  </div>
-                )}
-                <div>
-                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Absence Reason</p>
-                  <p className="text-sm font-bold text-foreground">{entry.absence.absence_reason}</p>
-                </div>
-              </div>
-              {entry.absence.absence_notes && (
-                <div className="p-3 rounded-xl bg-slate-50 border border-slate-200">
-                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1">Notes</p>
-                  <p className="text-sm text-foreground leading-relaxed">{entry.absence.absence_notes}</p>
-                </div>
-              )}
-              <div className="flex items-center gap-2 text-xs text-muted-foreground pt-1">
-                <Timer className="h-3.5 w-3.5" />
-                <span>Reported at {formatCellTime(entry.absence.timestamp)}</span>
-              </div>
-            </div>
-          ) : (
-            /* ── Punched In ──────────────────────────────────────────────── */
-            <div className="space-y-3">
-              {/* Time In */}
-              {entry.time_in && (
-                <div className="p-3 rounded-xl bg-green-50 border border-green-200">
-                  <div className="flex items-center gap-2 mb-2">
-                    <LogIn className="h-4 w-4 text-green-600" />
-                    <p className="text-[10px] font-bold text-green-700 uppercase tracking-wider">Clock In</p>
-                  </div>
-                  <p className="text-xl font-bold text-foreground tabular-nums">{formatCellTime(entry.time_in.timestamp)}</p>
-                  <p className="text-[10px] text-muted-foreground mt-1 flex items-center gap-1">
-                    <MapPin className="h-3 w-3" />
-                    {formatCoordinates(entry.time_in.latitude, entry.time_in.longitude)}
-                  </p>
-                </div>
-              )}
-
-              {/* Time Out */}
-              {entry.time_out ? (
-                <div className="p-3 rounded-xl bg-red-50 border border-red-200">
-                  <div className="flex items-center gap-2 mb-2">
-                    <LogOut className="h-4 w-4 text-red-500" />
-                    <p className="text-[10px] font-bold text-red-600 uppercase tracking-wider">Clock Out</p>
-                  </div>
-                  <p className="text-xl font-bold text-foreground tabular-nums">{formatCellTime(entry.time_out.timestamp)}</p>
-                  <p className="text-[10px] text-muted-foreground mt-1 flex items-center gap-1">
-                    <MapPin className="h-3 w-3" />
-                    {formatCoordinates(entry.time_out.latitude, entry.time_out.longitude)}
-                  </p>
-                </div>
-              ) : (
-                <div className="p-3 rounded-xl bg-blue-50 border border-blue-200 flex items-center gap-2">
-                  <div className="h-2 w-2 rounded-full bg-blue-500 animate-pulse" />
-                  <p className="text-sm font-semibold text-blue-700">Shift still in progress</p>
-                </div>
-              )}
-
-              {/* Hours worked */}
-              {entry.time_in && entry.time_out && (
-                <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-200">
-                  <p className="text-xs font-semibold text-muted-foreground">Total Hours Worked</p>
-                  <p className="text-sm font-bold">{formatHoursFromTimestamps(entry.time_in.timestamp, entry.time_out.timestamp)}</p>
-                </div>
-              )}
-            </div>
-          )}
+          <CalendarDayModalBody entry={entry} status={status} isFuture={isFuture} absenceReasonCfg={absenceReasonCfg} />
         </div>
       </div>
     </div>
