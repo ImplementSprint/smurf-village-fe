@@ -511,11 +511,11 @@ function InterviewTab({
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground flex items-center gap-1">
-              Reason
-              <span className="text-red-500">*</span>
+            <label htmlFor="interview-reason" className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground flex items-center gap-1">
+              Reason {" "}<span className="text-red-500" aria-hidden="true">*</span>
             </label>
             <Textarea
+              id="interview-reason"
               value={reason}
               onChange={(e) => setReason(e.target.value)}
               placeholder={cfg.placeholder}
@@ -708,8 +708,17 @@ function DetailModal({ detail, onClose, initialTab }: { readonly detail: DetailW
   }
 
   return (
-    <div role="presentation" className="fixed inset-0 z-60 flex items-center justify-center bg-black/40 animate-in fade-in duration-200 p-4" onClick={onClose} onKeyDown={(e) => { if (e.key === "Escape") onClose(); }}>
-      <div role="dialog" aria-modal="true" className="bg-card border border-border rounded-2xl shadow-2xl w-full max-w-lg max-h-[92vh] overflow-hidden flex flex-col animate-in zoom-in-95 duration-200" onClick={(e) => e.stopPropagation()} onKeyDown={(e) => e.stopPropagation()}>
+    <div className="fixed inset-0 z-60 flex items-center justify-center animate-in fade-in duration-200 p-4">
+      <button
+        type="button"
+        aria-label="Close application details"
+        className="absolute inset-0 bg-black/40"
+        onClick={onClose}
+      />
+      <dialog
+        open
+        className="relative bg-card border border-border rounded-2xl shadow-2xl w-full max-w-lg max-h-[92vh] overflow-hidden flex flex-col animate-in zoom-in-95 duration-200"
+      >
 
         {/* Gradient header */}
         <div className="relative overflow-hidden rounded-t-2xl bg-[linear-gradient(135deg,#0f172a_0%,#172554_55%,#134e4a_100%)] px-6 pt-5 pb-0">
@@ -825,7 +834,7 @@ function DetailModal({ detail, onClose, initialTab }: { readonly detail: DetailW
             <DetailModalAnswersTab sorted={sorted} />
           )}
         </div>
-      </div>
+      </dialog>
     </div>
   );
 }

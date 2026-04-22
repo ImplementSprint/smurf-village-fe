@@ -265,8 +265,9 @@ function ApplicantPortalAuthInner() {
               <>
                 <div className="flex gap-3">
                   <div className="space-y-2 flex-1">
-                    <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground ml-1">First Name</label>
+                    <label htmlFor="applicant-first-name" className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground ml-1">First Name</label>
                     <Input
+                      id="applicant-first-name"
                       type="text"
                       placeholder="John"
                       className="h-11 bg-background"
@@ -276,8 +277,9 @@ function ApplicantPortalAuthInner() {
                     />
                   </div>
                   <div className="space-y-2 flex-1">
-                    <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground ml-1">Last Name</label>
+                    <label htmlFor="applicant-last-name" className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground ml-1">Last Name</label>
                     <Input
+                      id="applicant-last-name"
                       type="text"
                       placeholder="Doe"
                       className="h-11 bg-background"
@@ -288,10 +290,11 @@ function ApplicantPortalAuthInner() {
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground ml-1">
+                  <label htmlFor="applicant-phone" className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground ml-1">
                     Phone Number <span className="normal-case font-normal text-muted-foreground/60">(optional)</span>
                   </label>
                   <Input
+                    id="applicant-phone"
                     type="tel"
                     placeholder="+63 917 123 4567"
                     className="h-11 bg-background"
@@ -303,8 +306,9 @@ function ApplicantPortalAuthInner() {
             )}
 
             <div className="space-y-2">
-              <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground ml-1">Email Address</label>
+              <label htmlFor="applicant-email" className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground ml-1">Email Address</label>
               <Input
+                id="applicant-email"
                 type="email"
                 placeholder="name@company.com"
                 className="h-11 bg-background"
@@ -315,8 +319,9 @@ function ApplicantPortalAuthInner() {
             </div>
 
             <div className="space-y-2">
-              <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground ml-1">Security Password</label>
+              <label htmlFor="applicant-password" className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground ml-1">Security Password</label>
               <PasswordInput
+                id="applicant-password"
                 placeholder="••••••••"
                 className="h-11 bg-background"
                 value={password}

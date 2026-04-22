@@ -57,6 +57,18 @@ const result = spawnSync(process.execPath, [jestBin, ...sanitizedArgs], {
   env: process.env,
 });
 
+function normalizeLcovFile(lcovPath) {
+  if (!fs.existsSync(lcovPath)) return;
+
+  const original = fs.readFileSync(lcovPath, "utf8");
+  const normalized = original.replaceAll(/^SF:(.*)$/gm, (_, sourceFile) => `SF:${sourceFile.replaceAll("\\", "/")}`);
+
+  if (normalized !== original) {
+    fs.writeFileSync(lcovPath, normalized, "utf8");
+    console.log("[jest-wrapper] normalized lcov SF paths to forward slashes");
+  }
+}
+
 // Debug: Check if coverage files exist after Jest runs
 console.log("[jest-wrapper] Jest exit code:", result.status);
 const coverageDir = path.join(process.cwd(), "coverage");
@@ -64,8 +76,10 @@ if (fs.existsSync(coverageDir)) {
   const files = fs.readdirSync(coverageDir);
   console.log("[jest-wrapper] coverage/ contents:", JSON.stringify(files));
   if (files.includes("lcov.info")) {
+    const lcovPath = path.join(coverageDir, "lcov.info");
+    normalizeLcovFile(lcovPath);
     console.log("[jest-wrapper] ✓ lcov.info exists");
-    const lcovStats = fs.statSync(path.join(coverageDir, "lcov.info"));
+    const lcovStats = fs.statSync(lcovPath);
     console.log("[jest-wrapper] lcov.info size:", lcovStats.size, "bytes");
   } else {
     console.log("[jest-wrapper] ✗ lcov.info MISSING");
