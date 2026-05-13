@@ -140,7 +140,11 @@ export function HRForms({ forms, remarks, onUpdate }: Readonly<HRFormsProps>) {
     );
   };
 
-  const formsRemarks = remarks.filter(r => r.tab_tag === "Forms");
+  const isFormsRemark = (tag: string) => {
+    const v = (tag || "").trim().toLowerCase();
+    return v === "forms" || v === "hr forms" || v === "hr_forms";
+  };
+  const formsRemarks = remarks.filter(r => isFormsRemark(r.tab_tag));
 
   return (
     <div className="space-y-4">
@@ -153,7 +157,7 @@ export function HRForms({ forms, remarks, onUpdate }: Readonly<HRFormsProps>) {
         <div className="space-y-4">
           {forms.map((form) => {
             const fields = getFormFields(form);
-            const formRemarks = remarks.filter(r => r.tab_tag === "Forms");
+            const formRemarks = remarks.filter(r => isFormsRemark(r.tab_tag));
             return (
               <Card key={form.onboarding_item_id} className={form.is_required ? "border-l-4 border-l-red-500" : ""}>
                 <CardHeader className="pb-3">
