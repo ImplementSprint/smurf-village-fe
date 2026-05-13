@@ -393,16 +393,23 @@ export class TimekeepingService {
 
   private resolveEffectiveDate(rawDate?: string | null): string {
     const todayInManila = this.getManilaDateString();
-    if (!rawDate) return todayInManila;
+    const tomorrowInManila = this.addDaysInManila(todayInManila, 1);
+    if (!rawDate) return tomorrowInManila;
 
     const normalized = String(rawDate).trim();
     if (!/^\d{4}-\d{2}-\d{2}$/.test(normalized)) {
       throw new BadRequestException('effective_date must be in YYYY-MM-DD format.');
     }
-    if (normalized < todayInManila) {
-      throw new BadRequestException('effective_date cannot be in the past.');
+    if (normalized < tomorrowInManila) {
+      throw new BadRequestException('effective_date must be tomorrow or later.');
     }
     return normalized;
+  }
+
+  private addDaysInManila(dateStr: string, days: number): string {
+    const base = new Date(`${dateStr}T00:00:00+08:00`);
+    base.setUTCDate(base.getUTCDate() + days);
+    return new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Manila' }).format(base);
   }
 
   private async getUpdaterName(userId?: string | null): Promise<string | null> {
