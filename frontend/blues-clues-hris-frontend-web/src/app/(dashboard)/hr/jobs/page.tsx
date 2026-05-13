@@ -1582,10 +1582,12 @@ function InterviewScheduleForm({
   const durationLabel = formatDuration(durationMins);
   const timeInvalid = !!(form.time && form.endTime && durationMins <= 0);
 
-  // Disallow past dates and enforce same-day minimum lead time when today is selected
-  const todayStr = new Date().toISOString().slice(0, 10);
+  // Disallow today/past dates for interview scheduling (tomorrow onwards only)
+  const todayStr = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Manila" }).format(new Date());
+  const tomorrowDate = new Date(`${todayStr}T00:00:00+08:00`);
+  tomorrowDate.setDate(tomorrowDate.getDate() + 1);
+  const tomorrowStr = tomorrowDate.toISOString().slice(0, 10);
   const now = new Date();
-  const nowTimeStr = now.toTimeString().slice(0, 5); // HH:MM
   const leadTime = new Date(now.getTime() + MIN_INTERVIEW_LEAD_MINUTES * 60 * 1000);
   const leadDateStr = leadTime.toISOString().slice(0, 10);
   const leadTimeStr = leadTime.toTimeString().slice(0, 5);
@@ -1600,8 +1602,8 @@ function InterviewScheduleForm({
       toast.error("Date, start time, end time, and interviewer name are required.");
       return;
     }
-    if (form.date < todayStr) {
-      toast.error("Interview date cannot be in the past.");
+    if (form.date <= todayStr) {
+      toast.error("Interview date must be tomorrow or later.");
       return;
     }
     if (form.date < leadDateStr || (form.date === leadDateStr && form.time < leadTimeStr)) {
@@ -1644,7 +1646,6 @@ function InterviewScheduleForm({
           </label>
           <div className="flex gap-1">
             {[
-              { label: "Today",    offset: 0 },
               { label: "Tomorrow", offset: 1 },
             ].map(({ label, offset }) => {
               const d = new Date(); d.setDate(d.getDate() + offset);
@@ -1662,7 +1663,7 @@ function InterviewScheduleForm({
             })}
           </div>
         </div>
-        <Input type="date" value={form.date} onChange={field("date")} min={todayStr} className="h-9" />
+        <Input type="date" value={form.date} onChange={field("date")} min={tomorrowStr} className="h-9" />
         {form.date && (
           <p className="text-xs text-muted-foreground pl-0.5">
             {new Date(`${form.date}T12:00:00`).toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" })}
@@ -2413,23 +2414,23 @@ function ApplicationDetailModal({
                   )}
 
                   {detail?.applicant_profile.resume_url ? (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="w-full h-auto gap-2 justify-start text-xs py-2"
-                      onClick={() => openResumeInNewTab(detail.applicant_profile.resume_url!, detail.applicant_profile.resume_name)}
-                    >
-                      <FileText className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-                      <span className="flex flex-col items-start gap-0.5 min-w-0 flex-1">
-                        <span className="font-medium">View Profile Resume</span>
-                        {detail.applicant_profile.resume_name && (
-                          <span className="truncate max-w-full text-[10px] font-normal text-muted-foreground" title={detail.applicant_profile.resume_name}>
-                            {detail.applicant_profile.resume_name}
-                          </span>
-                        )}
-                      </span>
-                      <ExternalLink className="h-3 w-3 shrink-0 ml-auto" />
-                    </Button>
+                    <div className="rounded-lg border border-border bg-background p-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="w-full h-8 gap-1.5 justify-start text-xs font-medium"
+                        onClick={() => openResumeInNewTab(detail.applicant_profile.resume_url!, detail.applicant_profile.resume_name)}
+                      >
+                        <FileText className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                        View Profile Resume
+                        <ExternalLink className="h-3 w-3 shrink-0 ml-auto" />
+                      </Button>
+                      {detail.applicant_profile.resume_name && (
+                        <p className="mt-1.5 truncate px-1 text-[9px] text-muted-foreground" title={detail.applicant_profile.resume_name}>
+                          {detail.applicant_profile.resume_name}
+                        </p>
+                      )}
+                    </div>
                   ) : (
                     <div className="rounded-lg border border-dashed border-border px-3 py-2 text-center">
                       <p className="text-[10px] text-muted-foreground">No profile resume uploaded</p>

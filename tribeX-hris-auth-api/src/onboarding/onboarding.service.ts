@@ -762,13 +762,22 @@ export class OnboardingService {
       if (stagingResetError) throw new InternalServerErrorException(stagingResetError.message);
     }
 
+    const tabTagFromCategory = (() => {
+      if (tabCategory === 'profile') return 'Profile';
+      if (tabCategory === 'documents') return 'Documents';
+      if (tabCategory === 'tasks') return 'Tasks';
+      if (tabCategory === 'equipment') return 'Equipment';
+      if (tabCategory === 'hr_forms') return 'Forms';
+      return 'Documents';
+    })();
+
     // If there are remarks, save them
     if (dto.remarks) {
       const { error: remarkInsertError } = await supabase.from('onboarding_remarks').insert({
         remark_id: crypto.randomUUID(),
         session_id: item.session_id,
         author_id: authorId ?? crypto.randomUUID(),
-        tab_tag: dto.tab_tag ?? 'Documents',
+        tab_tag: dto.tab_tag ?? tabTagFromCategory,
         remark_text: dto.remarks,
         created_at: new Date().toISOString(),
       });
@@ -1144,6 +1153,76 @@ export class OnboardingService {
     }
 
     return { message: 'Onboarding approved', session_id: sessionId, status: 'approved' };
+  }
+
+  async rejectSession(sessionId: string, reason: string, hrUserId?: string) {
+    const supabase = this.supabaseService.getClient();
+    const trimmedReason = reason?.trim();
+    if (!trimmedReason) throw new BadRequestException('Rejection reason is required.');
+
+    const { data: sessionRow, error: sessionError } = await supabase
+      .from('onboarding_sessions')
+      .select('account_id, status')
+      .eq('session_id', sessionId)
+      .maybeSingle();
+
+    if (sessionError) throw new InternalServerErrorException(sessionError.message);
+    if (!sessionRow) throw new NotFoundException('Session not found.');
+    if ((sessionRow as any).status !== 'for-review') {
+      throw new BadRequestException('Only sessions in "for-review" status can be rejected.');
+    }
+
+    const { error: sessionUpdateError } = await supabase
+      .from('onboarding_sessions')
+      .update({ status: 'in-progress', completed_at: null })
+      .eq('session_id', sessionId);
+    if (sessionUpdateError) throw new InternalServerErrorException(sessionUpdateError.message);
+
+    const { error: remarkInsertError } = await supabase
+      .from('onboarding_remarks')
+      .insert({
+        remark_id: crypto.randomUUID(),
+        session_id: sessionId,
+        author_id: hrUserId ?? crypto.randomUUID(),
+        tab_tag: 'Profile',
+        remark_text: `Final onboarding review rejected: ${trimmedReason}`,
+        created_at: new Date().toISOString(),
+      });
+    if (remarkInsertError) throw new InternalServerErrorException(remarkInsertError.message);
+
+    const ctx = await this.getSessionContext(sessionId);
+    if (ctx) {
+      this.auditService.log(
+        `ONBOARDING_SESSION_REJECTED: session ${sessionId}`,
+        hrUserId ?? ctx.accountId,
+        ctx.companyId,
+        ctx.accountId,
+      ).catch(err => this.logger.error('Failed to write audit log in rejectSession', err));
+
+      this.notificationsService.createNotification({
+        userId: ctx.accountId,
+        companyId: ctx.companyId,
+        type: 'ONBOARDING_REJECTED',
+        title: 'Onboarding Needs Revisions',
+        message: `HR requested updates before approval. Reason: ${trimmedReason}`,
+        metadata: { session_id: sessionId, reason: trimmedReason },
+      }).catch(err => this.logger.error('Failed to create notification in rejectSession', err));
+
+      if (ctx.employeeEmail) {
+        this.mailService.sendOnboardingRejectedEmail({
+          to: ctx.employeeEmail,
+          employeeName: ctx.employeeName,
+          reason: trimmedReason,
+        }).catch(err => this.logger.error('Failed to send onboarding rejected email in rejectSession', err));
+      }
+    }
+
+    return {
+      message: 'Session rejected and returned to applicant for corrections.',
+      session_id: sessionId,
+      status: 'in-progress',
+      reason: trimmedReason,
+    };
   }
 
   // =========================================================

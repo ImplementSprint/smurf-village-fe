@@ -872,7 +872,38 @@ export class MailService {
     }
   }
 
-  // ─── Profile Change Reviewed ─────────────────────────────────────────────────
+    async sendOnboardingRejectedEmail(opts: {
+    to: string;
+    employeeName: string;
+    reason: string;
+  }): Promise<void> {
+    const header = brandHeader(
+      'Onboarding Needs Revisions',
+      'Your final onboarding review was returned for updates',
+      STATUS.warning.headerBg,
+    );
+
+    const body = `
+      ${bodyText(`Hi <strong>${opts.employeeName}</strong>, your onboarding submission has been reviewed by HR and needs updates before final approval.`)}
+
+      ${noteCard('Reason from HR', opts.reason, STATUS.warning.bg, STATUS.warning.border)}
+
+      ${divider()}
+
+      ${bodyText('<strong>Next step:</strong> Log in to your onboarding portal, apply the required corrections, and resubmit your onboarding for review.', '0')}`;
+
+    try {
+      await this.sendMail({
+        from: this.from,
+        to: opts.to,
+        subject: 'Onboarding update: revisions requested by HR',
+        html: emailWrapper(header, body),
+      });
+    } catch (error) {
+      this.logger.error('Failed to send onboarding rejected email', error);
+    }
+  }
+// ─── Profile Change Reviewed ─────────────────────────────────────────────────
 
   async sendProfileChangeReviewedEmail(opts: {
     to: string;
@@ -999,4 +1030,5 @@ export class MailService {
     }
   }
 }
+
 

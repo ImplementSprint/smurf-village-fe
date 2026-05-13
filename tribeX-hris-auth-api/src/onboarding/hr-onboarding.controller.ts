@@ -4,6 +4,7 @@ import { OnboardingService } from './onboarding.service';
 import { UpdateTaskStatusDto } from './dto/update-task-status.dto';
 import { AddRemarkDto } from './dto/add-remark.dto';
 import { UpdateDeadlineDto } from './dto/update-deadline.dto';
+import { RejectSessionDto } from './dto/reject-session.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../auth/roles.guard';
 import { Roles } from '../auth/roles.decorator';
@@ -61,5 +62,12 @@ export class HrOnboardingController {
   @ApiOperation({ summary: 'Final approval of completed onboarding' })
   approveSession(@Param('sessionId') sessionId: string, @Req() req: any) {
     return this.onboardingService.approveSession(sessionId, req.user.sub_userid);
+  }
+
+  @Post('sessions/:sessionId/reject')
+  @Roles(...HR_ONLY)
+  @ApiOperation({ summary: 'Reject full onboarding and send it back to applicant with required reason' })
+  rejectSession(@Param('sessionId') sessionId: string, @Body() dto: RejectSessionDto, @Req() req: any) {
+    return this.onboardingService.rejectSession(sessionId, dto.reason, req.user.sub_userid);
   }
 }
