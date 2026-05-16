@@ -60,6 +60,7 @@ const MENU_CONFIG: Record<PersonaType, MenuSection[]> = {
       items: [
         { name: "Dashboard",   href: "/hr",             icon: LayoutDashboard },
         { name: "Timekeeping", href: "/hr/timekeeping", icon: Clock },
+        { name: "My Payslips", href: "/hr/payslips",    icon: DollarSign },
       ],
     },
     {
@@ -68,6 +69,7 @@ const MENU_CONFIG: Record<PersonaType, MenuSection[]> = {
         { name: "Recruitment", href: "/hr/jobs",       icon: Briefcase },
         { name: "Candidates",  href: "/hr/candidates", icon: Trophy },
         { name: "Onboarding",  href: "/hr/onboarding", icon: UserPlus },
+        { name: "Offboarding", href: "/hr/offboarding", icon: LogOut },
         { name: "Approvals",   href: "/hr/approvals",  icon: ShieldCheck },
       ],
     },
@@ -84,7 +86,10 @@ const MENU_CONFIG: Record<PersonaType, MenuSection[]> = {
       items: [
         { name: "Dashboard",   href: "/manager",             icon: LayoutDashboard },
         { name: "Team",        href: "/manager/team",        icon: Users },
+        { name: "Performance", href: "/manager/performance", icon: BarChart },
         { name: "Timekeeping", href: "/manager/timekeeping", icon: Clock },
+        { name: "My Payslips", href: "/manager/payslips",    icon: DollarSign },
+        { name: "Offboarding", href: "/manager/offboarding", icon: LogOut },
         { name: "Approvals",   href: "/manager/approvals",   icon: ClipboardCheck },
       ],
     },
@@ -104,7 +109,11 @@ const MENU_CONFIG: Record<PersonaType, MenuSection[]> = {
       items: [
         { name: "Dashboard",   href: "/employee",             icon: LayoutDashboard },
         { name: "Timekeeping", href: "/employee/timekeeping", icon: Clock },
+        { name: "Performance", href: "/employee/performance", icon: BarChart },
+        { name: "Leave",       href: "/employee/leave",       icon: FileText },
         { name: "My Profile",  href: "/employee/profile",     icon: Users },
+        { name: "Payslips",    href: "/employee/payslips",    icon: DollarSign },
+        { name: "Offboarding", href: "/employee/offboarding", icon: LogOut },
         { name: "Documents",   href: "/employee/documents",   icon: FileCheck },
       ],
     },
@@ -137,6 +146,7 @@ const MENU_CONFIG: Record<PersonaType, MenuSection[]> = {
       group: "System",
       items: [
         { name: "Subscriptions",   href: "/system-admin/subscriptions", icon: DollarSign },
+        { name: "Performance",     href: "/system-admin/performance-settings", icon: BarChart },
         { name: "Audit Logs",      href: "/system-admin/audit-logs",    icon: ScrollText },
         { name: "Global Settings", href: "/system-admin/settings",      icon: ClipboardCheck },
       ],

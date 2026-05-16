@@ -1277,6 +1277,9 @@ export class UsersService {
       dto.department_id,
     );
     const normalizedStartDate = this.normalizeOptionalString(dto.start_date);
+    const normalizedAccountStatus = this.normalizeOptionalString(
+      dto.account_status,
+    );
 
     if (normalizedFirstName !== undefined) {
       if (!normalizedFirstName) {
@@ -1313,6 +1316,13 @@ export class UsersService {
 
     if (normalizedStartDate !== undefined) {
       updates.start_date = normalizedStartDate;
+    }
+
+    if (normalizedAccountStatus !== undefined) {
+      if (!normalizedAccountStatus) {
+        throw new BadRequestException('account_status cannot be empty.');
+      }
+      updates.account_status = normalizedAccountStatus;
     }
 
     // Extended profile fields (System Admin only; HR can read but not write these via admin update)

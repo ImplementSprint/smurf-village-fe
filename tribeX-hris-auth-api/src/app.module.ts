@@ -19,6 +19,11 @@ import { AuditModule } from './audit/audit.module';
 import { OnboardingModule } from './onboarding/onboarding.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { SubscriptionModule } from './subscription/subscription.module';
+import { LeaveModule } from './leave/leave.module';
+import { PayrollModule } from './payroll/payroll.module';
+import { CnbModule } from './cnb/cnb.module';
+import { OffboardingModule } from './offboarding/offboarding.module';
+import { PerformanceModule } from './performance/performance.module';
 
 const shouldValidateEnv = process.env.NODE_ENV === 'production';
 
@@ -45,6 +50,11 @@ const shouldValidateEnv = process.env.NODE_ENV === 'production';
     OnboardingModule,
     NotificationsModule,
     SubscriptionModule,
+    LeaveModule,
+    PayrollModule,
+    CnbModule,
+    OffboardingModule,
+    PerformanceModule,
   ],
   controllers: [AppController],
   providers: [AppService],
