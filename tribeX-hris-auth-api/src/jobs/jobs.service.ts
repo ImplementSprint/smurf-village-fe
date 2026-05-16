@@ -857,6 +857,16 @@ export class JobsService {
 
   async scheduleInterview(applicationId: string, dto: ScheduleInterviewDto, companyId: string) {
     const supabase = this.supabaseService.getClient();
+    const minLeadMinutes = 120;
+    const scheduledAt = new Date(`${dto.scheduled_date}T${dto.scheduled_time}:00+08:00`);
+    if (Number.isNaN(scheduledAt.getTime())) {
+      throw new BadRequestException('Invalid interview schedule date/time.');
+    }
+    const now = new Date();
+    const minAllowed = new Date(now.getTime() + minLeadMinutes * 60 * 1000);
+    if (scheduledAt < minAllowed) {
+      throw new BadRequestException('Interview must be scheduled at least 2 hours ahead.');
+    }
 
     // Verify application belongs to this company
     const { data: app, error: appError } = await supabase
@@ -931,7 +941,7 @@ export class JobsService {
         technical_interview: 'Technical Interview',
         final_interview:     'Final Interview',
       };
-      await this.mailService.sendInterviewScheduleEmail({
+      this.mailService.sendInterviewScheduleEmail({
         to:               profile.email,
         applicantName,
         jobTitle:         posting?.title ?? 'the position',
@@ -946,6 +956,8 @@ export class JobsService {
         interviewerName:  dto.interviewer_name,
         interviewerTitle: dto.interviewer_title,
         notes:            dto.notes,
+      }).catch((err: Error) => {
+        this.logger.error(`Interview schedule email failed for application ${applicationId}: ${err?.message}`);
       });
     }
 
@@ -1015,7 +1027,7 @@ export class JobsService {
 
     if (profile?.email) {
       const applicantName = [profile.first_name, profile.last_name].filter(Boolean).join(' ') || 'Applicant';
-      await this.mailService.sendInterviewCancellationEmail({
+      this.mailService.sendInterviewCancellationEmail({
         to:            profile.email,
         applicantName,
         jobTitle:      posting?.title ?? 'the position',
@@ -1023,6 +1035,8 @@ export class JobsService {
         scheduledTime: schedule.scheduled_time,
         stageLabel:    stageLabelMap[stage] ?? stage,
         reason:        reason ?? null,
+      }).catch((err: Error) => {
+        this.logger.error(`Interview cancellation email failed for application ${applicationId}: ${err?.message}`);
       });
     }
 
