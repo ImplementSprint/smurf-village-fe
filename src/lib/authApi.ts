@@ -14,12 +14,21 @@ export async function loginApi(body: {
   password: string;
   rememberMe: boolean;
 }) {
-  const res = await fetch(`${API_BASE_URL}/login`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    credentials: "include", // receive the HttpOnly refresh_token cookie
-    body: JSON.stringify(body),
-  });
+  let res: Response;
+  try {
+    res = await fetch(`${API_BASE_URL}/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include", // receive the HttpOnly refresh_token cookie
+      body: JSON.stringify(body),
+    });
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Network request failed";
+    throw new Error(
+      `Cannot reach the login server at ${API_BASE_URL}. Check that the backend is running and CORS allows http://localhost:3000. Original error: ${message}`,
+    );
+  }
 
   const data = await res.json().catch(() => ({}));
 
@@ -787,6 +796,81 @@ export async function getMyCompany(): Promise<{ company_id: string; company_name
   const data = await res.json().catch(() => ({}));
   if (!res.ok) throw new Error(data?.message || 'Failed to fetch company info');
   return data;
+}
+
+// ---------------------------------------------------------------------------
+// Leave Requests API
+// ---------------------------------------------------------------------------
+
+export type LeaveReason = 'Sick Leave' | 'Emergency Leave' | 'WFH / Remote' | 'Personal Leave' | 'Vacation Leave' | 'Other';
+
+export type LeaveBalanceCard = {
+  type: string;
+  remaining: number | null;
+  total: number | null;
+};
+
+export type LeaveRequestStatus = 'Pending' | 'Approved' | 'Rejected';
+
+export type LeaveRequestItem = {
+  request_id: string;
+  leave_type: LeaveReason | string;
+  date: string;
+  start_date: string;
+  end_date: string;
+  reason: string;
+  status: 'approved' | 'rejected' | 'pending';
+  notes?: string | null;
+  manager_remark?: string | null;
+  created_at: string;
+};
+
+export async function getMyLeaveBalances(): Promise<LeaveBalanceCard[]> {
+  const res = await authFetch(`${API_BASE_URL}/leave/balances`);
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error((data as { message?: string })?.message || 'Failed to fetch leave balances');
+  return data as LeaveBalanceCard[];
+}
+
+export async function getMyLeaveRequests(): Promise<LeaveRequestItem[]> {
+  const res = await authFetch(`${API_BASE_URL}/leave/requests/me`);
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error((data as { message?: string })?.message || 'Failed to fetch leave requests');
+  const rows = Array.isArray(data) ? data : [];
+  return rows.map((row: any) => {
+    const rawStatus = String(row.status ?? 'Pending').toLowerCase();
+    const normalizedStatus: 'approved' | 'rejected' | 'pending' =
+      rawStatus === 'approved' ? 'approved' : rawStatus === 'rejected' ? 'rejected' : 'pending';
+
+    return {
+      request_id: row.request_id ?? crypto.randomUUID(),
+      leave_type: row.leave_type ?? 'Other',
+      date: row.date ?? row.start_date ?? row.created_at,
+      start_date: row.start_date ?? row.date ?? row.created_at,
+      end_date: row.end_date ?? row.start_date ?? row.date ?? row.created_at,
+      reason: row.reason ?? row.leave_type ?? 'Leave',
+      notes: row.notes ?? row.manager_remark ?? null,
+      manager_remark: row.manager_remark ?? null,
+      status: normalizedStatus,
+      created_at: row.created_at ?? new Date().toISOString(),
+    } as LeaveRequestItem;
+  });
+}
+
+export async function fileLeaveRequestApi(body: {
+  leave_type: LeaveReason;
+  start_date: string;
+  end_date: string;
+  reason: string;
+}): Promise<LeaveRequestItem> {
+  const res = await authFetch(`${API_BASE_URL}/leave/requests`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error((data as { message?: string })?.message || 'Failed to file leave request');
+  return data as LeaveRequestItem;
 }
 
 // ---------------------------------------------------------------------------
