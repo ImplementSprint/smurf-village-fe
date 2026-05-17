@@ -43,3 +43,16 @@ next-env.d.ts
 # Testing artifacts
 test-results/
 playwright-report/
+
+# build caches
+/.swc/
+
+# IDE - keep shared team configs in .vscode (e.g. SonarLint), ignore per-user IDE files
+.idea/
+*.iml
+*.swp
+*.swo
+*~
+
+# OS
+Thumbs.db
