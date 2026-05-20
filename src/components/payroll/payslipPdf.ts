@@ -73,6 +73,30 @@ export function downloadPayslipPdf(
     ...(!breakdown?.benefits?.length && Number(payslip.total_allowances) > 0
       ? [{ item: "Allowances", units: "-", rate: "-", amount: toCurrencyNumber(payslip.total_allowances) }]
       : []),
+    ...(breakdown?.overtime?.hours
+      ? [{
+          item: "Overtime Pay",
+          units: `${breakdown.overtime.hours} hr(s)`,
+          rate: `x${breakdown.overtime.multiplier}`,
+          amount: toCurrencyNumber(breakdown.overtime.pay),
+        }]
+      : []),
+    ...(breakdown?.nightShift?.hours
+      ? [{
+          item: "Night Shift Differential",
+          units: `${breakdown.nightShift.hours} hr(s)`,
+          rate: `x${breakdown.nightShift.multiplier}`,
+          amount: toCurrencyNumber(breakdown.nightShift.pay),
+        }]
+      : []),
+    ...(breakdown?.holiday?.dates?.length
+      ? [{
+          item: "Holiday Premium",
+          units: `${breakdown.holiday.dates.length} holiday(s)`,
+          rate: "-",
+          amount: toCurrencyNumber(breakdown.holiday.pay),
+        }]
+      : []),
   ];
 
   const deductionRows = [
@@ -84,6 +108,9 @@ export function downloadPayslipPdf(
           { item: "Pag-IBIG", amount: toCurrencyNumber(breakdown.pagibig) },
         ]
       : [{ item: "Statutory Deductions", amount: toCurrencyNumber(payslip.statutory_deductions) }]),
+    ...(breakdown?.lateness?.hours
+      ? [{ item: "Late Deduction", amount: toCurrencyNumber(breakdown.lateness.deduction) }]
+      : []),
   ];
 
   const payoutDate = payslip.period?.payout_date
@@ -120,7 +147,7 @@ export function downloadPayslipPdf(
   const drawRect = (x: number, y: number, width: number, height: number, fill = false) =>
     commands.push(`${x} ${y} ${width} ${height} re ${fill ? "B" : "S"}`);
   const drawText = (text: string, x: number, y: number, size = 10) =>
-    commands.push(`BT /F1 ${size} Tf 1 0 0 1 ${x} ${y} Tm (${escapePdfText(text)}) Tj ET`);
+    commands.push(`BT /F1 ${size} Tf 0 0 0 rg 1 0 0 1 ${x} ${y} Tm (${escapePdfText(text)}) Tj ET`);
   const drawRightText = (text: string, rightX: number, y: number, size = 10) => {
     const safe = text ?? "";
     const estimatedWidth = safe.length * size * 0.48;
@@ -159,7 +186,7 @@ export function downloadPayslipPdf(
     ["Employee", context.employeeName],
     ["Employee ID", context.employeeId || "-"],
     ["Email", context.employeeEmail || "-"],
-    ["Payslip ID", payslip.payslip_id],
+    ["Payslip ID", payslip.payslip_code ?? payslip.payslip_id],
     ["Status", payslip.status],
   ].forEach(([label, value]) => {
     drawText(`${label}:`, margin, leftInfoY, 10);
@@ -205,6 +232,7 @@ export function downloadPayslipPdf(
   [tableCol1, tableCol2, tableCol3, tableCol4, tableCol5].forEach((x) =>
     drawLine(x, earningsTop, x, earningsTop - rowHeight * (earningRows.length + 2)),
   );
+  drawRect(tableCol1, earningsTop, tableCol5 - tableCol1, -rowHeight * (earningRows.length + 2), false);
 
   let currentY = earningsTop - rowHeight;
   earningRows.forEach((row) => {
@@ -236,6 +264,7 @@ export function downloadPayslipPdf(
   [tableCol1, deductionCol2, tableCol5].forEach((x) =>
     drawLine(x, deductionsTop, x, deductionsTop - rowHeight * (deductionRows.length + 2)),
   );
+  drawRect(tableCol1, deductionsTop, tableCol5 - tableCol1, -rowHeight * (deductionRows.length + 2), false);
 
   currentY = deductionsTop - rowHeight;
   deductionRows.forEach((row) => {

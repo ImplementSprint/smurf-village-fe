@@ -51,6 +51,8 @@ export interface OffboardingCaseSummary {
   created_at: string;
   updated_at: string;
   employee_name: string | null;
+  employee_role_name?: string | null;
+  selected_template_id?: string | null;
 }
 
 export interface ChecklistItem {
@@ -196,6 +198,38 @@ export interface EmployeeUser {
   last_name: string;
   email?: string;
   employee_id?: string;
+  role_id?: string | null;
+  role_name?: string | null;
+}
+
+export type OffboardingTemplateCategory = "Asset" | "Document" | "Task";
+
+export interface OffboardingTemplateItemInput {
+  item_name: string;
+  description?: string;
+  is_required: boolean;
+  category?: OffboardingTemplateCategory;
+  is_custom?: boolean;
+}
+
+export interface OffboardingTemplateItem extends OffboardingTemplateItemInput {
+  item_id: string;
+  template_id: string;
+}
+
+export interface SystemAdminOffboardingTemplate {
+  template_id: string;
+  company_id: string;
+  template_name: string;
+  employee_type?: string | null;
+  description?: string | null;
+  applicable_offboarding_types?: Array<"Resignation" | "Termination" | "End of Contract">;
+  is_default?: boolean;
+  require_knowledge_transfer?: boolean;
+  system_access_to_revoke?: string[];
+  created_by?: string | null;
+  created_at?: string;
+  offboarding_checklist_template_items: OffboardingTemplateItem[];
 }
 
 // ── Employee API ──────────────────────────────────────────────────────────────
@@ -363,6 +397,7 @@ export async function initiateHROffboarding(payload: {
   reason: string;
   termination_details?: string | null;
   last_working_day: string;
+  template_id?: string | null;
 }): Promise<OffboardingCaseSummary> {
   const res = await fetch(`${API_BASE_URL}/offboarding/hr/cases`, {
     method: "POST",
@@ -371,6 +406,7 @@ export async function initiateHROffboarding(payload: {
       employee_id: payload.employee_id,
       offboarding_type: payload.offboarding_type,
       last_working_day: payload.last_working_day,
+      template_id: payload.template_id ?? null,
       termination: {
         reason: payload.reason,
         termination_details: payload.termination_details ?? null,
@@ -384,11 +420,12 @@ export async function reviewCase(
   caseId: string,
   action: "Accepted" | "Rejected",
   rejection_reason?: string,
+  template_id?: string | null,
 ): Promise<void> {
   const res = await fetch(`${API_BASE_URL}/offboarding/hr/cases/${caseId}/review`, {
     method: "PATCH",
     headers: headers(),
-    body: JSON.stringify({ action, rejection_reason }),
+    body: JSON.stringify({ action, rejection_reason, template_id: template_id ?? null }),
   });
   await handleResponse<unknown>(res);
 }
@@ -490,6 +527,14 @@ export async function triggerJobPosting(caseId: string): Promise<{ job_posting_i
   return handleResponse<{ job_posting_id: string }>(res);
 }
 
+export async function resetHRCase(caseId: string): Promise<{ success: true; case_id: string }> {
+  const res = await fetch(
+    `${API_BASE_URL}/offboarding/hr/cases/${caseId}`,
+    { method: "DELETE", headers: headers() },
+  );
+  return handleResponse<{ success: true; case_id: string }>(res);
+}
+
 // ── Shared ────────────────────────────────────────────────────────────────────
 
 export async function fetchCompanyEmployees(): Promise<EmployeeUser[]> {
@@ -501,6 +546,97 @@ export async function fetchCompanyEmployees(): Promise<EmployeeUser[]> {
   }
   const data = await res.json().catch(() => []);
   return Array.isArray(data) ? data : (data.users ?? data.data ?? []);
+}
+
+export async function getSystemAdminOffboardingTemplates(
+  companyId: string,
+): Promise<SystemAdminOffboardingTemplate[]> {
+  const res = await fetch(
+    `${API_BASE_URL}/offboarding/system-admin/tenants/${companyId}/checklist-templates`,
+    { headers: headers() },
+  );
+  return handleResponse<SystemAdminOffboardingTemplate[]>(res);
+}
+
+export async function getSystemAdminSystemAccessOptions(
+  companyId: string,
+): Promise<string[]> {
+  const res = await fetch(
+    `${API_BASE_URL}/offboarding/system-admin/tenants/${companyId}/system-access-options`,
+    { headers: headers() },
+  );
+  return handleResponse<string[]>(res);
+}
+
+export async function getHROffboardingTemplates(): Promise<SystemAdminOffboardingTemplate[]> {
+  const res = await fetch(
+    `${API_BASE_URL}/offboarding/hr/checklist-templates`,
+    { headers: headers() },
+  );
+  return handleResponse<SystemAdminOffboardingTemplate[]>(res);
+}
+
+export async function createSystemAdminOffboardingTemplate(
+  companyId: string,
+  payload: {
+    template_name: string;
+    employee_type?: string;
+    description?: string;
+    applicable_offboarding_types?: Array<"Resignation" | "Termination" | "End of Contract">;
+    is_default?: boolean;
+    require_knowledge_transfer?: boolean;
+    system_access_to_revoke?: string[];
+    items: OffboardingTemplateItemInput[];
+  },
+): Promise<SystemAdminOffboardingTemplate> {
+  const res = await fetch(
+    `${API_BASE_URL}/offboarding/system-admin/tenants/${companyId}/checklist-templates`,
+    {
+      method: "POST",
+      headers: headers(),
+      body: JSON.stringify(payload),
+    },
+  );
+  return handleResponse<SystemAdminOffboardingTemplate>(res);
+}
+
+export async function updateSystemAdminOffboardingTemplate(
+  companyId: string,
+  templateId: string,
+  payload: {
+    template_name: string;
+    employee_type?: string;
+    description?: string;
+    applicable_offboarding_types?: Array<"Resignation" | "Termination" | "End of Contract">;
+    is_default?: boolean;
+    require_knowledge_transfer?: boolean;
+    system_access_to_revoke?: string[];
+    items: OffboardingTemplateItemInput[];
+  },
+): Promise<SystemAdminOffboardingTemplate> {
+  const res = await fetch(
+    `${API_BASE_URL}/offboarding/system-admin/tenants/${companyId}/checklist-templates/${templateId}`,
+    {
+      method: "PATCH",
+      headers: headers(),
+      body: JSON.stringify(payload),
+    },
+  );
+  return handleResponse<SystemAdminOffboardingTemplate>(res);
+}
+
+export async function deleteSystemAdminOffboardingTemplate(
+  companyId: string,
+  templateId: string,
+): Promise<{ success: true }> {
+  const res = await fetch(
+    `${API_BASE_URL}/offboarding/system-admin/tenants/${companyId}/checklist-templates/${templateId}`,
+    {
+      method: "DELETE",
+      headers: headers(),
+    },
+  );
+  return handleResponse<{ success: true }>(res);
 }
 
 export async function updateUserAccountStatus(

@@ -3,6 +3,7 @@ import { authFetch } from "@/lib/authApi";
 
 export type PayslipEntry = {
   payslip_id: string;
+  payslip_code?: string;
   pay_period: string;
   basic_pay: number;
   allowances: number;
@@ -56,6 +57,7 @@ export type BenefitCatalogItem = {
 
 export type PayslipDetail = {
   payslip_id: string;
+  payslip_code?: string;
   user_id: string;
   company_id: string;
   basic_pay_earned: string;
@@ -89,6 +91,8 @@ export type PayslipDetail = {
   company?: {
     company_id: string;
     company_name: string;
+    company_display_name?: string | null;
+    company_logo_url?: string | null;
   } | null;
 };
 
@@ -105,6 +109,8 @@ export type LeaveRequestForApproval = {
   reviewed_by: string | null;
   reviewed_at: string | null;
   rejection_reason: string | null;
+  attachment_url?: string | null;
+  revocation_reason?: string | null;
   created_at: string;
   employee: {
     user_id: string;
@@ -113,6 +119,23 @@ export type LeaveRequestForApproval = {
     employee_id: string | null;
     email: string;
   } | null;
+};
+
+export type OvertimeRequestForApproval = {
+  ot_id: string;
+  employee_id: string;
+  ot_type: 'NORMAL' | 'REST_DAY' | 'HOLIDAY';
+  ot_date: string;
+  start_time: string;
+  end_time: string;
+  planned_hours: number;
+  reason?: string | null;
+  log_status: 'PENDING' | 'APPROVED' | 'DENIED';
+  reviewed_by?: string | null;
+  reviewed_at?: string | null;
+  review_reason?: string | null;
+  created_at: string;
+  employee?: { first_name: string | null; last_name: string | null; employee_id: string } | null;
 };
 
 export type ThirteenthMonthResult = {
@@ -171,7 +194,13 @@ export type PayslipBreakdown = {
     paidLeaveDays: number;
     unpaidLeaveDays: number;
     payableDays: number;
+    workedDateKeys?: string[];
+    holidayWorkedDates?: string[];
   };
+  overtime?: { hours: number; pay: number; multiplier: number };
+  nightShift?: { hours: number; pay: number; multiplier: number };
+  holiday?: { dates: string[]; pay: number };
+  lateness?: { hours: number; deduction: number; rate: number };
   deductionDefaults?: {
     sss?: { type: string; value: number };
     philhealth?: { type: string; value: number };
@@ -182,6 +211,7 @@ export type PayslipBreakdown = {
 
 export type ComputedPayslip = {
   payslip_id: string;
+  payslip_code?: string;
   user_id: string;
   company_id: string;
   basic_pay_earned: string;
@@ -583,6 +613,51 @@ export async function reviewLeaveRequestApi(
   if (!res.ok) {
     const data = await res.json().catch(() => ({}));
     throw new Error((data as { message?: string })?.message || "Failed to update leave request");
+  }
+}
+
+export async function reviewLeaveRevocationApi(
+  requestId: string,
+  action: 'approve' | 'reject',
+): Promise<void> {
+  const res = await authFetch(`${API_BASE_URL}/leave/requests/${requestId}/review-revocation`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action }),
+  });
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    throw new Error((data as { message?: string })?.message || 'Failed to review revocation');
+  }
+}
+
+export async function getOvertimeRequestsForApproval(
+  status?: string,
+  type?: string,
+): Promise<OvertimeRequestForApproval[]> {
+  const params = new URLSearchParams();
+  if (status) params.set("status", status);
+  if (type) params.set("type", type);
+  const query = params.toString() ? `?${params.toString()}` : "";
+  const res = await authFetch(`${API_BASE_URL}/overtime/requests${query}`);
+  const data = await res.json().catch(() => []);
+  if (!res.ok) throw new Error((data as { message?: string })?.message || "Failed to load OT requests");
+  return data as OvertimeRequestForApproval[];
+}
+
+export async function reviewOvertimeRequestApi(
+  otId: string,
+  action: "approve" | "deny",
+  review_reason?: string,
+): Promise<void> {
+  const res = await authFetch(`${API_BASE_URL}/overtime/requests/${otId}/review`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ action, review_reason: review_reason ?? null }),
+  });
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    throw new Error((data as { message?: string })?.message || "Failed to update OT request");
   }
 }
 

@@ -17,12 +17,14 @@ import {
 } from "@/components/ui/dialog";
 import {
   Clock, CheckCircle, AlertTriangle, UserMinus, Plus, X, Check,
-  KeyRound, DollarSign, Shield, Eye, FileText, Archive, Loader2, Upload, Search,
+  KeyRound, DollarSign, Shield, Eye, FileText, Archive, Loader2, Upload, Search, Trash2,
 } from "lucide-react";
+import { toast } from "sonner";
 import {
   getHRCases,
   getHRCaseDetail,
   getHRFinalPay,
+  getHROffboardingTemplates,
   initiateHROffboarding,
   reviewCase,
   updateChecklistItem,
@@ -36,12 +38,14 @@ import {
   updateHRCaseStatus,
   updateUserAccountStatus,
   triggerJobPosting,
+  resetHRCase,
   fetchCompanyEmployees,
   type OffboardingCaseSummary,
   type OffboardingCaseDetail,
   type ChecklistItem,
   type SystemAccessItem,
   type EmployeeUser,
+  type SystemAdminOffboardingTemplate,
 } from "@/lib/offboardingApi";
 
 // ── Constants ──────────────────────────────────────────────────────────────────
@@ -58,7 +62,53 @@ type InitiateForm = {
   details: string;
   lastWorkingDay: string;
   reason: string;
+  templateId: string;
 };
+
+function normalizeTemplateValue(value?: string | null): string {
+  return String(value ?? "").trim().toLowerCase();
+}
+
+function matchesTemplateScope(
+  template: SystemAdminOffboardingTemplate,
+  offboardingType: string,
+  roleName?: string | null,
+): boolean {
+  const normalizedType = normalizeTemplateValue(offboardingType);
+  const normalizedRole = normalizeTemplateValue(roleName);
+  const applicableTypes = (template.applicable_offboarding_types ?? []).map(normalizeTemplateValue).filter(Boolean);
+  const scopeTokens = String(template.employee_type ?? "")
+    .split(/[\/,|]/)
+    .map(token => normalizeTemplateValue(token))
+    .filter(Boolean);
+
+  const typeMatches =
+    applicableTypes.length > 0
+      ? applicableTypes.includes(normalizedType)
+      : scopeTokens.length === 0 || scopeTokens.includes(normalizedType);
+
+  if (!typeMatches) return false;
+  if (!normalizedRole) return true;
+
+  const roleTokens = scopeTokens.filter(token => token !== normalizedType);
+  return roleTokens.length === 0 || roleTokens.includes(normalizedRole);
+}
+
+function sortTemplatesForRole(
+  templates: SystemAdminOffboardingTemplate[],
+  roleName?: string | null,
+): SystemAdminOffboardingTemplate[] {
+  const normalizedRole = normalizeTemplateValue(roleName);
+  return [...templates].sort((left, right) => {
+    const leftTokens = String(left.employee_type ?? "").split(/[\/,|]/).map(token => normalizeTemplateValue(token)).filter(Boolean);
+    const rightTokens = String(right.employee_type ?? "").split(/[\/,|]/).map(token => normalizeTemplateValue(token)).filter(Boolean);
+    const leftRoleSpecific = normalizedRole ? leftTokens.includes(normalizedRole) : false;
+    const rightRoleSpecific = normalizedRole ? rightTokens.includes(normalizedRole) : false;
+    if (leftRoleSpecific !== rightRoleSpecific) return leftRoleSpecific ? -1 : 1;
+    if (Boolean(left.is_default) !== Boolean(right.is_default)) return left.is_default ? -1 : 1;
+    return String(right.created_at ?? "").localeCompare(String(left.created_at ?? ""));
+  });
+}
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -208,7 +258,7 @@ export default function HROffboardingPage() {
   const [hrDetailsMode, setHrDetailsMode] = useState<"type" | "upload">("type");
   const [hrDetailsFile, setHrDetailsFile] = useState<File | null>(null);
   const [initiateForm, setInitiateForm]   = useState<InitiateForm>({
-    offboardingType: "Termination", details: "", lastWorkingDay: "", reason: "",
+    offboardingType: "Termination", details: "", lastWorkingDay: "", reason: "", templateId: "",
   });
 
   // Employee search
@@ -218,12 +268,27 @@ export default function HROffboardingPage() {
   const [showEmployeeList, setShowEmployeeList]   = useState(false);
   const [employeeLoadError, setEmployeeLoadError] = useState<string | null>(null);
   const [loadingEmployees, setLoadingEmployees]   = useState(false);
+  const [templates, setTemplates]                 = useState<SystemAdminOffboardingTemplate[]>([]);
+  const [loadingTemplates, setLoadingTemplates]   = useState(false);
+  const [reviewTemplateId, setReviewTemplateId]   = useState("");
 
   const fetchCases = useCallback(async () => {
     try {
       const data = await getHRCases();
       setCases(data);
     } catch { /* silently ignore */ }
+  }, []);
+
+  const fetchTemplates = useCallback(async () => {
+    setLoadingTemplates(true);
+    try {
+      const data = await getHROffboardingTemplates();
+      setTemplates(data);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to load offboarding templates.");
+    } finally {
+      setLoadingTemplates(false);
+    }
   }, []);
 
   const fetchDetail = useCallback(async (caseId: string) => {
@@ -263,7 +328,10 @@ export default function HROffboardingPage() {
     }
   }, []);
 
-  useEffect(() => { fetchCases(); }, [fetchCases]);
+  useEffect(() => {
+    fetchCases();
+    fetchTemplates();
+  }, [fetchCases, fetchTemplates]);
 
   useEffect(() => {
     if (showInitiateForm && allEmployees.length === 0 && !loadingEmployees) {
@@ -284,6 +352,22 @@ export default function HROffboardingPage() {
     setFinalPayBreakdown(null);
     fetchDetail(selectedCaseId);
   }, [selectedCaseId, fetchDetail]);
+
+  const initiateTemplates = sortTemplatesForRole(
+    templates.filter((template) => matchesTemplateScope(template, initiateForm.offboardingType, selectedEmployee?.role_name)),
+    selectedEmployee?.role_name,
+  );
+
+  useEffect(() => {
+    if (!showInitiateForm) return;
+    const nextTemplateId =
+      initiateTemplates.find((template) => template.template_id === initiateForm.templateId)?.template_id
+      ?? initiateTemplates[0]?.template_id
+      ?? "";
+    if (nextTemplateId !== initiateForm.templateId) {
+      setInitiateForm((current) => ({ ...current, templateId: nextTemplateId }));
+    }
+  }, [showInitiateForm, initiateTemplates, initiateForm.templateId]);
 
   const selectedCase    = cases.find(c => c.case_id === selectedCaseId) ?? null;
   const isPending       = selectedCase?.status === "Manager_Acknowledged" || selectedCase?.status === "Submitted";
@@ -322,6 +406,25 @@ export default function HROffboardingPage() {
 
   const initiateFormValid = !!(selectedEmployee && initiateForm.lastWorkingDay && initiateForm.reason);
   const initiateLabel     = initiateForm.offboardingType === "End of Contract" ? "Initiate End of Contract" : "Initiate Termination";
+  const reviewTemplates = sortTemplatesForRole(
+    templates.filter((template) => matchesTemplateScope(template, selectedCase?.offboarding_type ?? "", selectedDetail?.employee_role_name ?? selectedCase?.employee_role_name)),
+    selectedDetail?.employee_role_name ?? selectedCase?.employee_role_name,
+  );
+
+  useEffect(() => {
+    if (!selectedCaseId) {
+      setReviewTemplateId("");
+      return;
+    }
+    const nextTemplateId =
+      reviewTemplates.find((template) => template.template_id === reviewTemplateId)?.template_id
+      ?? selectedCase?.selected_template_id
+      ?? reviewTemplates[0]?.template_id
+      ?? "";
+    if (nextTemplateId !== reviewTemplateId) {
+      setReviewTemplateId(nextTemplateId);
+    }
+  }, [selectedCaseId, reviewTemplates, selectedCase?.selected_template_id, reviewTemplateId]);
 
   // ── Handlers ──────────────────────────────────────────────────────────────────
 
@@ -336,11 +439,12 @@ export default function HROffboardingPage() {
         reason: initiateForm.reason,
         termination_details: initiateForm.details || null,
         last_working_day: initiateForm.lastWorkingDay,
+        template_id: initiateForm.templateId || null,
       });
       await fetchCases();
       setSelectedCaseId(created.case_id);
       setShowInitiateForm(false);
-      setInitiateForm({ offboardingType: "Termination", details: "", lastWorkingDay: "", reason: "" });
+      setInitiateForm({ offboardingType: "Termination", details: "", lastWorkingDay: "", reason: "", templateId: "" });
       setSelectedEmployee(null);
       setEmployeeSearch("");
       setHrDetailsMode("type");
@@ -356,7 +460,7 @@ export default function HROffboardingPage() {
     setLoadingAction(`accept-${id}`);
     setError(null);
     try {
-      await reviewCase(id, "Accepted");
+      await reviewCase(id, "Accepted", undefined, reviewTemplateId || null);
       await fetchCases();
       setSelectedCaseId(id);
     } catch (err) {
@@ -378,6 +482,29 @@ export default function HROffboardingPage() {
       setRejectReason("");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to reject case.");
+    } finally {
+      setLoadingAction(null);
+    }
+  }
+
+  async function handleResetCase(caseId: string) {
+    const confirmed = window.confirm(
+      "Reset this offboarding session? This will delete the current offboarding case and its generated checklist, system access, and final-pay session records.",
+    );
+    if (!confirmed) return;
+
+    setLoadingAction(`reset-${caseId}`);
+    setError(null);
+    try {
+      await resetHRCase(caseId);
+      await fetchCases();
+      if (selectedCaseId === caseId) {
+        setSelectedCaseId(null);
+        setSelectedDetail(null);
+      }
+      toast.success("Offboarding session reset.");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to reset offboarding case.");
     } finally {
       setLoadingAction(null);
     }
@@ -702,7 +829,10 @@ export default function HROffboardingPage() {
               <Label>Employee</Label>
               {selectedEmployee ? (
                 <div className="flex items-center justify-between border rounded-md px-3 py-2.5 bg-slate-50">
-                  <span className="text-sm font-medium">{selectedEmployee.first_name} {selectedEmployee.last_name}</span>
+                  <div>
+                    <p className="text-sm font-medium">{selectedEmployee.first_name} {selectedEmployee.last_name}</p>
+                    {selectedEmployee.role_name && <p className="text-xs text-slate-500">{selectedEmployee.role_name}</p>}
+                  </div>
                   <button type="button" onClick={() => { setSelectedEmployee(null); setEmployeeSearch(""); }} className="text-slate-400 hover:text-slate-600">
                     <X className="size-4" />
                   </button>
@@ -736,8 +866,11 @@ export default function HROffboardingPage() {
                             onClick={() => { setSelectedEmployee(emp); setEmployeeSearch(""); setShowEmployeeList(false); }}
                             className="w-full text-left px-4 py-2.5 text-sm hover:bg-slate-50 border-b last:border-0"
                           >
-                            <span className="font-medium">{emp.first_name} {emp.last_name}</span>
-                            {emp.email && <span className="text-slate-400 ml-2 text-xs">{emp.email}</span>}
+                            <div className="flex items-center gap-2">
+                              <span className="font-medium">{emp.first_name} {emp.last_name}</span>
+                              {emp.role_name && <span className="text-slate-400 text-xs">{emp.role_name}</span>}
+                              {emp.email && <span className="text-slate-400 text-xs">{emp.email}</span>}
+                            </div>
                           </button>
                         ))}
                       </div>
@@ -749,6 +882,29 @@ export default function HROffboardingPage() {
                   )}
                 </>
               )}
+            </div>
+
+            <div className="space-y-2">
+              <Label>Offboarding Template</Label>
+              <select
+                value={initiateForm.templateId}
+                onChange={e => setInitiateForm(f => ({ ...f, templateId: e.target.value }))}
+                className="w-full border border-input rounded-md px-3 py-2 text-sm bg-background h-10"
+                disabled={loadingTemplates || initiateTemplates.length === 0}
+              >
+                {loadingTemplates && <option value="">Loading templates...</option>}
+                {!loadingTemplates && initiateTemplates.length === 0 && <option value="">No matching templates found</option>}
+                {!loadingTemplates && initiateTemplates.map(template => (
+                  <option key={template.template_id} value={template.template_id}>
+                    {template.template_name}{template.employee_type ? ` - ${template.employee_type}` : ""}
+                  </option>
+                ))}
+              </select>
+              <p className="text-xs text-slate-500">
+                {selectedEmployee?.role_name
+                  ? `Suggested from the employee role (${selectedEmployee.role_name}) and offboarding type.`
+                  : "Select an employee to get role-based template suggestions."}
+              </p>
             </div>
 
             <div className="flex">
@@ -828,7 +984,7 @@ export default function HROffboardingPage() {
                 <span className="text-sm">Loading case details…</span>
               </div>
             ) : selectedDetail ? (
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-4 gap-3">
                 {([
                   { label: "Employee", value: selectedDetail.employee_name ?? "—" },
                   { label: "Last Day", value: selectedCase?.last_working_day ?? "—" },
@@ -944,13 +1100,54 @@ export default function HROffboardingPage() {
               </div>
             )}
             {canReview && (
-              <div className="grid grid-cols-2 gap-3 pt-1">
-                <Button onClick={() => handleAccept(selectedCase.case_id)} disabled={!!loadingAction} className="bg-slate-900 hover:bg-slate-800 text-white">
-                  {loadingAction === `accept-${selectedCase.case_id}` ? <Loader2 className="size-4 animate-spin mr-2" /> : <Check className="size-4 mr-2" />}
-                  Accept Offboarding
-                </Button>
-                <Button onClick={() => setRejectCaseId(selectedCase.case_id)} disabled={!!loadingAction} className="bg-red-600 hover:bg-red-700 text-white">
-                  <X className="size-4 mr-2" /> Reject
+              <div className="space-y-3 pt-1">
+                <div className="space-y-2">
+                  <Label>Checklist Template</Label>
+                  <select
+                    value={reviewTemplateId}
+                    onChange={e => setReviewTemplateId(e.target.value)}
+                    className="w-full border border-input rounded-md px-3 py-2 text-sm bg-background h-10"
+                    disabled={loadingTemplates || reviewTemplates.length === 0}
+                  >
+                    {loadingTemplates && <option value="">Loading templates...</option>}
+                    {!loadingTemplates && reviewTemplates.length === 0 && <option value="">No matching templates found</option>}
+                    {!loadingTemplates && reviewTemplates.map(template => (
+                      <option key={template.template_id} value={template.template_id}>
+                        {template.template_name}{template.employee_type ? ` - ${template.employee_type}` : ""}
+                      </option>
+                    ))}
+                  </select>
+                  <p className="text-xs text-slate-500">
+                    {selectedDetail.employee_role_name
+                      ? `Suggested from ${selectedDetail.employee_role_name} and ${selectedCase.offboarding_type}.`
+                      : "Choose which template to apply before HR accepts this case."}
+                  </p>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <Button onClick={() => handleAccept(selectedCase.case_id)} disabled={!!loadingAction} className="bg-slate-900 hover:bg-slate-800 text-white">
+                    {loadingAction === `accept-${selectedCase.case_id}` ? <Loader2 className="size-4 animate-spin mr-2" /> : <Check className="size-4 mr-2" />}
+                    Accept Offboarding
+                  </Button>
+                  <Button onClick={() => setRejectCaseId(selectedCase.case_id)} disabled={!!loadingAction} className="bg-red-600 hover:bg-red-700 text-white">
+                    <X className="size-4 mr-2" /> Reject
+                  </Button>
+                </div>
+              </div>
+            )}
+            {!isCompleted && (
+              <div className="border-t pt-3">
+                <Button
+                  variant="outline"
+                  onClick={() => handleResetCase(selectedCase.case_id)}
+                  disabled={!!loadingAction}
+                  className="border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700"
+                >
+                  {loadingAction === `reset-${selectedCase.case_id}` ? (
+                    <Loader2 className="size-4 animate-spin mr-2" />
+                  ) : (
+                    <Trash2 className="size-4 mr-2" />
+                  )}
+                  Reset Offboarding Session
                 </Button>
               </div>
             )}

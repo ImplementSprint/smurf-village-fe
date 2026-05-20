@@ -183,11 +183,17 @@ export async function updateSessionDeadline(sessionId: string, deadline_date: st
 }
 
 export async function approveSession(sessionId: string): Promise<any> {
-  const res = await fetch(`${API_BASE_URL}/onboarding/hr/sessions/${sessionId}/approve`, {
+  const res = await authFetch(`${API_BASE_URL}/onboarding/hr/sessions/${sessionId}/approve`, {
     method: 'POST',
     headers: headers(),
   });
-  if (!res.ok) throw new Error('Failed to approve');
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({} as any));
+    const msg = Array.isArray(body?.message)
+      ? body.message.join(', ')
+      : (body?.message || 'Failed to approve onboarding session');
+    throw new Error(msg);
+  }
   return res.json();
 }
 

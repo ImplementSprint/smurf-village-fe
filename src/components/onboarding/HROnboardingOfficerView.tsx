@@ -101,6 +101,8 @@ export default function HROnboardingOfficerView() {
   const [rejectReason, setRejectReason] = useState("");
   const [pendingSessionReject, setPendingSessionReject] = useState(false);
   const [sessionRejectReason, setSessionRejectReason] = useState("");
+  const [approvingSession, setApprovingSession] = useState(false);
+  const [rejectingSession, setRejectingSession] = useState(false);
 
   const enterChangeMode = (id: string) => setChangingItems(prev => new Set(prev).add(id));
   const exitChangeMode  = (id: string) => setChangingItems(prev => { const s = new Set(prev); s.delete(id); return s; });
@@ -301,6 +303,7 @@ export default function HROnboardingOfficerView() {
 
   const handleApproveSession = async () => {
     if (!selectedSession) return;
+    if (approvingSession) return;
     if (selectedSession.status !== "for-review") {
       toast.error("Only sessions in For Review can be approved.");
       return;
@@ -310,6 +313,7 @@ export default function HROnboardingOfficerView() {
       toast.error(blockReason);
       return;
     }
+    setApprovingSession(true);
     try {
       await approveSession(selectedSession.session_id);
       await refreshSession(selectedSession.session_id);
@@ -318,11 +322,14 @@ export default function HROnboardingOfficerView() {
     } catch (err: any) {
       console.error(err);
       toast.error(err?.message || "Failed to approve onboarding session.");
+    } finally {
+      setApprovingSession(false);
     }
   };
 
   const handleRejectSession = async () => {
     if (!selectedSession) return;
+    if (rejectingSession) return;
     if (selectedSession.status !== "for-review") {
       toast.error("Only sessions in For Review can be rejected.");
       return;
@@ -332,6 +339,7 @@ export default function HROnboardingOfficerView() {
       toast.error("Rejection reason is required.");
       return;
     }
+    setRejectingSession(true);
     try {
       await rejectSession(selectedSession.session_id, reason);
       setPendingSessionReject(false);
@@ -342,6 +350,8 @@ export default function HROnboardingOfficerView() {
     } catch (err: any) {
       console.error(err);
       toast.error(err?.message || "Failed to reject onboarding session.");
+    } finally {
+      setRejectingSession(false);
     }
   };
 
@@ -765,6 +775,7 @@ export default function HROnboardingOfficerView() {
                             size="sm"
                             variant="outline"
                             className="border-red-300 text-red-600 hover:bg-red-50 hover:text-red-700 h-8 text-xs font-semibold"
+                            disabled={approvingSession || rejectingSession}
                             onClick={() => {
                               setSessionRejectReason("");
                               setPendingSessionReject(true);
@@ -776,10 +787,10 @@ export default function HROnboardingOfficerView() {
                             size="sm"
                             className="bg-emerald-500 hover:bg-emerald-400 disabled:opacity-50 text-white h-8 text-xs font-semibold shadow-lg shadow-emerald-950/40 transition-all duration-150 active:scale-[0.98]"
                             onClick={handleApproveSession}
-                            disabled={!canApproveSelectedSession}
+                            disabled={!canApproveSelectedSession || approvingSession || rejectingSession}
                             title={!canApproveSelectedSession ? (approvalBlockReason ?? "Complete tasks and equipment first.") : undefined}
                           >
-                            <CheckCircle className="size-3.5 mr-1.5" />Approve
+                            <CheckCircle className="size-3.5 mr-1.5" />{approvingSession ? "Approving..." : "Approve"}
                           </Button>
                         </div>
                         {!canApproveSelectedSession && approvalBlockReason && (
@@ -1297,10 +1308,10 @@ export default function HROnboardingOfficerView() {
             </AlertDialogCancel>
             <AlertDialogAction
               className="bg-red-600 hover:bg-red-700 text-white"
-              disabled={!sessionRejectReason.trim()}
+              disabled={!sessionRejectReason.trim() || rejectingSession}
               onClick={handleRejectSession}
             >
-              Reject Session
+              {rejectingSession ? "Rejecting..." : "Reject Session"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -1308,4 +1319,3 @@ export default function HROnboardingOfficerView() {
     </div>
   );
 }
-

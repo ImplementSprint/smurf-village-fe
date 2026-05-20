@@ -549,7 +549,7 @@ export function EmployeeProfileSheet({
     const now = new Date();
     let workDayCount = 0;
     const monthStart2 = new Date(now.getFullYear(), now.getMonth(), 1);
-    const cur = new Date(monthStart2);
+    let cur = new Date(monthStart2);
     while (cur <= now) {
       const dow = cur.getDay();
       if (dow !== 0 && dow !== 6) workDayCount++;

@@ -9,32 +9,70 @@ import {
 
 let refreshPromise: Promise<any> | null = null;
 
+export type RoleSwitchOption = {
+  role_id: string;
+  role_name: string;
+  portal_key: string;
+};
+
+export type LoginResponse = {
+  access_token: string;
+  active_role?: string;
+  active_portal?: string;
+  available_portals?: string[];
+  role_switch_options?: RoleSwitchOption[];
+  requires_portal_selection?: boolean;
+};
+
 export async function loginApi(body: {
   identifier: string;
   password: string;
   rememberMe: boolean;
 }) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 15_000);
+
   let res: Response;
   try {
     res = await fetch(`${API_BASE_URL}/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      credentials: "include", // receive the HttpOnly refresh_token cookie
+      credentials: "include",
       body: JSON.stringify(body),
+      signal: controller.signal,
     });
-  } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "Network request failed";
+  } catch (error: any) {
+    if (error?.name === "AbortError") {
+      throw new Error("Request timed out. The server is taking too long — please try again.");
+    }
+    const message = error instanceof Error ? error.message : "Network request failed";
     throw new Error(
-      `Cannot reach the login server at ${API_BASE_URL}. Check that the backend is running and CORS allows http://localhost:3000. Original error: ${message}`,
+      `Cannot reach the server at ${API_BASE_URL}. Make sure the backend is running. (${message})`,
     );
+  } finally {
+    clearTimeout(timer);
   }
 
   const data = await res.json().catch(() => ({}));
 
   if (!res.ok) throw new Error(data?.message || "Login failed");
 
-  return data as { access_token: string };
+  return data as LoginResponse;
+}
+
+export async function switchRoleApi(body: { role_id: string }) {
+  const res = await authFetch(`${API_BASE_URL}/switch-role`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error((data as any)?.message || "Role switch failed");
+  if (!(data as any)?.access_token) throw new Error("Missing access_token");
+
+  writeAccessToken((data as any).access_token);
+  return data as LoginResponse;
 }
 
 export async function applicantRegisterApi(
@@ -542,6 +580,8 @@ export type ApplicationDetail = {
 export type PublicCareersPage = {
   company_id: string;
   company_name: string;
+  company_display_name?: string | null;
+  company_logo_url?: string | null;
   slug: string;
   jobs: Pick<JobPosting, 'job_posting_id' | 'title' | 'description' | 'location' | 'employment_type' | 'salary_range' | 'posted_at' | 'closes_at'>[];
 };
@@ -791,7 +831,13 @@ export async function rejectOnboardingSubmission(submissionId: string, hrNotes: 
   }
 }
 
-export async function getMyCompany(): Promise<{ company_id: string; company_name: string; slug: string }> {
+export async function getMyCompany(): Promise<{
+  company_id: string;
+  company_name: string;
+  company_display_name?: string | null;
+  company_logo_url?: string | null;
+  slug: string;
+}> {
   const res = await authFetch(`${API_BASE_URL}/users/company/me`);
   const data = await res.json().catch(() => ({}));
   if (!res.ok) throw new Error(data?.message || 'Failed to fetch company info');
@@ -871,6 +917,66 @@ export async function fileLeaveRequestApi(body: {
   const data = await res.json().catch(() => ({}));
   if (!res.ok) throw new Error((data as { message?: string })?.message || 'Failed to file leave request');
   return data as LeaveRequestItem;
+}
+
+// ---------------------------------------------------------------------------
+// Overtime Requests API
+// ---------------------------------------------------------------------------
+
+export type OvertimeType = "NORMAL" | "REST_DAY" | "HOLIDAY";
+
+export type OvertimeRequest = {
+  ot_id: string;
+  employee_id: string;
+  ot_type: OvertimeType;
+  ot_date: string;
+  start_time: string;
+  end_time: string;
+  planned_hours: number;
+  reason?: string | null;
+  log_status: "PENDING" | "APPROVED" | "DENIED";
+  reviewed_by?: string | null;
+  reviewed_at?: string | null;
+  review_reason?: string | null;
+  created_at: string;
+};
+
+export async function getMyOvertimeRequests(): Promise<OvertimeRequest[]> {
+  const res = await authFetch(`${API_BASE_URL}/overtime/requests/me`);
+  const data = await res.json().catch(() => []);
+  if (!res.ok) throw new Error((data as { message?: string })?.message || "Failed to load overtime requests");
+  return (Array.isArray(data) ? data : []) as OvertimeRequest[];
+}
+
+export async function fileOvertimeRequestApi(body: {
+  ot_type: OvertimeType;
+  ot_date: string;
+  start_time: string;
+  end_time: string;
+  latitude: number;
+  longitude: number;
+  reason?: string;
+}): Promise<OvertimeRequest> {
+  const res = await authFetch(`${API_BASE_URL}/overtime/requests`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error((data as { message?: string })?.message || "Failed to file overtime request");
+  return data as OvertimeRequest;
+}
+
+export async function getMyOvertimeSummary(month?: string): Promise<{ approved_planned_hours: number }> {
+  const url = month
+    ? `${API_BASE_URL}/overtime/my-summary?month=${encodeURIComponent(month)}`
+    : `${API_BASE_URL}/overtime/my-summary`;
+  const res = await authFetch(url);
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error((data as { message?: string })?.message || "Failed to load overtime summary");
+  return {
+    approved_planned_hours: Number((data as { approved_planned_hours?: number })?.approved_planned_hours ?? 0),
+  };
 }
 
 // ---------------------------------------------------------------------------

@@ -116,12 +116,12 @@ const STATUTORY_FIELD_CONFIG: Record<
 > = {
   tin_number: {
     label: "TIN",
-    digits: 9,
-    maxLength: 11,
-    placeholder: "123-456-789",
+    digits: 12,
+    maxLength: 15,
+    placeholder: "123-456-789-000",
     format: (digits) => {
-      const value = digits.slice(0, 9);
-      const groups = [value.slice(0, 3), value.slice(3, 6), value.slice(6, 9)];
+      const value = digits.slice(0, 12);
+      const groups = [value.slice(0, 3), value.slice(3, 6), value.slice(6, 9), value.slice(9, 12)];
       return groups.filter(Boolean).join("-");
     },
   },
