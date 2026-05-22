@@ -81,7 +81,6 @@ permissions:
 
 jobs:
   call-orchestrator:
-    # Track latest central workflow updates from central-workflow main
     uses: ImplementSprint/central-workflow/.github/workflows/master-pipeline-fe.yml@main
     with:
       pipeline_mode: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.pipeline_mode || 'auto' }}
