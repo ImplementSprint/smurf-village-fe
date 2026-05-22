@@ -38,7 +38,7 @@ import { CandidateProfileModal } from "@/components/candidates/CandidateProfileM
 
 type JobWithCount = CandidateJobOption & { total_candidates?: number };
 
-function normalizeStatus(status: string) {
+export function normalizeStatus(status: string) {
   return status
     .split(/[_\s]+/)
     .filter(Boolean)
@@ -56,25 +56,25 @@ const SFIA_LEVELS = {
   7: "Strategizing",
 } as const;
 
-function getSfiaLevelName(level: number): string {
+export function getSfiaLevelName(level: number): string {
   return SFIA_LEVELS[level as keyof typeof SFIA_LEVELS] || "Unknown";
 }
 
-function getSfiaLevelColor(level: number): string {
+export function getSfiaLevelColor(level: number): string {
   if (level <= 2) return "bg-red-400"; // Beginner
   if (level <= 4) return "bg-amber-400"; // Intermediate
   if (level <= 6) return "bg-green-500"; // Advanced
   return "bg-emerald-600"; // Expert
 }
 
-function getSfiaLevelBgColor(level: number): string {
+export function getSfiaLevelBgColor(level: number): string {
   if (level <= 2) return "bg-red-50";
   if (level <= 4) return "bg-amber-50";
   if (level <= 6) return "bg-green-50";
   return "bg-emerald-50";
 }
 
-function formatJobMeta(job: JobWithCount) {
+export function formatJobMeta(job: JobWithCount) {
   const parts = [job.location, job.status ? normalizeStatus(job.status) : null];
   if (typeof job.total_candidates === "number") {
     parts.push(`${job.total_candidates} candidates`);
