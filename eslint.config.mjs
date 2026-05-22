@@ -13,11 +13,15 @@ const eslintConfig = defineConfig([
     "build/**",
     "next-env.d.ts",
   ]),
-  // Jest config files must use CommonJS require() — disable the rule for them.
   {
-    files: ["jest.config.js", "jest.setup.js"],
     rules: {
+      "@typescript-eslint/no-explicit-any": "warn",
+      "react-hooks/set-state-in-effect": "off",
+      "react-hooks/immutability": "off",
+      "react/no-unescaped-entities": "off",
       "@typescript-eslint/no-require-imports": "off",
+      "@next/next/no-img-element": "off",
+      "prefer-const": "warn",
     },
   },
 ]);

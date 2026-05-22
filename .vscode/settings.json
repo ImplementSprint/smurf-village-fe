@@ -1,0 +1,6 @@
+{
+    "sonarlint.connectedMode.project": {
+        "connectionId": "implementsprint-1",
+        "projectKey": "ImplementSprint_smurf-village-fe"
+    }
+}
