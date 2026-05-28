@@ -192,8 +192,9 @@ export default function EmployeeOvertimePage() {
               </div>
 
               <div className="space-y-1">
-                <label className="text-xs font-medium">Date</label>
+                <label htmlFor="overtime-date" className="text-xs font-medium">Date</label>
                 <input
+                  id="overtime-date"
                   type="date"
                   min={tomorrow}
                   value={otDate}
@@ -204,8 +205,9 @@ export default function EmployeeOvertimePage() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <label className="text-xs font-medium">Start Time</label>
+                  <label htmlFor="overtime-start-time" className="text-xs font-medium">Start Time</label>
                   <input
+                    id="overtime-start-time"
                     type="time"
                     value={startTime}
                     onChange={(event) => setStartTime(event.target.value)}
@@ -213,8 +215,9 @@ export default function EmployeeOvertimePage() {
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-xs font-medium">End Time</label>
+                  <label htmlFor="overtime-end-time" className="text-xs font-medium">End Time</label>
                   <input
+                    id="overtime-end-time"
                     type="time"
                     value={endTime}
                     onChange={(event) => setEndTime(event.target.value)}
@@ -228,8 +231,9 @@ export default function EmployeeOvertimePage() {
               ) : null}
 
               <div className="space-y-1">
-                <label className="text-xs font-medium">Reason (optional)</label>
+                <label htmlFor="overtime-reason" className="text-xs font-medium">Reason (optional)</label>
                 <textarea
+                  id="overtime-reason"
                   value={reason}
                   onChange={(event) => setReason(event.target.value)}
                   rows={2}

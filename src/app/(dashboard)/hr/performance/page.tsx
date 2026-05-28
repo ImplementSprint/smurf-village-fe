@@ -75,11 +75,10 @@ function mapApproval(a: any): ApprovalItem {
 }
 
 function ApprovalIcon({ type, className }: { type: ApprovalItem["type"]; className?: string }) {
-  const Icon =
-    type === "Goal" ? Target :
-    type === "Review" ? FileText :
-    type === "PIP" ? ClipboardCheck :
-    BadgeDollarSign;
+  let Icon = BadgeDollarSign;
+  if (type === "Goal") Icon = Target;
+  else if (type === "Review") Icon = FileText;
+  else if (type === "PIP") Icon = ClipboardCheck;
 
   return <Icon className={className} />;
 }

@@ -1,0 +1,47 @@
+e055bfd59a9321148854f3d9dfbdbcb5
+"use strict";
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+const _jsxruntime = require("react/jsx-runtime");
+const _react = require("@testing-library/react");
+const _ApplicationStatusBadge = require("../../components/candidates/ApplicationStatusBadge");
+const _JobStatusBadge = require("../../components/jobs/JobStatusBadge");
+const _StatusBadge = require("../../components/timekeeping/StatusBadge");
+const _StatusBadge1 = require("../../components/super-admin/StatusBadge");
+const _StatusBadge2 = require("../../components/onboarding/shared/StatusBadge");
+describe("status badges", ()=>{
+    it("renders the application badge variants", ()=>{
+        (0, _react.render)(/*#__PURE__*/ (0, _jsxruntime.jsx)(_ApplicationStatusBadge.ApplicationStatusBadge, {
+            status: "final interview"
+        }));
+        expect(_react.screen.getByText("Final Interview")).toBeInTheDocument();
+    });
+    it("renders job, timekeeping, onboarding, and super-admin badges", ()=>{
+        (0, _react.render)(/*#__PURE__*/ (0, _jsxruntime.jsxs)("div", {
+            children: [
+                /*#__PURE__*/ (0, _jsxruntime.jsx)(_JobStatusBadge.JobStatusBadge, {
+                    status: "open"
+                }),
+                /*#__PURE__*/ (0, _jsxruntime.jsx)(_StatusBadge.TimekeepingStatusBadge, {
+                    status: "present"
+                }),
+                /*#__PURE__*/ (0, _jsxruntime.jsx)(_StatusBadge2.StatusBadge, {
+                    status: "approved"
+                }),
+                /*#__PURE__*/ (0, _jsxruntime.jsx)(_StatusBadge1.StatusBadge, {
+                    status: "Active"
+                }),
+                /*#__PURE__*/ (0, _jsxruntime.jsx)(_StatusBadge1.DetailedStatusBadge, {
+                    status: "approved"
+                })
+            ]
+        }));
+        expect(_react.screen.getByText("open")).toBeInTheDocument();
+        expect(_react.screen.getByText("Present")).toBeInTheDocument();
+        expect(_react.screen.getByText("Approved")).toBeInTheDocument();
+        expect(_react.screen.getByText("Active")).toBeInTheDocument();
+    });
+});
+
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIkM6XFxVc2Vyc1xcQWRyaWFuXFxEb3dubG9hZHNcXHNwcmludDhcXHNyY1xcX190ZXN0c19fXFxjb3ZlcmFnZVxcc3RhdHVzLWJhZGdlcy50ZXN0LnRzeCJdLCJzb3VyY2VzQ29udGVudCI6WyJpbXBvcnQgeyByZW5kZXIsIHNjcmVlbiB9IGZyb20gXCJAdGVzdGluZy1saWJyYXJ5L3JlYWN0XCI7XG5pbXBvcnQgeyBBcHBsaWNhdGlvblN0YXR1c0JhZGdlIH0gZnJvbSBcIkAvY29tcG9uZW50cy9jYW5kaWRhdGVzL0FwcGxpY2F0aW9uU3RhdHVzQmFkZ2VcIjtcbmltcG9ydCB7IEpvYlN0YXR1c0JhZGdlIH0gZnJvbSBcIkAvY29tcG9uZW50cy9qb2JzL0pvYlN0YXR1c0JhZGdlXCI7XG5pbXBvcnQgeyBUaW1la2VlcGluZ1N0YXR1c0JhZGdlIH0gZnJvbSBcIkAvY29tcG9uZW50cy90aW1la2VlcGluZy9TdGF0dXNCYWRnZVwiO1xuaW1wb3J0IHsgU3RhdHVzQmFkZ2UgYXMgU3VwZXJBZG1pblN0YXR1c0JhZGdlLCBEZXRhaWxlZFN0YXR1c0JhZGdlIH0gZnJvbSBcIkAvY29tcG9uZW50cy9zdXBlci1hZG1pbi9TdGF0dXNCYWRnZVwiO1xuaW1wb3J0IHsgU3RhdHVzQmFkZ2UgYXMgT25ib2FyZGluZ1N0YXR1c0JhZGdlIH0gZnJvbSBcIkAvY29tcG9uZW50cy9vbmJvYXJkaW5nL3NoYXJlZC9TdGF0dXNCYWRnZVwiO1xuXG5kZXNjcmliZShcInN0YXR1cyBiYWRnZXNcIiwgKCkgPT4ge1xuICBpdChcInJlbmRlcnMgdGhlIGFwcGxpY2F0aW9uIGJhZGdlIHZhcmlhbnRzXCIsICgpID0+IHtcbiAgICByZW5kZXIoPEFwcGxpY2F0aW9uU3RhdHVzQmFkZ2Ugc3RhdHVzPVwiZmluYWwgaW50ZXJ2aWV3XCIgLz4pO1xuICAgIGV4cGVjdChzY3JlZW4uZ2V0QnlUZXh0KFwiRmluYWwgSW50ZXJ2aWV3XCIpKS50b0JlSW5UaGVEb2N1bWVudCgpO1xuICB9KTtcblxuICBpdChcInJlbmRlcnMgam9iLCB0aW1la2VlcGluZywgb25ib2FyZGluZywgYW5kIHN1cGVyLWFkbWluIGJhZGdlc1wiLCAoKSA9PiB7XG4gICAgcmVuZGVyKFxuICAgICAgPGRpdj5cbiAgICAgICAgPEpvYlN0YXR1c0JhZGdlIHN0YXR1cz1cIm9wZW5cIiAvPlxuICAgICAgICA8VGltZWtlZXBpbmdTdGF0dXNCYWRnZSBzdGF0dXM9XCJwcmVzZW50XCIgLz5cbiAgICAgICAgPE9uYm9hcmRpbmdTdGF0dXNCYWRnZSBzdGF0dXM9XCJhcHByb3ZlZFwiIC8+XG4gICAgICAgIDxTdXBlckFkbWluU3RhdHVzQmFkZ2Ugc3RhdHVzPVwiQWN0aXZlXCIgLz5cbiAgICAgICAgPERldGFpbGVkU3RhdHVzQmFkZ2Ugc3RhdHVzPVwiYXBwcm92ZWRcIiAvPlxuICAgICAgPC9kaXY+LFxuICAgICk7XG5cbiAgICBleHBlY3Qoc2NyZWVuLmdldEJ5VGV4dChcIm9wZW5cIikpLnRvQmVJblRoZURvY3VtZW50KCk7XG4gICAgZXhwZWN0KHNjcmVlbi5nZXRCeVRleHQoXCJQcmVzZW50XCIpKS50b0JlSW5UaGVEb2N1bWVudCgpO1xuICAgIGV4cGVjdChzY3JlZW4uZ2V0QnlUZXh0KFwiQXBwcm92ZWRcIikpLnRvQmVJblRoZURvY3VtZW50KCk7XG4gICAgZXhwZWN0KHNjcmVlbi5nZXRCeVRleHQoXCJBY3RpdmVcIikpLnRvQmVJblRoZURvY3VtZW50KCk7XG4gIH0pO1xufSk7XG4iXSwibmFtZXMiOlsiZGVzY3JpYmUiLCJpdCIsInJlbmRlciIsIkFwcGxpY2F0aW9uU3RhdHVzQmFkZ2UiLCJzdGF0dXMiLCJleHBlY3QiLCJzY3JlZW4iLCJnZXRCeVRleHQiLCJ0b0JlSW5UaGVEb2N1bWVudCIsImRpdiIsIkpvYlN0YXR1c0JhZGdlIiwiVGltZWtlZXBpbmdTdGF0dXNCYWRnZSIsIk9uYm9hcmRpbmdTdGF0dXNCYWRnZSIsIlN1cGVyQWRtaW5TdGF0dXNCYWRnZSIsIkRldGFpbGVkU3RhdHVzQmFkZ2UiXSwibWFwcGluZ3MiOiI7Ozs7O3VCQUErQjt3Q0FDUTtnQ0FDUjs2QkFDUTs4QkFDbUM7OEJBQ3JCO0FBRXJEQSxTQUFTLGlCQUFpQjtJQUN4QkMsR0FBRywwQ0FBMEM7UUFDM0NDLElBQUFBLGFBQU0sZ0JBQUMscUJBQUNDLDhDQUFzQjtZQUFDQyxRQUFPOztRQUN0Q0MsT0FBT0MsYUFBTSxDQUFDQyxTQUFTLENBQUMsb0JBQW9CQyxpQkFBaUI7SUFDL0Q7SUFFQVAsR0FBRyxnRUFBZ0U7UUFDakVDLElBQUFBLGFBQU0sZ0JBQ0osc0JBQUNPOzs4QkFDQyxxQkFBQ0MsOEJBQWM7b0JBQUNOLFFBQU87OzhCQUN2QixxQkFBQ08sbUNBQXNCO29CQUFDUCxRQUFPOzs4QkFDL0IscUJBQUNRLHlCQUFxQjtvQkFBQ1IsUUFBTzs7OEJBQzlCLHFCQUFDUyx5QkFBcUI7b0JBQUNULFFBQU87OzhCQUM5QixxQkFBQ1UsaUNBQW1CO29CQUFDVixRQUFPOzs7O1FBSWhDQyxPQUFPQyxhQUFNLENBQUNDLFNBQVMsQ0FBQyxTQUFTQyxpQkFBaUI7UUFDbERILE9BQU9DLGFBQU0sQ0FBQ0MsU0FBUyxDQUFDLFlBQVlDLGlCQUFpQjtRQUNyREgsT0FBT0MsYUFBTSxDQUFDQyxTQUFTLENBQUMsYUFBYUMsaUJBQWlCO1FBQ3RESCxPQUFPQyxhQUFNLENBQUNDLFNBQVMsQ0FBQyxXQUFXQyxpQkFBaUI7SUFDdEQ7QUFDRiJ9

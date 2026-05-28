@@ -550,8 +550,7 @@ function InterviewTab({
 
           <div className="space-y-1.5">
             <label className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground flex items-center gap-1">
-              Reason
-              <span className="text-red-500">*</span>
+              Reason <span className="text-red-500">*</span>
             </label>
             <Textarea
               value={reason}

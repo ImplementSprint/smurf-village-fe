@@ -1,0 +1,126 @@
+772aa106160ac5797c5f2c71fdbb80d9
+"use strict";
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+function _export(target, all) {
+    for(var name in all)Object.defineProperty(target, name, {
+        enumerable: true,
+        get: Object.getOwnPropertyDescriptor(all, name).get
+    });
+}
+_export(exports, {
+    get DetailedStatusBadge () {
+        return DetailedStatusBadge;
+    },
+    get StatusBadge () {
+        return StatusBadge;
+    }
+});
+const _jsxruntime = require("react/jsx-runtime");
+const _lucidereact = require("lucide-react");
+const _badge = require("../../ui/badge");
+const STATUS_VARIANTS = {
+    approved: "default",
+    rejected: "destructive",
+    "for-review": "secondary",
+    submitted: "outline",
+    issued: "secondary",
+    pending: "secondary",
+    confirmed: "default"
+};
+const STATUS_LABELS = {
+    "for-review": "For Review",
+    issued: "Issued",
+    confirmed: "Confirmed"
+};
+function StatusBadge({ status }) {
+    return /*#__PURE__*/ (0, _jsxruntime.jsx)(_badge.Badge, {
+        variant: STATUS_VARIANTS[status] ?? "secondary",
+        className: "whitespace-nowrap",
+        children: STATUS_LABELS[status] ?? status.charAt(0).toUpperCase() + status.slice(1)
+    });
+}
+function DetailedStatusBadge({ status, pendingLabel = "Pending" }) {
+    switch(status){
+        case "pending":
+            return /*#__PURE__*/ (0, _jsxruntime.jsxs)(_badge.Badge, {
+                variant: "outline",
+                className: "bg-slate-100 text-slate-700",
+                children: [
+                    /*#__PURE__*/ (0, _jsxruntime.jsx)(_lucidereact.AlertCircle, {
+                        className: "size-3 mr-1"
+                    }),
+                    pendingLabel
+                ]
+            });
+        case "submitted":
+            return /*#__PURE__*/ (0, _jsxruntime.jsxs)(_badge.Badge, {
+                variant: "outline",
+                className: "bg-slate-900 text-white",
+                children: [
+                    /*#__PURE__*/ (0, _jsxruntime.jsx)(_lucidereact.CheckCircle, {
+                        className: "size-3 mr-1"
+                    }),
+                    "Submitted"
+                ]
+            });
+        case "for-review":
+            return /*#__PURE__*/ (0, _jsxruntime.jsxs)(_badge.Badge, {
+                variant: "outline",
+                className: "bg-amber-100 text-amber-800",
+                children: [
+                    /*#__PURE__*/ (0, _jsxruntime.jsx)(_lucidereact.AlertCircle, {
+                        className: "size-3 mr-1"
+                    }),
+                    "For Review"
+                ]
+            });
+        case "approved":
+            return /*#__PURE__*/ (0, _jsxruntime.jsxs)(_badge.Badge, {
+                variant: "outline",
+                className: "bg-teal-100 text-teal-800",
+                children: [
+                    /*#__PURE__*/ (0, _jsxruntime.jsx)(_lucidereact.CheckCircle, {
+                        className: "size-3 mr-1"
+                    }),
+                    "Approved"
+                ]
+            });
+        case "confirmed":
+            return /*#__PURE__*/ (0, _jsxruntime.jsxs)(_badge.Badge, {
+                variant: "outline",
+                className: "bg-teal-100 text-teal-800",
+                children: [
+                    /*#__PURE__*/ (0, _jsxruntime.jsx)(_lucidereact.CheckCircle, {
+                        className: "size-3 mr-1"
+                    }),
+                    "Confirmed"
+                ]
+            });
+        case "rejected":
+            return /*#__PURE__*/ (0, _jsxruntime.jsxs)(_badge.Badge, {
+                variant: "outline",
+                className: "bg-red-100 text-red-800",
+                children: [
+                    /*#__PURE__*/ (0, _jsxruntime.jsx)(_lucidereact.XCircle, {
+                        className: "size-3 mr-1"
+                    }),
+                    "Rejected"
+                ]
+            });
+        default:
+            return /*#__PURE__*/ (0, _jsxruntime.jsxs)(_badge.Badge, {
+                variant: "outline",
+                className: "bg-slate-100 text-slate-700",
+                children: [
+                    /*#__PURE__*/ (0, _jsxruntime.jsx)(_lucidereact.AlertCircle, {
+                        className: "size-3 mr-1"
+                    }),
+                    pendingLabel
+                ]
+            });
+    }
+}
+
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIkM6XFxVc2Vyc1xcQWRyaWFuXFxEb3dubG9hZHNcXHNwcmludDhcXHNyY1xcY29tcG9uZW50c1xcb25ib2FyZGluZ1xcc2hhcmVkXFxTdGF0dXNCYWRnZS50c3giXSwic291cmNlc0NvbnRlbnQiOlsiaW1wb3J0IHsgQ2hlY2tDaXJjbGUsIFhDaXJjbGUsIEFsZXJ0Q2lyY2xlIH0gZnJvbSBcImx1Y2lkZS1yZWFjdFwiO1xyXG5pbXBvcnQgeyBCYWRnZSB9IGZyb20gXCJAL2NvbXBvbmVudHMvdWkvYmFkZ2VcIjtcclxuXHJcbmNvbnN0IFNUQVRVU19WQVJJQU5UUzogUmVjb3JkPHN0cmluZywgXCJkZWZhdWx0XCIgfCBcInNlY29uZGFyeVwiIHwgXCJkZXN0cnVjdGl2ZVwiIHwgXCJvdXRsaW5lXCI+ID0ge1xyXG4gIGFwcHJvdmVkOiBcImRlZmF1bHRcIixcclxuICByZWplY3RlZDogXCJkZXN0cnVjdGl2ZVwiLFxyXG4gIFwiZm9yLXJldmlld1wiOiBcInNlY29uZGFyeVwiLFxyXG4gIHN1Ym1pdHRlZDogXCJvdXRsaW5lXCIsXHJcbiAgaXNzdWVkOiBcInNlY29uZGFyeVwiLFxyXG4gIHBlbmRpbmc6IFwic2Vjb25kYXJ5XCIsXHJcbiAgY29uZmlybWVkOiBcImRlZmF1bHRcIixcclxufTtcclxuXHJcbmNvbnN0IFNUQVRVU19MQUJFTFM6IFJlY29yZDxzdHJpbmcsIHN0cmluZz4gPSB7XHJcbiAgXCJmb3ItcmV2aWV3XCI6IFwiRm9yIFJldmlld1wiLFxyXG4gIGlzc3VlZDogXCJJc3N1ZWRcIixcclxuICBjb25maXJtZWQ6IFwiQ29uZmlybWVkXCIsXHJcbn07XHJcblxyXG5leHBvcnQgZnVuY3Rpb24gU3RhdHVzQmFkZ2UoeyBzdGF0dXMgfTogUmVhZG9ubHk8eyBzdGF0dXM6IHN0cmluZyB9Pikge1xyXG4gIHJldHVybiAoXHJcbiAgICA8QmFkZ2UgdmFyaWFudD17U1RBVFVTX1ZBUklBTlRTW3N0YXR1c10gPz8gXCJzZWNvbmRhcnlcIn0gY2xhc3NOYW1lPVwid2hpdGVzcGFjZS1ub3dyYXBcIj5cclxuICAgICAge1NUQVRVU19MQUJFTFNbc3RhdHVzXSA/PyAoc3RhdHVzLmNoYXJBdCgwKS50b1VwcGVyQ2FzZSgpICsgc3RhdHVzLnNsaWNlKDEpKX1cclxuICAgIDwvQmFkZ2U+XHJcbiAgKTtcclxufVxyXG5cclxuZXhwb3J0IGZ1bmN0aW9uIERldGFpbGVkU3RhdHVzQmFkZ2Uoe1xyXG4gIHN0YXR1cyxcclxuICBwZW5kaW5nTGFiZWwgPSBcIlBlbmRpbmdcIixcclxufTogUmVhZG9ubHk8eyBzdGF0dXM6IHN0cmluZzsgcGVuZGluZ0xhYmVsPzogc3RyaW5nIH0+KSB7XHJcbiAgc3dpdGNoIChzdGF0dXMpIHtcclxuICAgIGNhc2UgXCJwZW5kaW5nXCI6XHJcbiAgICAgIHJldHVybiAoXHJcbiAgICAgICAgPEJhZGdlIHZhcmlhbnQ9XCJvdXRsaW5lXCIgY2xhc3NOYW1lPVwiYmctc2xhdGUtMTAwIHRleHQtc2xhdGUtNzAwXCI+XHJcbiAgICAgICAgICA8QWxlcnRDaXJjbGUgY2xhc3NOYW1lPVwic2l6ZS0zIG1yLTFcIiAvPlxyXG4gICAgICAgICAge3BlbmRpbmdMYWJlbH1cclxuICAgICAgICA8L0JhZGdlPlxyXG4gICAgICApO1xyXG4gICAgY2FzZSBcInN1Ym1pdHRlZFwiOlxyXG4gICAgICByZXR1cm4gKFxyXG4gICAgICAgIDxCYWRnZSB2YXJpYW50PVwib3V0bGluZVwiIGNsYXNzTmFtZT1cImJnLXNsYXRlLTkwMCB0ZXh0LXdoaXRlXCI+XHJcbiAgICAgICAgICA8Q2hlY2tDaXJjbGUgY2xhc3NOYW1lPVwic2l6ZS0zIG1yLTFcIiAvPlxyXG4gICAgICAgICAgU3VibWl0dGVkXHJcbiAgICAgICAgPC9CYWRnZT5cclxuICAgICAgKTtcclxuICAgIGNhc2UgXCJmb3ItcmV2aWV3XCI6XHJcbiAgICAgIHJldHVybiAoXHJcbiAgICAgICAgPEJhZGdlIHZhcmlhbnQ9XCJvdXRsaW5lXCIgY2xhc3NOYW1lPVwiYmctYW1iZXItMTAwIHRleHQtYW1iZXItODAwXCI+XHJcbiAgICAgICAgICA8QWxlcnRDaXJjbGUgY2xhc3NOYW1lPVwic2l6ZS0zIG1yLTFcIiAvPlxyXG4gICAgICAgICAgRm9yIFJldmlld1xyXG4gICAgICAgIDwvQmFkZ2U+XHJcbiAgICAgICk7XHJcbiAgICBjYXNlIFwiYXBwcm92ZWRcIjpcclxuICAgICAgcmV0dXJuIChcclxuICAgICAgICA8QmFkZ2UgdmFyaWFudD1cIm91dGxpbmVcIiBjbGFzc05hbWU9XCJiZy10ZWFsLTEwMCB0ZXh0LXRlYWwtODAwXCI+XHJcbiAgICAgICAgICA8Q2hlY2tDaXJjbGUgY2xhc3NOYW1lPVwic2l6ZS0zIG1yLTFcIiAvPlxyXG4gICAgICAgICAgQXBwcm92ZWRcclxuICAgICAgICA8L0JhZGdlPlxyXG4gICAgICApO1xyXG4gICAgY2FzZSBcImNvbmZpcm1lZFwiOlxyXG4gICAgICByZXR1cm4gKFxyXG4gICAgICAgIDxCYWRnZSB2YXJpYW50PVwib3V0bGluZVwiIGNsYXNzTmFtZT1cImJnLXRlYWwtMTAwIHRleHQtdGVhbC04MDBcIj5cclxuICAgICAgICAgIDxDaGVja0NpcmNsZSBjbGFzc05hbWU9XCJzaXplLTMgbXItMVwiIC8+XHJcbiAgICAgICAgICBDb25maXJtZWRcclxuICAgICAgICA8L0JhZGdlPlxyXG4gICAgICApO1xyXG4gICAgY2FzZSBcInJlamVjdGVkXCI6XHJcbiAgICAgIHJldHVybiAoXHJcbiAgICAgICAgPEJhZGdlIHZhcmlhbnQ9XCJvdXRsaW5lXCIgY2xhc3NOYW1lPVwiYmctcmVkLTEwMCB0ZXh0LXJlZC04MDBcIj5cclxuICAgICAgICAgIDxYQ2lyY2xlIGNsYXNzTmFtZT1cInNpemUtMyBtci0xXCIgLz5cclxuICAgICAgICAgIFJlamVjdGVkXHJcbiAgICAgICAgPC9CYWRnZT5cclxuICAgICAgKTtcclxuICAgIGRlZmF1bHQ6XHJcbiAgICAgIHJldHVybiAoXHJcbiAgICAgICAgPEJhZGdlIHZhcmlhbnQ9XCJvdXRsaW5lXCIgY2xhc3NOYW1lPVwiYmctc2xhdGUtMTAwIHRleHQtc2xhdGUtNzAwXCI+XHJcbiAgICAgICAgICA8QWxlcnRDaXJjbGUgY2xhc3NOYW1lPVwic2l6ZS0zIG1yLTFcIiAvPlxyXG4gICAgICAgICAge3BlbmRpbmdMYWJlbH1cclxuICAgICAgICA8L0JhZGdlPlxyXG4gICAgICApO1xyXG4gIH1cclxufVxyXG4iXSwibmFtZXMiOlsiRGV0YWlsZWRTdGF0dXNCYWRnZSIsIlN0YXR1c0JhZGdlIiwiU1RBVFVTX1ZBUklBTlRTIiwiYXBwcm92ZWQiLCJyZWplY3RlZCIsInN1Ym1pdHRlZCIsImlzc3VlZCIsInBlbmRpbmciLCJjb25maXJtZWQiLCJTVEFUVVNfTEFCRUxTIiwic3RhdHVzIiwiQmFkZ2UiLCJ2YXJpYW50IiwiY2xhc3NOYW1lIiwiY2hhckF0IiwidG9VcHBlckNhc2UiLCJzbGljZSIsInBlbmRpbmdMYWJlbCIsIkFsZXJ0Q2lyY2xlIiwiQ2hlY2tDaXJjbGUiLCJYQ2lyY2xlIl0sIm1hcHBpbmdzIjoiOzs7Ozs7Ozs7OztRQTJCZ0JBO2VBQUFBOztRQVJBQztlQUFBQTs7Ozs2QkFuQmtDO3VCQUM1QjtBQUV0QixNQUFNQyxrQkFBdUY7SUFDM0ZDLFVBQVU7SUFDVkMsVUFBVTtJQUNWLGNBQWM7SUFDZEMsV0FBVztJQUNYQyxRQUFRO0lBQ1JDLFNBQVM7SUFDVEMsV0FBVztBQUNiO0FBRUEsTUFBTUMsZ0JBQXdDO0lBQzVDLGNBQWM7SUFDZEgsUUFBUTtJQUNSRSxXQUFXO0FBQ2I7QUFFTyxTQUFTUCxZQUFZLEVBQUVTLE1BQU0sRUFBZ0M7SUFDbEUscUJBQ0UscUJBQUNDLFlBQUs7UUFBQ0MsU0FBU1YsZUFBZSxDQUFDUSxPQUFPLElBQUk7UUFBYUcsV0FBVTtrQkFDL0RKLGFBQWEsQ0FBQ0MsT0FBTyxJQUFLQSxPQUFPSSxNQUFNLENBQUMsR0FBR0MsV0FBVyxLQUFLTCxPQUFPTSxLQUFLLENBQUM7O0FBRy9FO0FBRU8sU0FBU2hCLG9CQUFvQixFQUNsQ1UsTUFBTSxFQUNOTyxlQUFlLFNBQVMsRUFDNEI7SUFDcEQsT0FBUVA7UUFDTixLQUFLO1lBQ0gscUJBQ0Usc0JBQUNDLFlBQUs7Z0JBQUNDLFNBQVE7Z0JBQVVDLFdBQVU7O2tDQUNqQyxxQkFBQ0ssd0JBQVc7d0JBQUNMLFdBQVU7O29CQUN0Qkk7OztRQUdQLEtBQUs7WUFDSCxxQkFDRSxzQkFBQ04sWUFBSztnQkFBQ0MsU0FBUTtnQkFBVUMsV0FBVTs7a0NBQ2pDLHFCQUFDTSx3QkFBVzt3QkFBQ04sV0FBVTs7b0JBQWdCOzs7UUFJN0MsS0FBSztZQUNILHFCQUNFLHNCQUFDRixZQUFLO2dCQUFDQyxTQUFRO2dCQUFVQyxXQUFVOztrQ0FDakMscUJBQUNLLHdCQUFXO3dCQUFDTCxXQUFVOztvQkFBZ0I7OztRQUk3QyxLQUFLO1lBQ0gscUJBQ0Usc0JBQUNGLFlBQUs7Z0JBQUNDLFNBQVE7Z0JBQVVDLFdBQVU7O2tDQUNqQyxxQkFBQ00sd0JBQVc7d0JBQUNOLFdBQVU7O29CQUFnQjs7O1FBSTdDLEtBQUs7WUFDSCxxQkFDRSxzQkFBQ0YsWUFBSztnQkFBQ0MsU0FBUTtnQkFBVUMsV0FBVTs7a0NBQ2pDLHFCQUFDTSx3QkFBVzt3QkFBQ04sV0FBVTs7b0JBQWdCOzs7UUFJN0MsS0FBSztZQUNILHFCQUNFLHNCQUFDRixZQUFLO2dCQUFDQyxTQUFRO2dCQUFVQyxXQUFVOztrQ0FDakMscUJBQUNPLG9CQUFPO3dCQUFDUCxXQUFVOztvQkFBZ0I7OztRQUl6QztZQUNFLHFCQUNFLHNCQUFDRixZQUFLO2dCQUFDQyxTQUFRO2dCQUFVQyxXQUFVOztrQ0FDakMscUJBQUNLLHdCQUFXO3dCQUFDTCxXQUFVOztvQkFDdEJJOzs7SUFHVDtBQUNGIn0=

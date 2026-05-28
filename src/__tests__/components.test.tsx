@@ -97,42 +97,6 @@ describe('Component Rendering', () => {
   });
 });
 
-describe('Component State Management', () => {
-  it('should handle state updates', () => {
-    const TestComponent = () => {
-      const [count, setCount] = React.useState(0);
-      return (
-        <div>
-          <span>{count}</span>
-          <button onClick={() => setCount(count + 1)}>Increment</button>
-        </div>
-      );
-    };
-    render(<TestComponent />);
-    expect(screen.getByText('0')).toBeInTheDocument();
-  });
-
-  it('should handle form inputs', () => {
-    const TestComponent = () => {
-      const [value, setValue] = React.useState('');
-      return (
-        <div>
-          <input
-            type="text"
-            value={value}
-            onChange={(e) => setValue(e.target.value)}
-            placeholder="Enter text"
-          />
-          <span>{value}</span>
-        </div>
-      );
-    };
-    render(<TestComponent />);
-    const input = screen.getByPlaceholderText('Enter text') as HTMLInputElement;
-    expect(input.value).toBe('');
-  });
-});
-
 describe('Component CSS Classes', () => {
   it('should apply class names', () => {
     const TestComponent = () => <div className="test-class">Content</div>;

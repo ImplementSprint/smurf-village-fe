@@ -1252,14 +1252,14 @@ function StepConfirm({
   onBack,
   onSubmit,
   loading,
-}: {
+}: Readonly<{
   billing: "monthly" | "annual";
   company: CompanyFormData;
   payData: PaymentFormData;
   onBack: () => void;
   onSubmit: () => void;
   loading: boolean;
-}) {
+}>) {
   const [agreeTos, setAgreeTos] = useState(false);
   const [agreeComms, setAgreeComms] = useState(false);
 

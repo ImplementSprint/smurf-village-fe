@@ -64,7 +64,7 @@ function TimePicker({
   disabled?: boolean;
 }) {
   const parts = value.match(/^(\d{1,2}):(\d{2})/) ?? [];
-  const h24 = parseInt(parts[1] ?? "9", 10);
+  const h24 = Number.parseInt(parts[1] ?? "9", 10);
   const mm = parts[2] ?? "00";
   const period = h24 >= 12 ? "PM" : "AM";
   const h12 = h24 % 12 === 0 ? 12 : h24 % 12;
@@ -81,7 +81,7 @@ function TimePicker({
     <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)_auto] items-center gap-1 w-full">
       <select
         value={h12}
-        onChange={e => emit(parseInt(e.target.value, 10), mm, period)}
+        onChange={e => emit(Number.parseInt(e.target.value, 10), mm, period)}
         disabled={disabled}
         aria-label="Hour"
         className={`${SELECT_CLS} w-full min-w-0 text-center`}
@@ -133,11 +133,11 @@ function EffectiveDatePicker({
   disabled?: boolean;
 }) {
   const [y, m, d] = value.split("-");
-  const minYear = parseInt(min.split("-")[0] ?? String(new Date().getFullYear()), 10);
+  const minYear = Number.parseInt(min.split("-")[0] ?? String(new Date().getFullYear()), 10);
   const years = useMemo(() => [minYear, minYear + 1], [minYear]);
 
   const maxDay = useMemo(
-    () => new Date(parseInt(y, 10), parseInt(m, 10), 0).getDate(),
+    () => new Date(Number.parseInt(y, 10), Number.parseInt(m, 10), 0).getDate(),
     [y, m],
   );
   const days = useMemo(
@@ -146,8 +146,8 @@ function EffectiveDatePicker({
   );
 
   const emit = (ny: string, nm: string, nd: string) => {
-    const md = new Date(parseInt(ny, 10), parseInt(nm, 10), 0).getDate();
-    const clamped = Math.min(parseInt(nd, 10), md);
+    const md = new Date(Number.parseInt(ny, 10), Number.parseInt(nm, 10), 0).getDate();
+    const clamped = Math.min(Number.parseInt(nd, 10), md);
     onChange(`${ny}-${nm.padStart(2, "0")}-${String(clamped).padStart(2, "0")}`);
   };
 

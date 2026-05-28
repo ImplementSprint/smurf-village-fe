@@ -998,10 +998,10 @@ function FeaturesSection() {
 
   useEffect(() => {
     if (!activeFeatureId || reducedMotion) return;
-    const timer = window.setInterval(() => {
+    const timer = globalThis.setInterval(() => {
       setPreviewTick((prev) => prev + 1);
     }, 1200);
-    return () => window.clearInterval(timer);
+    return () => globalThis.clearInterval(timer);
   }, [activeFeatureId, reducedMotion]);
 
   useEffect(() => {

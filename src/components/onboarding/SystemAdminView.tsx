@@ -629,10 +629,10 @@ export default function SystemAdminView() {
                                         <div className="space-y-1.5">
                                           <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Videos</p>
                                           <div className="flex flex-wrap gap-2">
-                                            {rc.videoLinks.map((url, vi) => {
+                                            {rc.videoLinks.map((url) => {
                                               const ytId = getYouTubeId(url);
                                               return ytId ? (
-                                                <a key={vi} href={url} target="_blank" rel="noopener noreferrer"
+                                                <a key={url} href={url} target="_blank" rel="noopener noreferrer"
                                                   className="flex items-center gap-0 rounded-lg border overflow-hidden hover:border-red-300 hover:shadow-sm transition-all max-w-[220px]">
                                                     <img
                                                     src={`https://img.youtube.com/vi/${ytId}/mqdefault.jpg`}
@@ -648,7 +648,7 @@ export default function SystemAdminView() {
                                                   </div>
                                                 </a>
                                               ) : (
-                                                <a key={vi} href={url} target="_blank" rel="noopener noreferrer"
+                                                <a key={url} href={url} target="_blank" rel="noopener noreferrer"
                                                   className="flex items-center gap-1.5 rounded-lg border px-3 py-1.5 hover:bg-muted/50 transition-colors max-w-[200px]">
                                                   <Video className="size-3.5 text-blue-500 shrink-0" />
                                                   <span className="text-xs text-blue-600 truncate">{url.replace(/https?:\/\//, "")}</span>
@@ -665,8 +665,8 @@ export default function SystemAdminView() {
                                         <div className="space-y-1.5">
                                           <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Images</p>
                                           <div className="flex flex-wrap gap-2">
-                                            {rc.imageUrls.map((url, ii) => (
-                                              <a key={ii} href={url} target="_blank" rel="noopener noreferrer"
+                                            {rc.imageUrls.map((url) => (
+                                              <a key={url} href={url} target="_blank" rel="noopener noreferrer"
                                                 className="block size-16 rounded-lg overflow-hidden border hover:border-primary/40 hover:shadow-sm transition-all bg-muted">
                                                 <img
                                                   src={url}
@@ -692,8 +692,8 @@ export default function SystemAdminView() {
                                         <div className="space-y-1.5">
                                           <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Files</p>
                                           <div className="flex flex-wrap gap-1.5">
-                                            {rc.fileLinks.map((file, fi) => (
-                                              <a key={fi} href={file.url} target="_blank" rel="noopener noreferrer"
+                                            {rc.fileLinks.map((file) => (
+                                              <a key={file.url || file.name} href={file.url} target="_blank" rel="noopener noreferrer"
                                                 className="inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs hover:bg-muted/60 transition-colors group/file">
                                                 <Paperclip className="size-3 text-muted-foreground shrink-0" />
                                                 <span className="font-medium text-foreground">{file.name || "File"}</span>

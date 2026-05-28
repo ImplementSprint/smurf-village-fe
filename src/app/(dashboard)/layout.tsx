@@ -86,12 +86,15 @@ export default function SharedDashboardLayout({
       }
 
       // Collect all active HR sub-role names (user may hold multiple simultaneously)
-      const activeHrRoleNames: string[] = Array.isArray(me.role_switch_options)
-        ? (me.role_switch_options as { role_id: string; role_name: string; portal_key: string }[])
-            .filter((opt) => opt.portal_key === "hr")
-            .map((opt) => opt.role_name)
-            .filter(isHrRoleName)
-        : isHrRoleName(me.role_name) ? [me.role_name] : [];
+      let activeHrRoleNames: string[] = [];
+      if (Array.isArray(me.role_switch_options)) {
+        activeHrRoleNames = (me.role_switch_options as { role_id: string; role_name: string; portal_key: string }[])
+          .filter((opt) => opt.portal_key === "hr")
+          .map((opt) => opt.role_name)
+          .filter(isHrRoleName);
+      } else if (isHrRoleName(me.role_name)) {
+        activeHrRoleNames = [me.role_name];
+      }
 
       if (pathname.startsWith("/hr") && activeHrRoleNames.length > 0 && !isHrPathAllowedForRoles(activeHrRoleNames, pathname)) {
         router.replace(getDefaultPathForRoles(activeHrRoleNames));

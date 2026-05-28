@@ -517,7 +517,15 @@ function ConfigureSfiaSkillsModal({
   };
 
   return createPortal(
-    <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/40" onClick={onClose}>
+    <div
+      className="fixed inset-0 z-[70] flex items-center justify-center bg-black/40"
+      onClick={onClose}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") onClose();
+      }}
+    >
       <div
         className="bg-card border border-border rounded-2xl shadow-2xl w-full max-w-lg mx-4 flex flex-col max-h-[85vh]"
         onClick={(e) => e.stopPropagation()}
@@ -1626,9 +1634,10 @@ function InterviewScheduleForm({
   const leadTimeStr = leadTime.toTimeString().slice(0, 5);
   const isToday = form.date === todayStr;
   const minStartTime = isToday ? leadTimeStr : undefined;
-  const minEndTime = isToday
-    ? (form.time && form.time > leadTimeStr ? form.time : leadTimeStr)
-    : form.time || undefined;
+  let minEndTime = form.time || undefined;
+  if (isToday) {
+    minEndTime = form.time && form.time > leadTimeStr ? form.time : leadTimeStr;
+  }
 
   const handleSubmit = () => {
     if (!form.date || !form.time || !form.endTime || !form.interviewer) {

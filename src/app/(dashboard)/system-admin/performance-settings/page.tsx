@@ -615,24 +615,27 @@ export default function SystemAdminPerformancePage() {
           <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground mb-3">Add New Rule</p>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
             <div>
-              <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wide mb-1.5 block">Condition</label>
+              <label htmlFor="new-rule-condition" className="text-[10px] font-bold text-muted-foreground uppercase tracking-wide mb-1.5 block">Condition</label>
               <Input
+                id="new-rule-condition"
                 placeholder="e.g. 3 HIGH violations"
                 value={newRule.condition}
                 onChange={e => setNewRule(prev => ({ ...prev, condition: e.target.value }))}
               />
             </div>
             <div>
-              <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wide mb-1.5 block">Action</label>
+              <label htmlFor="new-rule-action" className="text-[10px] font-bold text-muted-foreground uppercase tracking-wide mb-1.5 block">Action</label>
               <Input
+                id="new-rule-action"
                 placeholder="e.g. Auto-Suspension"
                 value={newRule.action}
                 onChange={e => setNewRule(prev => ({ ...prev, action: e.target.value }))}
               />
             </div>
             <div>
-              <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wide mb-1.5 block">Affected Benefits</label>
+              <label htmlFor="new-rule-benefits" className="text-[10px] font-bold text-muted-foreground uppercase tracking-wide mb-1.5 block">Affected Benefits</label>
               <Input
+                id="new-rule-benefits"
                 placeholder="e.g. Bonus, Merit Increase"
                 value={newRule.affectedBenefits}
                 onChange={e => setNewRule(prev => ({ ...prev, affectedBenefits: e.target.value }))}

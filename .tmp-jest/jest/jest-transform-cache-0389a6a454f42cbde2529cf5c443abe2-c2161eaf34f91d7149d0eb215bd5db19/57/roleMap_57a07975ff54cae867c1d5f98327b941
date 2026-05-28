@@ -1,0 +1,86 @@
+2083ee082afd42a81fcbf70d4f1102f9
+"use strict";
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+function _export(target, all) {
+    for(var name in all)Object.defineProperty(target, name, {
+        enumerable: true,
+        get: Object.getOwnPropertyDescriptor(all, name).get
+    });
+}
+_export(exports, {
+    get portalLabel () {
+        return portalLabel;
+    },
+    get portalToPath () {
+        return portalToPath;
+    },
+    get roleToPath () {
+        return roleToPath;
+    }
+});
+function roleToPath(roleName) {
+    switch(roleName){
+        case "System Admin":
+            return "/system-admin";
+        case "Admin":
+            return "/admin";
+        case "HR Officer":
+        case "HR Recruiter":
+        case "HR Interviewer":
+        case "HR Compensation and Benefits Officer":
+        case "HR Offboarding Officer/Coordinator":
+        case "HR Onboarding Officer":
+        case "HR Performance Management Officer":
+            return "/hr";
+        case "Active Employee":
+        case "Employee":
+            return "/employee";
+        case "Applicant":
+            return "/applicant";
+        case "Manager":
+        case "Group Head":
+            return "/manager";
+        default:
+            return "/login";
+    }
+}
+function portalToPath(portalKey) {
+    switch(portalKey){
+        case "system-admin":
+            return "/system-admin";
+        case "admin":
+            return "/admin";
+        case "hr":
+            return "/hr";
+        case "manager":
+            return "/manager";
+        case "employee":
+            return "/employee";
+        case "applicant":
+            return "/applicant";
+        default:
+            return "/login";
+    }
+}
+function portalLabel(portalKey) {
+    switch(portalKey){
+        case "system-admin":
+            return "System Admin Portal";
+        case "admin":
+            return "Admin Portal";
+        case "hr":
+            return "HR Portal";
+        case "manager":
+            return "Manager Portal";
+        case "employee":
+            return "Employee Portal";
+        case "applicant":
+            return "Applicant Portal";
+        default:
+            return "Portal";
+    }
+}
+
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIkM6XFxVc2Vyc1xcQWRyaWFuXFxEb3dubG9hZHNcXHNwcmludDhcXHNyY1xcbGliXFxyb2xlTWFwLnRzIl0sInNvdXJjZXNDb250ZW50IjpbImV4cG9ydCBmdW5jdGlvbiByb2xlVG9QYXRoKHJvbGVOYW1lPzogc3RyaW5nKSB7XHJcbiAgc3dpdGNoIChyb2xlTmFtZSkge1xyXG4gICAgY2FzZSBcIlN5c3RlbSBBZG1pblwiOlxyXG4gICAgICByZXR1cm4gXCIvc3lzdGVtLWFkbWluXCI7XHJcbiAgICBjYXNlIFwiQWRtaW5cIjpcclxuICAgICAgcmV0dXJuIFwiL2FkbWluXCI7XHJcbiAgICBjYXNlIFwiSFIgT2ZmaWNlclwiOlxyXG4gICAgY2FzZSBcIkhSIFJlY3J1aXRlclwiOlxyXG4gICAgY2FzZSBcIkhSIEludGVydmlld2VyXCI6XHJcbiAgICBjYXNlIFwiSFIgQ29tcGVuc2F0aW9uIGFuZCBCZW5lZml0cyBPZmZpY2VyXCI6XHJcbiAgICBjYXNlIFwiSFIgT2ZmYm9hcmRpbmcgT2ZmaWNlci9Db29yZGluYXRvclwiOlxyXG4gICAgY2FzZSBcIkhSIE9uYm9hcmRpbmcgT2ZmaWNlclwiOlxyXG4gICAgY2FzZSBcIkhSIFBlcmZvcm1hbmNlIE1hbmFnZW1lbnQgT2ZmaWNlclwiOlxyXG4gICAgICByZXR1cm4gXCIvaHJcIjtcclxuICAgIGNhc2UgXCJBY3RpdmUgRW1wbG95ZWVcIjpcclxuICAgICAgY2FzZSBcIkVtcGxveWVlXCI6XHJcbiAgICAgIHJldHVybiBcIi9lbXBsb3llZVwiO1xyXG4gICAgY2FzZSBcIkFwcGxpY2FudFwiOlxyXG4gICAgICByZXR1cm4gXCIvYXBwbGljYW50XCI7XHJcbiAgICBjYXNlIFwiTWFuYWdlclwiOlxyXG4gICAgY2FzZSBcIkdyb3VwIEhlYWRcIjpcclxuICAgICAgcmV0dXJuIFwiL21hbmFnZXJcIjtcclxuICAgIGRlZmF1bHQ6XHJcbiAgICAgIHJldHVybiBcIi9sb2dpblwiO1xyXG4gIH1cclxufVxyXG5cclxuZXhwb3J0IGZ1bmN0aW9uIHBvcnRhbFRvUGF0aChwb3J0YWxLZXk/OiBzdHJpbmcpIHtcclxuICBzd2l0Y2ggKHBvcnRhbEtleSkge1xyXG4gICAgY2FzZSBcInN5c3RlbS1hZG1pblwiOlxyXG4gICAgICByZXR1cm4gXCIvc3lzdGVtLWFkbWluXCI7XHJcbiAgICBjYXNlIFwiYWRtaW5cIjpcclxuICAgICAgcmV0dXJuIFwiL2FkbWluXCI7XHJcbiAgICBjYXNlIFwiaHJcIjpcclxuICAgICAgcmV0dXJuIFwiL2hyXCI7XHJcbiAgICBjYXNlIFwibWFuYWdlclwiOlxyXG4gICAgICByZXR1cm4gXCIvbWFuYWdlclwiO1xyXG4gICAgY2FzZSBcImVtcGxveWVlXCI6XHJcbiAgICAgIHJldHVybiBcIi9lbXBsb3llZVwiO1xyXG4gICAgY2FzZSBcImFwcGxpY2FudFwiOlxyXG4gICAgICByZXR1cm4gXCIvYXBwbGljYW50XCI7XHJcbiAgICBkZWZhdWx0OlxyXG4gICAgICByZXR1cm4gXCIvbG9naW5cIjtcclxuICB9XHJcbn1cclxuXHJcbmV4cG9ydCBmdW5jdGlvbiBwb3J0YWxMYWJlbChwb3J0YWxLZXk/OiBzdHJpbmcpIHtcclxuICBzd2l0Y2ggKHBvcnRhbEtleSkge1xyXG4gICAgY2FzZSBcInN5c3RlbS1hZG1pblwiOlxyXG4gICAgICByZXR1cm4gXCJTeXN0ZW0gQWRtaW4gUG9ydGFsXCI7XHJcbiAgICBjYXNlIFwiYWRtaW5cIjpcclxuICAgICAgcmV0dXJuIFwiQWRtaW4gUG9ydGFsXCI7XHJcbiAgICBjYXNlIFwiaHJcIjpcclxuICAgICAgcmV0dXJuIFwiSFIgUG9ydGFsXCI7XHJcbiAgICBjYXNlIFwibWFuYWdlclwiOlxyXG4gICAgICByZXR1cm4gXCJNYW5hZ2VyIFBvcnRhbFwiO1xyXG4gICAgY2FzZSBcImVtcGxveWVlXCI6XHJcbiAgICAgIHJldHVybiBcIkVtcGxveWVlIFBvcnRhbFwiO1xyXG4gICAgY2FzZSBcImFwcGxpY2FudFwiOlxyXG4gICAgICByZXR1cm4gXCJBcHBsaWNhbnQgUG9ydGFsXCI7XHJcbiAgICBkZWZhdWx0OlxyXG4gICAgICByZXR1cm4gXCJQb3J0YWxcIjtcclxuICB9XHJcbn1cclxuIl0sIm5hbWVzIjpbInBvcnRhbExhYmVsIiwicG9ydGFsVG9QYXRoIiwicm9sZVRvUGF0aCIsInJvbGVOYW1lIiwicG9ydGFsS2V5Il0sIm1hcHBpbmdzIjoiOzs7Ozs7Ozs7OztRQThDZ0JBO2VBQUFBOztRQW5CQUM7ZUFBQUE7O1FBM0JBQztlQUFBQTs7O0FBQVQsU0FBU0EsV0FBV0MsUUFBaUI7SUFDMUMsT0FBUUE7UUFDTixLQUFLO1lBQ0gsT0FBTztRQUNULEtBQUs7WUFDSCxPQUFPO1FBQ1QsS0FBSztRQUNMLEtBQUs7UUFDTCxLQUFLO1FBQ0wsS0FBSztRQUNMLEtBQUs7UUFDTCxLQUFLO1FBQ0wsS0FBSztZQUNILE9BQU87UUFDVCxLQUFLO1FBQ0gsS0FBSztZQUNMLE9BQU87UUFDVCxLQUFLO1lBQ0gsT0FBTztRQUNULEtBQUs7UUFDTCxLQUFLO1lBQ0gsT0FBTztRQUNUO1lBQ0UsT0FBTztJQUNYO0FBQ0Y7QUFFTyxTQUFTRixhQUFhRyxTQUFrQjtJQUM3QyxPQUFRQTtRQUNOLEtBQUs7WUFDSCxPQUFPO1FBQ1QsS0FBSztZQUNILE9BQU87UUFDVCxLQUFLO1lBQ0gsT0FBTztRQUNULEtBQUs7WUFDSCxPQUFPO1FBQ1QsS0FBSztZQUNILE9BQU87UUFDVCxLQUFLO1lBQ0gsT0FBTztRQUNUO1lBQ0UsT0FBTztJQUNYO0FBQ0Y7QUFFTyxTQUFTSixZQUFZSSxTQUFrQjtJQUM1QyxPQUFRQTtRQUNOLEtBQUs7WUFDSCxPQUFPO1FBQ1QsS0FBSztZQUNILE9BQU87UUFDVCxLQUFLO1lBQ0gsT0FBTztRQUNULEtBQUs7WUFDSCxPQUFPO1FBQ1QsS0FBSztZQUNILE9BQU87UUFDVCxLQUFLO1lBQ0gsT0FBTztRQUNUO1lBQ0UsT0FBTztJQUNYO0FBQ0YifQ==

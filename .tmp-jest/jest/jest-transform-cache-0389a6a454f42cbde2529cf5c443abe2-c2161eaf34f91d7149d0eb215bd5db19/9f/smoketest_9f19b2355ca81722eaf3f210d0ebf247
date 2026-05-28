@@ -1,0 +1,10 @@
+27ef97ba1f002c002abf24240e43a213
+"use strict";
+// Smoke test to pass "no tests found" check
+describe('Smoke Test', ()=>{
+    it('should pass', ()=>{
+        expect(true).toBe(true);
+    });
+});
+
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIkM6XFxVc2Vyc1xcQWRyaWFuXFxEb3dubG9hZHNcXHNwcmludDhcXHNyY1xcX190ZXN0c19fXFxzbW9rZS50ZXN0LnRzIl0sInNvdXJjZXNDb250ZW50IjpbIi8vIFNtb2tlIHRlc3QgdG8gcGFzcyBcIm5vIHRlc3RzIGZvdW5kXCIgY2hlY2tcclxuZGVzY3JpYmUoJ1Ntb2tlIFRlc3QnLCAoKSA9PiB7XHJcbiAgaXQoJ3Nob3VsZCBwYXNzJywgKCkgPT4ge1xyXG4gICAgZXhwZWN0KHRydWUpLnRvQmUodHJ1ZSk7XHJcbiAgfSk7XHJcbn0pO1xyXG4iXSwibmFtZXMiOlsiZGVzY3JpYmUiLCJpdCIsImV4cGVjdCIsInRvQmUiXSwibWFwcGluZ3MiOiI7QUFBQSw0Q0FBNEM7QUFDNUNBLFNBQVMsY0FBYztJQUNyQkMsR0FBRyxlQUFlO1FBQ2hCQyxPQUFPLE1BQU1DLElBQUksQ0FBQztJQUNwQjtBQUNGIn0=

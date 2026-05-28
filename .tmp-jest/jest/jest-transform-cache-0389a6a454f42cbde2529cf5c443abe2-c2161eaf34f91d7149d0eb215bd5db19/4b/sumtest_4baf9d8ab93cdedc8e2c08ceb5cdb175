@@ -1,0 +1,19 @@
+66d805e511ca1103e8982be4fa61659c
+"use strict";
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+const _sum = require("../../src/lib/sum");
+describe("sum", ()=>{
+    it("adds positive numbers", ()=>{
+        expect((0, _sum.sum)(2, 3)).toBe(5);
+    });
+    it("handles negative numbers", ()=>{
+        expect((0, _sum.sum)(-2, -3)).toBe(-5);
+    });
+    it("handles mixed signs", ()=>{
+        expect((0, _sum.sum)(-2, 3)).toBe(1);
+    });
+});
+
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIkM6XFxVc2Vyc1xcQWRyaWFuXFxEb3dubG9hZHNcXHNwcmludDhcXHRlc3RzXFx1bml0XFxzdW0udGVzdC50cyJdLCJzb3VyY2VzQ29udGVudCI6WyJpbXBvcnQgeyBzdW0gfSBmcm9tIFwiLi4vLi4vc3JjL2xpYi9zdW1cIjtcclxuXHJcbmRlc2NyaWJlKFwic3VtXCIsICgpID0+IHtcclxuICBpdChcImFkZHMgcG9zaXRpdmUgbnVtYmVyc1wiLCAoKSA9PiB7XHJcbiAgICBleHBlY3Qoc3VtKDIsIDMpKS50b0JlKDUpO1xyXG4gIH0pO1xyXG5cclxuICBpdChcImhhbmRsZXMgbmVnYXRpdmUgbnVtYmVyc1wiLCAoKSA9PiB7XHJcbiAgICBleHBlY3Qoc3VtKC0yLCAtMykpLnRvQmUoLTUpO1xyXG4gIH0pO1xyXG5cclxuICBpdChcImhhbmRsZXMgbWl4ZWQgc2lnbnNcIiwgKCkgPT4ge1xyXG4gICAgZXhwZWN0KHN1bSgtMiwgMykpLnRvQmUoMSk7XHJcbiAgfSk7XHJcbn0pO1xyXG4iXSwibmFtZXMiOlsiZGVzY3JpYmUiLCJpdCIsImV4cGVjdCIsInN1bSIsInRvQmUiXSwibWFwcGluZ3MiOiI7Ozs7cUJBQW9CO0FBRXBCQSxTQUFTLE9BQU87SUFDZEMsR0FBRyx5QkFBeUI7UUFDMUJDLE9BQU9DLElBQUFBLFFBQUcsRUFBQyxHQUFHLElBQUlDLElBQUksQ0FBQztJQUN6QjtJQUVBSCxHQUFHLDRCQUE0QjtRQUM3QkMsT0FBT0MsSUFBQUEsUUFBRyxFQUFDLENBQUMsR0FBRyxDQUFDLElBQUlDLElBQUksQ0FBQyxDQUFDO0lBQzVCO0lBRUFILEdBQUcsdUJBQXVCO1FBQ3hCQyxPQUFPQyxJQUFBQSxRQUFHLEVBQUMsQ0FBQyxHQUFHLElBQUlDLElBQUksQ0FBQztJQUMxQjtBQUNGIn0=

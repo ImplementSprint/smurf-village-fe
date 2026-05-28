@@ -200,6 +200,11 @@ export default function EmployeeDashboardPage() {
     "absence":  { label: "On Leave",    cls: "bg-amber-100 text-amber-700 border-amber-200"  },
   };
   const todayCfg = todayStatus ? statusConfig[todayStatus] : null;
+  const startDateValue = loading
+    ? "—"
+    : profile?.start_date
+      ? new Date(profile.start_date).toLocaleDateString("en-US", { month: "short", year: "numeric" })
+      : "—";
 
   // ── Missing profile fields ───────────────────────────────────────────────────
   const missingProfileFields = PROFILE_FIELDS.filter(({ key }) => !profile?.[key]).map(f => f.label);
@@ -282,9 +287,7 @@ export default function EmployeeDashboardPage() {
         />
         <StatCard
           label="Start Date"
-          value={loading ? "—" : (profile?.start_date
-            ? new Date(profile.start_date).toLocaleDateString("en-US", { month: "short", year: "numeric" })
-            : "—")}
+          value={startDateValue}
           sub={profile?.employee_id ? `ID: ${profile.employee_id}` : undefined}
           icon={CalendarDays}
           color="bg-amber-50 text-amber-700"

@@ -395,6 +395,8 @@ export default function SystemAdminTimekeepingPage() {
 
   const weekRange  = useMemo(() => getWeekRange(weekOffset),   [weekOffset]);
   const monthRange = useMemo(() => getMonthRange(monthOffset), [monthOffset]);
+  const calendarReferenceDate =
+    calPickerNav ?? (viewMode === "day" ? selectedDate : new Date());
 
   const { from, to } = useMemo(() => {
     if (viewMode === "week")  return { from: weekRange.from,  to: weekRange.to  };
@@ -458,9 +460,15 @@ export default function SystemAdminTimekeepingPage() {
       const presentTotal = s.presentIds.size;
       const late = s.lateIds.size;
       const absent = s.absentIds.size;
+      let rowStatus: CalendarDayData["status"];
+      if (date > today) rowStatus = "future";
+      else if (late > 0) rowStatus = "late";
+      else if (presentTotal > 0) rowStatus = "present";
+      else if (absent > 0) rowStatus = "absent";
+      else rowStatus = "no-schedule";
       return {
         date,
-        status: date > today ? "future" : late > 0 ? "late" : presentTotal > 0 ? "present" : absent > 0 ? "absent" : "no-schedule",
+        status: rowStatus,
         summary: date > today ? undefined : { present: presentTotal - late, late, absent, excused: 0, notClockedIn: 0, total: users.length },
       };
     });
@@ -755,7 +763,7 @@ export default function SystemAdminTimekeepingPage() {
           </div>
           <AttendanceCalendarGrid
             mode={calendarMode}
-            referenceDate={calPickerNav ?? (viewMode === "day" ? selectedDate : new Date())}
+            referenceDate={calendarReferenceDate}
             days={calendarDays}
             loading={loading}
             showModeToggle

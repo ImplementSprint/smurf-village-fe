@@ -1,0 +1,16 @@
+85e64347a1a00f05986aa2f384d50285
+"use strict";
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+Object.defineProperty(exports, "sum", {
+    enumerable: true,
+    get: function() {
+        return sum;
+    }
+});
+function sum(left, right) {
+    return left + right;
+}
+
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIkM6XFxVc2Vyc1xcQWRyaWFuXFxEb3dubG9hZHNcXHNwcmludDhcXHNyY1xcbGliXFxzdW0udHMiXSwic291cmNlc0NvbnRlbnQiOlsiZXhwb3J0IGZ1bmN0aW9uIHN1bShsZWZ0OiBudW1iZXIsIHJpZ2h0OiBudW1iZXIpOiBudW1iZXIge1xyXG4gIHJldHVybiBsZWZ0ICsgcmlnaHQ7XHJcbn1cclxuIl0sIm5hbWVzIjpbInN1bSIsImxlZnQiLCJyaWdodCJdLCJtYXBwaW5ncyI6Ijs7OzsrQkFBZ0JBOzs7ZUFBQUE7OztBQUFULFNBQVNBLElBQUlDLElBQVksRUFBRUMsS0FBYTtJQUM3QyxPQUFPRCxPQUFPQztBQUNoQiJ9

@@ -1,0 +1,1 @@
+{"version":3,"sources":["C:\\Users\\Adrian\\Downloads\\sprint8\\tests\\unit\\sanity.test.ts"],"sourcesContent":["describe(\"sanity\", () => {\r\n  it(\"true should be true\", () => {\r\n    expect(true).toBe(true);\r\n  });\r\n});\r\n"],"names":["describe","it","expect","toBe"],"mappings":";AAAAA,SAAS,UAAU;IACjBC,GAAG,uBAAuB;QACxBC,OAAO,MAAMC,IAAI,CAAC;IACpB;AACF"}

@@ -24,6 +24,18 @@ import { toast } from "sonner";
 type TeamStatus = "On Track" | "Exceeding" | "At Risk" | "PIP" | "Pending Review";
 type BSCCategory = "FINANCIAL" | "CUSTOMER" | "INTERNAL" | "LEARNING";
 type Priority = "High" | "Medium" | "Low";
+type TeamMember = {
+  id: string;
+  name?: string;
+  user_id?: string;
+  employee_id?: string;
+  status?: string;
+  [key: string]: unknown;
+};
+type SelfAssessment = {
+  goal_results?: Array<Record<string, unknown>>;
+  self_comments?: string | null;
+};
 
 const BSC_CATEGORIES: BSCCategory[] = ["FINANCIAL", "CUSTOMER", "INTERNAL", "LEARNING"];
 const PRIORITIES: Priority[] = ["High", "Medium", "Low"];
@@ -65,15 +77,15 @@ function StatusBadge({ status }: { status: TeamStatus }) {
 // ─── Page ────────────────────────────────────────────────────────────────────
 
 export default function ManagerPerformancePage() {
-  const [team, setTeam] = useState<any[]>([]);
-  const [managerDashboard, setManagerDashboard] = useState<any>(null);
+  const [team, setTeam] = useState<TeamMember[]>([]);
+  const [managerDashboard, setManagerDashboard] = useState<Record<string, unknown> | null>(null);
   const [loading, setLoading] = useState(true);
 
   const [filter, setFilter] = useState("All");
   const [goalModalOpen, setGoalModalOpen] = useState(false);
   const [empSearch, setEmpSearch] = useState("");
   const [reviewModalOpen, setReviewModalOpen] = useState(false);
-  const [selectedMember, setSelectedMember] = useState<any | null>(null);
+  const [selectedMember, setSelectedMember] = useState<TeamMember | null>(null);
 
   // Goal form
   const [selectedEmp, setSelectedEmp] = useState<string>("");
@@ -88,21 +100,21 @@ export default function ManagerPerformancePage() {
   const [comments, setComments] = useState("");
   const [recommendations, setRecommendations] = useState({ promotion: false, bonus: false, merit: false });
   const [existingEvalId, setExistingEvalId] = useState<string | null>(null);
-  const [teamEvaluations, setTeamEvaluations] = useState<any[]>([]);
+  const [teamEvaluations, setTeamEvaluations] = useState<Array<Record<string, unknown>>>([]);
 
   // PIP creation
   const [pipModalOpen, setPipModalOpen] = useState(false);
-  const [pipTargetMember, setPipTargetMember] = useState<any | null>(null);
+  const [pipTargetMember, setPipTargetMember] = useState<TeamMember | null>(null);
   const [pipForm, setPipForm] = useState({ deadline: "", goals: ["", "", ""] });
 
   // PIP update review
   const [pipReviewOpen, setPipReviewOpen] = useState(false);
-  const [pipReviewMember, setPipReviewMember] = useState<any | null>(null);
-  const [pipReviewUpdates, setPipReviewUpdates] = useState<any[]>([]);
+  const [pipReviewMember, setPipReviewMember] = useState<TeamMember | null>(null);
+  const [pipReviewUpdates, setPipReviewUpdates] = useState<Array<Record<string, unknown>>>([]);
   const [pipReviewNotes, setPipReviewNotes] = useState<Record<string, string>>({});
 
   // Self-assessment (shown inside review modal)
-  const [memberSelfAssessment, setMemberSelfAssessment] = useState<any | null>(null);
+  const [memberSelfAssessment, setMemberSelfAssessment] = useState<SelfAssessment | null>(null);
   const [selfAssessmentExpanded, setSelfAssessmentExpanded] = useState(false);
 
   // Rating labels (from settings)

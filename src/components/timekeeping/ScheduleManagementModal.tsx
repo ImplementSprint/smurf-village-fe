@@ -269,7 +269,7 @@ function TimePickerWheel({
 
   return (
     <div className="relative">
-      {label && <label className="text-xs text-muted-foreground mb-1 block">{label}</label>}
+      {label && <p className="text-xs text-muted-foreground mb-1 block">{label}</p>}
 
       <button
         type="button"

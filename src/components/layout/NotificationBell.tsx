@@ -75,9 +75,11 @@ export function NotificationBell() {
   useEffect(() => {
     if (!open) return;
     const handler = (e: MouseEvent) => {
+      const target = e.target;
+      if (!(target instanceof Node)) return;
       if (
-        dropdownRef.current?.contains(e.target as Node) ||
-        btnRef.current?.contains(e.target as Node)
+        dropdownRef.current?.contains(target) ||
+        btnRef.current?.contains(target)
       ) return;
       setOpen(false);
     };

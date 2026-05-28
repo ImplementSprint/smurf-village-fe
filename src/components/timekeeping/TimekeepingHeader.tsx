@@ -78,7 +78,10 @@ export function DayStatRow({
   const absentTone    = dayStarted && absent > 0 ? "red" : "neutral";
   const inTone        = inCount > 0 ? "green" : "neutral";
   const lateTone      = late > 0 ? "amber" : "neutral";
-  const rateTone      = rate >= 80 ? "green" : rate >= 50 ? "amber" : dayStarted ? "red" : "neutral";
+  let rateTone: "neutral" | "green" | "amber" | "red" = "neutral";
+  if (rate >= 80) rateTone = "green";
+  else if (rate >= 50) rateTone = "amber";
+  else if (dayStarted) rateTone = "red";
 
   return (
     <div className="flex flex-wrap items-center gap-2">

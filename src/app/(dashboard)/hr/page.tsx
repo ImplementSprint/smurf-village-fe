@@ -253,6 +253,21 @@ function EditEmployeeModal({
   onClose: () => void;
   onSaved: (updated: Employee) => void;
 }>) {
+  function isValidCompanyEmail(value: string): boolean {
+    const email = value.trim();
+    if (!email || email.includes(" ") || email.includes("\t") || email.includes("\n")) return false;
+
+    const atIndex = email.indexOf("@");
+    if (atIndex <= 0 || atIndex !== email.lastIndexOf("@")) return false;
+
+    const localPart = email.slice(0, atIndex);
+    const domainPart = email.slice(atIndex + 1);
+    if (!localPart || !domainPart) return false;
+    if (domainPart.startsWith(".") || domainPart.endsWith(".")) return false;
+    if (!domainPart.includes(".")) return false;
+    return true;
+  }
+
   const [form, setForm] = useState({
     role_id: employee.role_id ?? "",
     department_id: employee.department_id ?? "",
@@ -268,7 +283,7 @@ function EditEmployeeModal({
   const validate = () => {
     const e: Record<string, string> = {};
     if (!form.role_id) e.role_id = "Role is required";
-    if (companyEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(companyEmail))
+    if (companyEmail && !isValidCompanyEmail(companyEmail))
       e.companyEmail = "Enter a valid email address";
     return e;
   };

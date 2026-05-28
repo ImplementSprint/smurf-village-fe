@@ -2041,12 +2041,14 @@ export default function HRTimekeepingPage() {
   }, [customFrom, customTo, from, to, viewMode]);
 
   useEffect(() => {
-    void refreshTimekeepingData();
+    refreshTimekeepingData();
   }, [refreshTimekeepingData]);
 
   useEffect(() => {
-    if (mainPanel !== "attendance") return;
-    void refreshAbsenceRequests();
+    if (mainPanel !== "attendance") {
+      return;
+    }
+    refreshAbsenceRequests();
   }, [mainPanel, refreshAbsenceRequests]);
 
   // Open drill-down panel — slide-over fetches its own data per selected period

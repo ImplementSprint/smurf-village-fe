@@ -1,0 +1,63 @@
+48f9c048be4ad3d2e2b1bd65c57fa80b
+"use strict";
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+const _jsxruntime = require("react/jsx-runtime");
+const _react = require("@testing-library/react");
+const _alert = require("../../components/ui/alert");
+const _badge = require("../../components/ui/badge");
+const _button = require("../../components/ui/button");
+const _card = require("../../components/ui/card");
+const _checkbox = require("../../components/ui/checkbox");
+const _input = require("../../components/ui/input");
+const _label = require("../../components/ui/label");
+describe("ui primitives", ()=>{
+    it("renders badge, button, card, alert, input, label, and checkbox primitives", ()=>{
+        (0, _react.render)(/*#__PURE__*/ (0, _jsxruntime.jsxs)("div", {
+            children: [
+                /*#__PURE__*/ (0, _jsxruntime.jsx)(_badge.Badge, {
+                    children: "Badge"
+                }),
+                /*#__PURE__*/ (0, _jsxruntime.jsx)(_button.Button, {
+                    children: "Save"
+                }),
+                /*#__PURE__*/ (0, _jsxruntime.jsx)(_card.Card, {
+                    children: /*#__PURE__*/ (0, _jsxruntime.jsx)(_card.CardContent, {
+                        children: "Card body"
+                    })
+                }),
+                /*#__PURE__*/ (0, _jsxruntime.jsxs)(_alert.Alert, {
+                    children: [
+                        /*#__PURE__*/ (0, _jsxruntime.jsx)(_alert.AlertTitle, {
+                            children: "Heads up"
+                        }),
+                        /*#__PURE__*/ (0, _jsxruntime.jsx)(_alert.AlertDescription, {
+                            children: "Alert body"
+                        })
+                    ]
+                }),
+                /*#__PURE__*/ (0, _jsxruntime.jsx)(_label.Label, {
+                    htmlFor: "email",
+                    children: "Email"
+                }),
+                /*#__PURE__*/ (0, _jsxruntime.jsx)(_input.Input, {
+                    id: "email"
+                }),
+                /*#__PURE__*/ (0, _jsxruntime.jsx)(_checkbox.Checkbox, {
+                    "aria-label": "Agree"
+                })
+            ]
+        }));
+        expect(_react.screen.getByText("Badge")).toBeInTheDocument();
+        expect(_react.screen.getByRole("button", {
+            name: "Save"
+        })).toBeInTheDocument();
+        expect(_react.screen.getByText("Card body")).toBeInTheDocument();
+        expect(_react.screen.getByText("Heads up")).toBeInTheDocument();
+        expect(_react.screen.getByLabelText("Email")).toBeInTheDocument();
+        expect(_react.screen.getByLabelText("Agree")).toBeInTheDocument();
+    });
+});
+
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIkM6XFxVc2Vyc1xcQWRyaWFuXFxEb3dubG9hZHNcXHNwcmludDhcXHNyY1xcX190ZXN0c19fXFxjb3ZlcmFnZVxcdWktcHJpbWl0aXZlcy50ZXN0LnRzeCJdLCJzb3VyY2VzQ29udGVudCI6WyJpbXBvcnQgeyByZW5kZXIsIHNjcmVlbiB9IGZyb20gXCJAdGVzdGluZy1saWJyYXJ5L3JlYWN0XCI7XG5pbXBvcnQgeyBBbGVydCwgQWxlcnREZXNjcmlwdGlvbiwgQWxlcnRUaXRsZSB9IGZyb20gXCJAL2NvbXBvbmVudHMvdWkvYWxlcnRcIjtcbmltcG9ydCB7IEJhZGdlIH0gZnJvbSBcIkAvY29tcG9uZW50cy91aS9iYWRnZVwiO1xuaW1wb3J0IHsgQnV0dG9uIH0gZnJvbSBcIkAvY29tcG9uZW50cy91aS9idXR0b25cIjtcbmltcG9ydCB7IENhcmQsIENhcmRDb250ZW50IH0gZnJvbSBcIkAvY29tcG9uZW50cy91aS9jYXJkXCI7XG5pbXBvcnQgeyBDaGVja2JveCB9IGZyb20gXCJAL2NvbXBvbmVudHMvdWkvY2hlY2tib3hcIjtcbmltcG9ydCB7IElucHV0IH0gZnJvbSBcIkAvY29tcG9uZW50cy91aS9pbnB1dFwiO1xuaW1wb3J0IHsgTGFiZWwgfSBmcm9tIFwiQC9jb21wb25lbnRzL3VpL2xhYmVsXCI7XG5cbmRlc2NyaWJlKFwidWkgcHJpbWl0aXZlc1wiLCAoKSA9PiB7XG4gIGl0KFwicmVuZGVycyBiYWRnZSwgYnV0dG9uLCBjYXJkLCBhbGVydCwgaW5wdXQsIGxhYmVsLCBhbmQgY2hlY2tib3ggcHJpbWl0aXZlc1wiLCAoKSA9PiB7XG4gICAgcmVuZGVyKFxuICAgICAgPGRpdj5cbiAgICAgICAgPEJhZGdlPkJhZGdlPC9CYWRnZT5cbiAgICAgICAgPEJ1dHRvbj5TYXZlPC9CdXR0b24+XG4gICAgICAgIDxDYXJkPlxuICAgICAgICAgIDxDYXJkQ29udGVudD5DYXJkIGJvZHk8L0NhcmRDb250ZW50PlxuICAgICAgICA8L0NhcmQ+XG4gICAgICAgIDxBbGVydD5cbiAgICAgICAgICA8QWxlcnRUaXRsZT5IZWFkcyB1cDwvQWxlcnRUaXRsZT5cbiAgICAgICAgICA8QWxlcnREZXNjcmlwdGlvbj5BbGVydCBib2R5PC9BbGVydERlc2NyaXB0aW9uPlxuICAgICAgICA8L0FsZXJ0PlxuICAgICAgICA8TGFiZWwgaHRtbEZvcj1cImVtYWlsXCI+RW1haWw8L0xhYmVsPlxuICAgICAgICA8SW5wdXQgaWQ9XCJlbWFpbFwiIC8+XG4gICAgICAgIDxDaGVja2JveCBhcmlhLWxhYmVsPVwiQWdyZWVcIiAvPlxuICAgICAgPC9kaXY+LFxuICAgICk7XG5cbiAgICBleHBlY3Qoc2NyZWVuLmdldEJ5VGV4dChcIkJhZGdlXCIpKS50b0JlSW5UaGVEb2N1bWVudCgpO1xuICAgIGV4cGVjdChzY3JlZW4uZ2V0QnlSb2xlKFwiYnV0dG9uXCIsIHsgbmFtZTogXCJTYXZlXCIgfSkpLnRvQmVJblRoZURvY3VtZW50KCk7XG4gICAgZXhwZWN0KHNjcmVlbi5nZXRCeVRleHQoXCJDYXJkIGJvZHlcIikpLnRvQmVJblRoZURvY3VtZW50KCk7XG4gICAgZXhwZWN0KHNjcmVlbi5nZXRCeVRleHQoXCJIZWFkcyB1cFwiKSkudG9CZUluVGhlRG9jdW1lbnQoKTtcbiAgICBleHBlY3Qoc2NyZWVuLmdldEJ5TGFiZWxUZXh0KFwiRW1haWxcIikpLnRvQmVJblRoZURvY3VtZW50KCk7XG4gICAgZXhwZWN0KHNjcmVlbi5nZXRCeUxhYmVsVGV4dChcIkFncmVlXCIpKS50b0JlSW5UaGVEb2N1bWVudCgpO1xuICB9KTtcbn0pO1xuIl0sIm5hbWVzIjpbImRlc2NyaWJlIiwiaXQiLCJyZW5kZXIiLCJkaXYiLCJCYWRnZSIsIkJ1dHRvbiIsIkNhcmQiLCJDYXJkQ29udGVudCIsIkFsZXJ0IiwiQWxlcnRUaXRsZSIsIkFsZXJ0RGVzY3JpcHRpb24iLCJMYWJlbCIsImh0bWxGb3IiLCJJbnB1dCIsImlkIiwiQ2hlY2tib3giLCJhcmlhLWxhYmVsIiwiZXhwZWN0Iiwic2NyZWVuIiwiZ2V0QnlUZXh0IiwidG9CZUluVGhlRG9jdW1lbnQiLCJnZXRCeVJvbGUiLCJuYW1lIiwiZ2V0QnlMYWJlbFRleHQiXSwibWFwcGluZ3MiOiI7Ozs7O3VCQUErQjt1QkFDcUI7dUJBQzlCO3dCQUNDO3NCQUNXOzBCQUNUO3VCQUNIO3VCQUNBO0FBRXRCQSxTQUFTLGlCQUFpQjtJQUN4QkMsR0FBRyw2RUFBNkU7UUFDOUVDLElBQUFBLGFBQU0sZ0JBQ0osc0JBQUNDOzs4QkFDQyxxQkFBQ0MsWUFBSzs4QkFBQzs7OEJBQ1AscUJBQUNDLGNBQU07OEJBQUM7OzhCQUNSLHFCQUFDQyxVQUFJOzhCQUNILGNBQUEscUJBQUNDLGlCQUFXO2tDQUFDOzs7OEJBRWYsc0JBQUNDLFlBQUs7O3NDQUNKLHFCQUFDQyxpQkFBVTtzQ0FBQzs7c0NBQ1oscUJBQUNDLHVCQUFnQjtzQ0FBQzs7Ozs4QkFFcEIscUJBQUNDLFlBQUs7b0JBQUNDLFNBQVE7OEJBQVE7OzhCQUN2QixxQkFBQ0MsWUFBSztvQkFBQ0MsSUFBRzs7OEJBQ1YscUJBQUNDLGtCQUFRO29CQUFDQyxjQUFXOzs7O1FBSXpCQyxPQUFPQyxhQUFNLENBQUNDLFNBQVMsQ0FBQyxVQUFVQyxpQkFBaUI7UUFDbkRILE9BQU9DLGFBQU0sQ0FBQ0csU0FBUyxDQUFDLFVBQVU7WUFBRUMsTUFBTTtRQUFPLElBQUlGLGlCQUFpQjtRQUN0RUgsT0FBT0MsYUFBTSxDQUFDQyxTQUFTLENBQUMsY0FBY0MsaUJBQWlCO1FBQ3ZESCxPQUFPQyxhQUFNLENBQUNDLFNBQVMsQ0FBQyxhQUFhQyxpQkFBaUI7UUFDdERILE9BQU9DLGFBQU0sQ0FBQ0ssY0FBYyxDQUFDLFVBQVVILGlCQUFpQjtRQUN4REgsT0FBT0MsYUFBTSxDQUFDSyxjQUFjLENBQUMsVUFBVUgsaUJBQWlCO0lBQzFEO0FBQ0YifQ==

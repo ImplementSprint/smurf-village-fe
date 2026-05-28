@@ -162,22 +162,22 @@ function ApplicationForm({
             <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-3">Your Information</p>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
-                <label className="text-xs text-muted-foreground font-medium">First Name</label>
-                <Input value={autoFill.first_name} readOnly className="h-9 bg-muted/30 text-muted-foreground cursor-not-allowed" />
+                <label htmlFor="app-first-name" className="text-xs text-muted-foreground font-medium">First Name</label>
+                <Input id="app-first-name" value={autoFill.first_name} readOnly className="h-9 bg-muted/30 text-muted-foreground cursor-not-allowed" />
               </div>
               <div className="space-y-1">
-                <label className="text-xs text-muted-foreground font-medium">Last Name</label>
-                <Input value={autoFill.last_name} readOnly className="h-9 bg-muted/30 text-muted-foreground cursor-not-allowed" />
+                <label htmlFor="app-last-name" className="text-xs text-muted-foreground font-medium">Last Name</label>
+                <Input id="app-last-name" value={autoFill.last_name} readOnly className="h-9 bg-muted/30 text-muted-foreground cursor-not-allowed" />
               </div>
             </div>
             <div className="mt-3 space-y-1">
-              <label className="text-xs text-muted-foreground font-medium">Email</label>
-              <Input value={autoFill.email} readOnly className="h-9 bg-muted/30 text-muted-foreground cursor-not-allowed" />
+              <label htmlFor="app-email" className="text-xs text-muted-foreground font-medium">Email</label>
+              <Input id="app-email" value={autoFill.email} readOnly className="h-9 bg-muted/30 text-muted-foreground cursor-not-allowed" />
             </div>
             {autoFill.phone_number && (
               <div className="mt-3 space-y-1">
-                <label className="text-xs text-muted-foreground font-medium">Phone Number</label>
-                <Input value={autoFill.phone_number} readOnly className="h-9 bg-muted/30 text-muted-foreground cursor-not-allowed" />
+                <label htmlFor="app-phone-number" className="text-xs text-muted-foreground font-medium">Phone Number</label>
+                <Input id="app-phone-number" value={autoFill.phone_number} readOnly className="h-9 bg-muted/30 text-muted-foreground cursor-not-allowed" />
               </div>
             )}
             <p className="text-[10px] text-muted-foreground/60 mt-1.5">Pulled from your account.</p>
@@ -193,12 +193,13 @@ function ApplicationForm({
               <div className="space-y-5">
                 {questions.map((q) => (
                   <div key={q.question_id} className="space-y-2">
-                    <label className="text-sm font-semibold text-foreground">
+                    <label htmlFor={`question-${q.question_id}`} className="text-sm font-semibold text-foreground">
                       {q.question_text}
                       {q.is_required && <span className="text-destructive ml-1">*</span>}
                     </label>
                     {q.question_type === "text" && (
                       <textarea
+                        id={`question-${q.question_id}`}
                         value={answers[q.question_id] ?? ""}
                         onChange={(e) => setAnswer(q.question_id, e.target.value)}
                         placeholder="Your answer..."

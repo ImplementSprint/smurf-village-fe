@@ -196,6 +196,11 @@ export default function SubscriptionsPage() {
           className="fixed inset-0 flex items-center justify-center z-50 animate-fade-in"
           style={{ background: 'rgba(15,23,42,0.6)', backdropFilter: 'blur(4px)' }}
           onClick={e => { if (e.target === e.currentTarget) setStatusModal(null); }}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") setStatusModal(null);
+          }}
         >
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 animate-slide-up">
             <div className="flex items-center justify-between mb-5">
@@ -247,6 +252,11 @@ export default function SubscriptionsPage() {
           className="fixed inset-0 z-50 flex animate-fade-in"
           style={{ background: 'rgba(15,23,42,0.4)' }}
           onClick={e => { if (e.target === e.currentTarget) setHistoryDrawer(null); }}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") setHistoryDrawer(null);
+          }}
         >
           <div className="ml-auto w-96 bg-white h-full shadow-2xl flex flex-col animate-slide-up">
             <div className="flex items-center justify-between p-5 border-b border-slate-100">

@@ -409,8 +409,17 @@ export function VideoTrainingManager() {
               {sourceMode === "upload" && !editTarget && (
                 <div>
                   {!selectedFile ? (
-                    <div onDrop={handleFileDrop} onDragOver={(e) => e.preventDefault()}
+                    <div
+                      onDrop={handleFileDrop}
+                      onDragOver={(e) => e.preventDefault()}
                       onClick={() => fileInputRef.current?.click()}
+                      role="button"
+                      tabIndex={0}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          fileInputRef.current?.click();
+                        }
+                      }}
                       className="border-2 border-dashed border-slate-200 rounded-xl p-6 flex flex-col items-center gap-2 cursor-pointer hover:border-blue-400 hover:bg-blue-50/40 transition-all">
                       <div className="size-10 rounded-xl bg-slate-100 flex items-center justify-center">
                         <FileVideo className="size-5 text-slate-400" />
