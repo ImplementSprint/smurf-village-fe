@@ -1,0 +1,1 @@
+{"version":3,"sources":["C:\\Users\\Adrian\\Downloads\\sprint8\\src\\__tests__\\hooks.test.ts"],"sourcesContent":["describe(\"Hooks smoke test\", () => {\n  it(\"runs a basic assertion\", () => {\n    expect(true).toBe(true);\n  });\n});\n"],"names":["describe","it","expect","toBe"],"mappings":";AAAAA,SAAS,oBAAoB;IAC3BC,GAAG,0BAA0B;QAC3BC,OAAO,MAAMC,IAAI,CAAC;IACpB;AACF"}

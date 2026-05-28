@@ -1,0 +1,59 @@
+9922d1c792619af88672e4aafd6092b0
+"use strict";
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+const _ApplicationStatusBadge = require("../../components/candidates/ApplicationStatusBadge");
+const _JobStatusBadge = require("../../components/jobs/JobStatusBadge");
+const _StatusBadge = require("../../components/timekeeping/StatusBadge");
+const _StatusBadge1 = require("../../components/super-admin/StatusBadge");
+const _StatusBadge2 = require("../../components/onboarding/shared/StatusBadge");
+describe("status badges", ()=>{
+    it("normalizes and styles application statuses", ()=>{
+        expect((0, _ApplicationStatusBadge.getNormalizedStatusLabel)("final interview")).toBe("Final Interview");
+        expect((0, _ApplicationStatusBadge.getApplicationStatusStyle)("submitted")).toContain("bg-gray-100");
+        expect((0, _ApplicationStatusBadge.ApplicationStatusBadge)({
+            status: "screening"
+        })).toMatchObject({
+            type: "span",
+            props: expect.objectContaining({
+                children: "Screening"
+            })
+        });
+    });
+    it("returns badge elements for the other status badges", ()=>{
+        expect((0, _JobStatusBadge.JobStatusBadge)({
+            status: "open"
+        })).toMatchObject({
+            type: "span",
+            props: expect.objectContaining({
+                children: expect.arrayContaining([
+                    expect.anything(),
+                    "open"
+                ])
+            })
+        });
+        expect((0, _StatusBadge.TimekeepingStatusBadge)({
+            status: "present"
+        })).toMatchObject({
+            props: expect.any(Object)
+        });
+        expect((0, _StatusBadge1.StatusBadge)({
+            status: "Active"
+        })).toMatchObject({
+            props: expect.any(Object)
+        });
+        expect((0, _StatusBadge1.DetailedStatusBadge)({
+            status: "approved"
+        })).toMatchObject({
+            props: expect.any(Object)
+        });
+        expect((0, _StatusBadge2.StatusBadge)({
+            status: "approved"
+        })).toMatchObject({
+            type: "span"
+        });
+    });
+});
+
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIkM6XFxVc2Vyc1xcQWRyaWFuXFxEb3dubG9hZHNcXHNwcmludDhcXHNyY1xcX190ZXN0c19fXFxjb3ZlcmFnZVxcc3RhdHVzLWJhZGdlcy50ZXN0LnRzeCJdLCJzb3VyY2VzQ29udGVudCI6WyJpbXBvcnQgeyBBcHBsaWNhdGlvblN0YXR1c0JhZGdlLCBnZXRBcHBsaWNhdGlvblN0YXR1c1N0eWxlLCBnZXROb3JtYWxpemVkU3RhdHVzTGFiZWwgfSBmcm9tIFwiQC9jb21wb25lbnRzL2NhbmRpZGF0ZXMvQXBwbGljYXRpb25TdGF0dXNCYWRnZVwiO1xuaW1wb3J0IHsgSm9iU3RhdHVzQmFkZ2UgfSBmcm9tIFwiQC9jb21wb25lbnRzL2pvYnMvSm9iU3RhdHVzQmFkZ2VcIjtcbmltcG9ydCB7IFRpbWVrZWVwaW5nU3RhdHVzQmFkZ2UgfSBmcm9tIFwiQC9jb21wb25lbnRzL3RpbWVrZWVwaW5nL1N0YXR1c0JhZGdlXCI7XG5pbXBvcnQgeyBTdGF0dXNCYWRnZSBhcyBTdXBlckFkbWluU3RhdHVzQmFkZ2UsIERldGFpbGVkU3RhdHVzQmFkZ2UgfSBmcm9tIFwiQC9jb21wb25lbnRzL3N1cGVyLWFkbWluL1N0YXR1c0JhZGdlXCI7XG5pbXBvcnQgeyBTdGF0dXNCYWRnZSBhcyBPbmJvYXJkaW5nU3RhdHVzQmFkZ2UgfSBmcm9tIFwiQC9jb21wb25lbnRzL29uYm9hcmRpbmcvc2hhcmVkL1N0YXR1c0JhZGdlXCI7XG5cbmRlc2NyaWJlKFwic3RhdHVzIGJhZGdlc1wiLCAoKSA9PiB7XG4gIGl0KFwibm9ybWFsaXplcyBhbmQgc3R5bGVzIGFwcGxpY2F0aW9uIHN0YXR1c2VzXCIsICgpID0+IHtcbiAgICBleHBlY3QoZ2V0Tm9ybWFsaXplZFN0YXR1c0xhYmVsKFwiZmluYWwgaW50ZXJ2aWV3XCIpKS50b0JlKFwiRmluYWwgSW50ZXJ2aWV3XCIpO1xuICAgIGV4cGVjdChnZXRBcHBsaWNhdGlvblN0YXR1c1N0eWxlKFwic3VibWl0dGVkXCIpKS50b0NvbnRhaW4oXCJiZy1ncmF5LTEwMFwiKTtcbiAgICBleHBlY3QoQXBwbGljYXRpb25TdGF0dXNCYWRnZSh7IHN0YXR1czogXCJzY3JlZW5pbmdcIiB9KSkudG9NYXRjaE9iamVjdCh7XG4gICAgICB0eXBlOiBcInNwYW5cIixcbiAgICAgIHByb3BzOiBleHBlY3Qub2JqZWN0Q29udGFpbmluZyh7IGNoaWxkcmVuOiBcIlNjcmVlbmluZ1wiIH0pLFxuICAgIH0pO1xuICB9KTtcblxuICBpdChcInJldHVybnMgYmFkZ2UgZWxlbWVudHMgZm9yIHRoZSBvdGhlciBzdGF0dXMgYmFkZ2VzXCIsICgpID0+IHtcbiAgICBleHBlY3QoSm9iU3RhdHVzQmFkZ2UoeyBzdGF0dXM6IFwib3BlblwiIH0pKS50b01hdGNoT2JqZWN0KHtcbiAgICAgIHR5cGU6IFwic3BhblwiLFxuICAgICAgcHJvcHM6IGV4cGVjdC5vYmplY3RDb250YWluaW5nKHsgY2hpbGRyZW46IGV4cGVjdC5hcnJheUNvbnRhaW5pbmcoW2V4cGVjdC5hbnl0aGluZygpLCBcIm9wZW5cIl0pIH0pLFxuICAgIH0pO1xuXG4gICAgZXhwZWN0KFRpbWVrZWVwaW5nU3RhdHVzQmFkZ2UoeyBzdGF0dXM6IFwicHJlc2VudFwiIH0pKS50b01hdGNoT2JqZWN0KHsgcHJvcHM6IGV4cGVjdC5hbnkoT2JqZWN0KSB9KTtcbiAgICBleHBlY3QoU3VwZXJBZG1pblN0YXR1c0JhZGdlKHsgc3RhdHVzOiBcIkFjdGl2ZVwiIH0pKS50b01hdGNoT2JqZWN0KHsgcHJvcHM6IGV4cGVjdC5hbnkoT2JqZWN0KSB9KTtcbiAgICBleHBlY3QoRGV0YWlsZWRTdGF0dXNCYWRnZSh7IHN0YXR1czogXCJhcHByb3ZlZFwiIH0pKS50b01hdGNoT2JqZWN0KHsgcHJvcHM6IGV4cGVjdC5hbnkoT2JqZWN0KSB9KTtcblxuICAgIGV4cGVjdChPbmJvYXJkaW5nU3RhdHVzQmFkZ2UoeyBzdGF0dXM6IFwiYXBwcm92ZWRcIiB9KSkudG9NYXRjaE9iamVjdCh7XG4gICAgICB0eXBlOiBcInNwYW5cIixcbiAgICB9KTtcbiAgfSk7XG59KTtcbiJdLCJuYW1lcyI6WyJkZXNjcmliZSIsIml0IiwiZXhwZWN0IiwiZ2V0Tm9ybWFsaXplZFN0YXR1c0xhYmVsIiwidG9CZSIsImdldEFwcGxpY2F0aW9uU3RhdHVzU3R5bGUiLCJ0b0NvbnRhaW4iLCJBcHBsaWNhdGlvblN0YXR1c0JhZGdlIiwic3RhdHVzIiwidG9NYXRjaE9iamVjdCIsInR5cGUiLCJwcm9wcyIsIm9iamVjdENvbnRhaW5pbmciLCJjaGlsZHJlbiIsIkpvYlN0YXR1c0JhZGdlIiwiYXJyYXlDb250YWluaW5nIiwiYW55dGhpbmciLCJUaW1la2VlcGluZ1N0YXR1c0JhZGdlIiwiYW55IiwiT2JqZWN0IiwiU3VwZXJBZG1pblN0YXR1c0JhZGdlIiwiRGV0YWlsZWRTdGF0dXNCYWRnZSIsIk9uYm9hcmRpbmdTdGF0dXNCYWRnZSJdLCJtYXBwaW5ncyI6Ijs7Ozt3Q0FBNEY7Z0NBQzdEOzZCQUNROzhCQUNtQzs4QkFDckI7QUFFckRBLFNBQVMsaUJBQWlCO0lBQ3hCQyxHQUFHLDhDQUE4QztRQUMvQ0MsT0FBT0MsSUFBQUEsZ0RBQXdCLEVBQUMsb0JBQW9CQyxJQUFJLENBQUM7UUFDekRGLE9BQU9HLElBQUFBLGlEQUF5QixFQUFDLGNBQWNDLFNBQVMsQ0FBQztRQUN6REosT0FBT0ssSUFBQUEsOENBQXNCLEVBQUM7WUFBRUMsUUFBUTtRQUFZLElBQUlDLGFBQWEsQ0FBQztZQUNwRUMsTUFBTTtZQUNOQyxPQUFPVCxPQUFPVSxnQkFBZ0IsQ0FBQztnQkFBRUMsVUFBVTtZQUFZO1FBQ3pEO0lBQ0Y7SUFFQVosR0FBRyxzREFBc0Q7UUFDdkRDLE9BQU9ZLElBQUFBLDhCQUFjLEVBQUM7WUFBRU4sUUFBUTtRQUFPLElBQUlDLGFBQWEsQ0FBQztZQUN2REMsTUFBTTtZQUNOQyxPQUFPVCxPQUFPVSxnQkFBZ0IsQ0FBQztnQkFBRUMsVUFBVVgsT0FBT2EsZUFBZSxDQUFDO29CQUFDYixPQUFPYyxRQUFRO29CQUFJO2lCQUFPO1lBQUU7UUFDakc7UUFFQWQsT0FBT2UsSUFBQUEsbUNBQXNCLEVBQUM7WUFBRVQsUUFBUTtRQUFVLElBQUlDLGFBQWEsQ0FBQztZQUFFRSxPQUFPVCxPQUFPZ0IsR0FBRyxDQUFDQztRQUFRO1FBQ2hHakIsT0FBT2tCLElBQUFBLHlCQUFxQixFQUFDO1lBQUVaLFFBQVE7UUFBUyxJQUFJQyxhQUFhLENBQUM7WUFBRUUsT0FBT1QsT0FBT2dCLEdBQUcsQ0FBQ0M7UUFBUTtRQUM5RmpCLE9BQU9tQixJQUFBQSxpQ0FBbUIsRUFBQztZQUFFYixRQUFRO1FBQVcsSUFBSUMsYUFBYSxDQUFDO1lBQUVFLE9BQU9ULE9BQU9nQixHQUFHLENBQUNDO1FBQVE7UUFFOUZqQixPQUFPb0IsSUFBQUEseUJBQXFCLEVBQUM7WUFBRWQsUUFBUTtRQUFXLElBQUlDLGFBQWEsQ0FBQztZQUNsRUMsTUFBTTtRQUNSO0lBQ0Y7QUFDRiJ9

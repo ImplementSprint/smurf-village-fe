@@ -1,0 +1,9 @@
+23eb1f93be5c43edd799a21250e002f4
+"use strict";
+describe("Hooks smoke test", ()=>{
+    it("runs a basic assertion", ()=>{
+        expect(true).toBe(true);
+    });
+});
+
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIkM6XFxVc2Vyc1xcQWRyaWFuXFxEb3dubG9hZHNcXHNwcmludDhcXHNyY1xcX190ZXN0c19fXFxob29rcy50ZXN0LnRzIl0sInNvdXJjZXNDb250ZW50IjpbImRlc2NyaWJlKFwiSG9va3Mgc21va2UgdGVzdFwiLCAoKSA9PiB7XG4gIGl0KFwicnVucyBhIGJhc2ljIGFzc2VydGlvblwiLCAoKSA9PiB7XG4gICAgZXhwZWN0KHRydWUpLnRvQmUodHJ1ZSk7XG4gIH0pO1xufSk7XG4iXSwibmFtZXMiOlsiZGVzY3JpYmUiLCJpdCIsImV4cGVjdCIsInRvQmUiXSwibWFwcGluZ3MiOiI7QUFBQUEsU0FBUyxvQkFBb0I7SUFDM0JDLEdBQUcsMEJBQTBCO1FBQzNCQyxPQUFPLE1BQU1DLElBQUksQ0FBQztJQUNwQjtBQUNGIn0=

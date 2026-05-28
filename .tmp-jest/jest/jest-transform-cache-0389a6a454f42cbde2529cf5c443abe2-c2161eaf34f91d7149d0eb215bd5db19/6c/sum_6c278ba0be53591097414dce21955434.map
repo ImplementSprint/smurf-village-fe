@@ -1,0 +1,1 @@
+{"version":3,"sources":["C:\\Users\\Adrian\\Downloads\\sprint8\\src\\lib\\sum.ts"],"sourcesContent":["export function sum(left: number, right: number): number {\r\n  return left + right;\r\n}\r\n"],"names":["sum","left","right"],"mappings":";;;;+BAAgBA;;;eAAAA;;;AAAT,SAASA,IAAIC,IAAY,EAAEC,KAAa;IAC7C,OAAOD,OAAOC;AAChB"}

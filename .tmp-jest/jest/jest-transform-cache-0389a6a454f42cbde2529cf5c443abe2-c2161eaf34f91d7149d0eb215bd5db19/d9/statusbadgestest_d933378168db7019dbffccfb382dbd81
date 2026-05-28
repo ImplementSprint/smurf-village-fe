@@ -1,0 +1,54 @@
+cc0458e2d8413acda63e1eb45f036f4b
+"use strict";
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+const _ApplicationStatusBadge = require("../../components/candidates/ApplicationStatusBadge");
+const _JobStatusBadge = require("../../components/jobs/JobStatusBadge");
+const _StatusBadge = require("../../components/timekeeping/StatusBadge");
+const _StatusBadge1 = require("../../components/super-admin/StatusBadge");
+const _StatusBadge2 = require("../../components/onboarding/shared/StatusBadge");
+describe("status badges", ()=>{
+    it("normalizes and styles application statuses", ()=>{
+        expect((0, _ApplicationStatusBadge.getNormalizedStatusLabel)("final interview")).toBe("Final Interview");
+        expect((0, _ApplicationStatusBadge.getApplicationStatusStyle)("submitted")).toContain("bg-gray-100");
+        expect((0, _ApplicationStatusBadge.ApplicationStatusBadge)({
+            status: "screening"
+        })).toMatchObject({
+            type: "span",
+            props: expect.objectContaining({
+                children: "Screening"
+            })
+        });
+    });
+    it("returns badge elements for the other status badges", ()=>{
+        expect((0, _JobStatusBadge.JobStatusBadge)({
+            status: "open"
+        })).toMatchObject({
+            type: "span",
+            props: expect.objectContaining({
+                children: expect.arrayContaining([
+                    expect.anything(),
+                    "open"
+                ])
+            })
+        });
+        expect((0, _StatusBadge.TimekeepingStatusBadge)({
+            status: "present"
+        })).toMatchObject({
+            props: expect.any(Object)
+        });
+        expect((0, _StatusBadge1.StatusBadge)({
+            status: "Active"
+        })).toMatchObject({
+            props: expect.any(Object)
+        });
+        expect((0, _StatusBadge2.StatusBadge)({
+            status: "approved"
+        })).toMatchObject({
+            props: expect.any(Object)
+        });
+    });
+});
+
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIkM6XFxVc2Vyc1xcQWRyaWFuXFxEb3dubG9hZHNcXHNwcmludDhcXHNyY1xcX190ZXN0c19fXFxjb3ZlcmFnZVxcc3RhdHVzLWJhZGdlcy50ZXN0LnRzeCJdLCJzb3VyY2VzQ29udGVudCI6WyJpbXBvcnQgeyBBcHBsaWNhdGlvblN0YXR1c0JhZGdlLCBnZXRBcHBsaWNhdGlvblN0YXR1c1N0eWxlLCBnZXROb3JtYWxpemVkU3RhdHVzTGFiZWwgfSBmcm9tIFwiQC9jb21wb25lbnRzL2NhbmRpZGF0ZXMvQXBwbGljYXRpb25TdGF0dXNCYWRnZVwiO1xuaW1wb3J0IHsgSm9iU3RhdHVzQmFkZ2UgfSBmcm9tIFwiQC9jb21wb25lbnRzL2pvYnMvSm9iU3RhdHVzQmFkZ2VcIjtcbmltcG9ydCB7IFRpbWVrZWVwaW5nU3RhdHVzQmFkZ2UgfSBmcm9tIFwiQC9jb21wb25lbnRzL3RpbWVrZWVwaW5nL1N0YXR1c0JhZGdlXCI7XG5pbXBvcnQgeyBTdGF0dXNCYWRnZSBhcyBTdXBlckFkbWluU3RhdHVzQmFkZ2UgfSBmcm9tIFwiQC9jb21wb25lbnRzL3N1cGVyLWFkbWluL1N0YXR1c0JhZGdlXCI7XG5pbXBvcnQgeyBTdGF0dXNCYWRnZSBhcyBPbmJvYXJkaW5nU3RhdHVzQmFkZ2UgfSBmcm9tIFwiQC9jb21wb25lbnRzL29uYm9hcmRpbmcvc2hhcmVkL1N0YXR1c0JhZGdlXCI7XG5cbmRlc2NyaWJlKFwic3RhdHVzIGJhZGdlc1wiLCAoKSA9PiB7XG4gIGl0KFwibm9ybWFsaXplcyBhbmQgc3R5bGVzIGFwcGxpY2F0aW9uIHN0YXR1c2VzXCIsICgpID0+IHtcbiAgICBleHBlY3QoZ2V0Tm9ybWFsaXplZFN0YXR1c0xhYmVsKFwiZmluYWwgaW50ZXJ2aWV3XCIpKS50b0JlKFwiRmluYWwgSW50ZXJ2aWV3XCIpO1xuICAgIGV4cGVjdChnZXRBcHBsaWNhdGlvblN0YXR1c1N0eWxlKFwic3VibWl0dGVkXCIpKS50b0NvbnRhaW4oXCJiZy1ncmF5LTEwMFwiKTtcbiAgICBleHBlY3QoQXBwbGljYXRpb25TdGF0dXNCYWRnZSh7IHN0YXR1czogXCJzY3JlZW5pbmdcIiB9KSkudG9NYXRjaE9iamVjdCh7XG4gICAgICB0eXBlOiBcInNwYW5cIixcbiAgICAgIHByb3BzOiBleHBlY3Qub2JqZWN0Q29udGFpbmluZyh7IGNoaWxkcmVuOiBcIlNjcmVlbmluZ1wiIH0pLFxuICAgIH0pO1xuICB9KTtcblxuICBpdChcInJldHVybnMgYmFkZ2UgZWxlbWVudHMgZm9yIHRoZSBvdGhlciBzdGF0dXMgYmFkZ2VzXCIsICgpID0+IHtcbiAgICBleHBlY3QoSm9iU3RhdHVzQmFkZ2UoeyBzdGF0dXM6IFwib3BlblwiIH0pKS50b01hdGNoT2JqZWN0KHtcbiAgICAgIHR5cGU6IFwic3BhblwiLFxuICAgICAgcHJvcHM6IGV4cGVjdC5vYmplY3RDb250YWluaW5nKHsgY2hpbGRyZW46IGV4cGVjdC5hcnJheUNvbnRhaW5pbmcoW2V4cGVjdC5hbnl0aGluZygpLCBcIm9wZW5cIl0pIH0pLFxuICAgIH0pO1xuXG4gICAgZXhwZWN0KFRpbWVrZWVwaW5nU3RhdHVzQmFkZ2UoeyBzdGF0dXM6IFwicHJlc2VudFwiIH0pKS50b01hdGNoT2JqZWN0KHsgcHJvcHM6IGV4cGVjdC5hbnkoT2JqZWN0KSB9KTtcbiAgICBleHBlY3QoU3VwZXJBZG1pblN0YXR1c0JhZGdlKHsgc3RhdHVzOiBcIkFjdGl2ZVwiIH0pKS50b01hdGNoT2JqZWN0KHsgcHJvcHM6IGV4cGVjdC5hbnkoT2JqZWN0KSB9KTtcblxuICAgIGV4cGVjdChPbmJvYXJkaW5nU3RhdHVzQmFkZ2UoeyBzdGF0dXM6IFwiYXBwcm92ZWRcIiB9KSkudG9NYXRjaE9iamVjdCh7IHByb3BzOiBleHBlY3QuYW55KE9iamVjdCkgfSk7XG4gIH0pO1xufSk7XG4iXSwibmFtZXMiOlsiZGVzY3JpYmUiLCJpdCIsImV4cGVjdCIsImdldE5vcm1hbGl6ZWRTdGF0dXNMYWJlbCIsInRvQmUiLCJnZXRBcHBsaWNhdGlvblN0YXR1c1N0eWxlIiwidG9Db250YWluIiwiQXBwbGljYXRpb25TdGF0dXNCYWRnZSIsInN0YXR1cyIsInRvTWF0Y2hPYmplY3QiLCJ0eXBlIiwicHJvcHMiLCJvYmplY3RDb250YWluaW5nIiwiY2hpbGRyZW4iLCJKb2JTdGF0dXNCYWRnZSIsImFycmF5Q29udGFpbmluZyIsImFueXRoaW5nIiwiVGltZWtlZXBpbmdTdGF0dXNCYWRnZSIsImFueSIsIk9iamVjdCIsIlN1cGVyQWRtaW5TdGF0dXNCYWRnZSIsIk9uYm9hcmRpbmdTdGF0dXNCYWRnZSJdLCJtYXBwaW5ncyI6Ijs7Ozt3Q0FBNEY7Z0NBQzdEOzZCQUNROzhCQUNjOzhCQUNBO0FBRXJEQSxTQUFTLGlCQUFpQjtJQUN4QkMsR0FBRyw4Q0FBOEM7UUFDL0NDLE9BQU9DLElBQUFBLGdEQUF3QixFQUFDLG9CQUFvQkMsSUFBSSxDQUFDO1FBQ3pERixPQUFPRyxJQUFBQSxpREFBeUIsRUFBQyxjQUFjQyxTQUFTLENBQUM7UUFDekRKLE9BQU9LLElBQUFBLDhDQUFzQixFQUFDO1lBQUVDLFFBQVE7UUFBWSxJQUFJQyxhQUFhLENBQUM7WUFDcEVDLE1BQU07WUFDTkMsT0FBT1QsT0FBT1UsZ0JBQWdCLENBQUM7Z0JBQUVDLFVBQVU7WUFBWTtRQUN6RDtJQUNGO0lBRUFaLEdBQUcsc0RBQXNEO1FBQ3ZEQyxPQUFPWSxJQUFBQSw4QkFBYyxFQUFDO1lBQUVOLFFBQVE7UUFBTyxJQUFJQyxhQUFhLENBQUM7WUFDdkRDLE1BQU07WUFDTkMsT0FBT1QsT0FBT1UsZ0JBQWdCLENBQUM7Z0JBQUVDLFVBQVVYLE9BQU9hLGVBQWUsQ0FBQztvQkFBQ2IsT0FBT2MsUUFBUTtvQkFBSTtpQkFBTztZQUFFO1FBQ2pHO1FBRUFkLE9BQU9lLElBQUFBLG1DQUFzQixFQUFDO1lBQUVULFFBQVE7UUFBVSxJQUFJQyxhQUFhLENBQUM7WUFBRUUsT0FBT1QsT0FBT2dCLEdBQUcsQ0FBQ0M7UUFBUTtRQUNoR2pCLE9BQU9rQixJQUFBQSx5QkFBcUIsRUFBQztZQUFFWixRQUFRO1FBQVMsSUFBSUMsYUFBYSxDQUFDO1lBQUVFLE9BQU9ULE9BQU9nQixHQUFHLENBQUNDO1FBQVE7UUFFOUZqQixPQUFPbUIsSUFBQUEseUJBQXFCLEVBQUM7WUFBRWIsUUFBUTtRQUFXLElBQUlDLGFBQWEsQ0FBQztZQUFFRSxPQUFPVCxPQUFPZ0IsR0FBRyxDQUFDQztRQUFRO0lBQ2xHO0FBQ0YifQ==

@@ -1,55 +1,36 @@
-# Call_Template_Single (Next.js)
+This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
-Minimal Next.js + TypeScript project that **calls reusable CI/CD workflows** from the `CICD-Fe_Single-test` repository.
+## Getting Started
 
-## Local Commands
+First, run the development server:
 
 ```bash
-npm install
 npm run dev
-npm run test
-npm run lint
-npm run build
+# or
+yarn dev
+# or
+pnpm dev
+# or
+bun dev
 ```
 
-## CI/CD Setup Required
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-This repository does **not** contain its own workflow definitions.  
-Instead, `.github/workflows/master-pipeline-fe-single.yml` calls the reusable workflows hosted in `CICD-Fe_Single-test`.
+You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
-### 1) Required Branches
+This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
-- `test`
-- `uat`
-- `main`
+## Learn More
 
-### 2) Required Repository Secrets
+To learn more about Next.js, take a look at the following resources:
 
-- `VERCEL_TOKEN`
-- `VERCEL_ORG_ID`
-- A secret that stores your Vercel Project ID (for example: `VERCEL_PROJECT_ID_FE_SINGLE`)
+- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
+- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
 
-For PR auto-creation jobs, also provide one of:
+You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
 
-- `GH_PR_TOKEN` (preferred), or
-- `GHPR_TOKEN` (legacy)
+## Deploy on Vercel
 
-### 3) Required Repository Variable
+The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
-- `FE_SINGLE_SYSTEM_JSON`
-  - A JSON object (or one-item array) with keys: `name`, `dir`, `image`, `vercel_project_secret`.
-  - Example: `{"name":"Frontend-Root","dir":".","image":"fe-single-web","vercel_project_secret":"VERCEL_PROJECT_ID_FE_SINGLE"}`
-
-### 4) Update Workflow Reference
-
-In `.github/workflows/master-pipeline-fe-single.yml`, replace `OWNER/CICD-Fe_Single-test` with the actual GitHub owner/org and repo name where the reusable workflows are hosted.
-
-### 5) Vercel Project Settings
-
-- Link this repository to a Vercel project.
-- Set Vercel Root Directory to `.` for this single frontend setup.
-
-## Notes
-
-- Unit tests generate `coverage/coverage-summary.json` for the test workflow.
-- `Dockerfile` is included so the existing Docker build workflow on `main` can run.
+Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.

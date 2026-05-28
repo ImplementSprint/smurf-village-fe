@@ -1,0 +1,16 @@
+3ccbad842349bb0f3aacd460f7444451
+// Uses NEXT_PUBLIC_API_BASE_URL env var when set (e.g. in Railway / Vercel),
+// falls back to localhost for local development.
+"use strict";
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+Object.defineProperty(exports, "API_BASE_URL", {
+    enumerable: true,
+    get: function() {
+        return API_BASE_URL;
+    }
+});
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:5000/api/tribeX/auth/v1";
+
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIkM6XFxVc2Vyc1xcQWRyaWFuXFxEb3dubG9hZHNcXHNwcmludDhcXHNyY1xcbGliXFxhcGkudHMiXSwic291cmNlc0NvbnRlbnQiOlsiXHJcbi8vIFVzZXMgTkVYVF9QVUJMSUNfQVBJX0JBU0VfVVJMIGVudiB2YXIgd2hlbiBzZXQgKGUuZy4gaW4gUmFpbHdheSAvIFZlcmNlbCksXHJcbi8vIGZhbGxzIGJhY2sgdG8gbG9jYWxob3N0IGZvciBsb2NhbCBkZXZlbG9wbWVudC5cclxuZXhwb3J0IGNvbnN0IEFQSV9CQVNFX1VSTCA9XHJcbiAgcHJvY2Vzcy5lbnYuTkVYVF9QVUJMSUNfQVBJX0JBU0VfVVJMID8/XHJcbiAgXCJodHRwOi8vbG9jYWxob3N0OjUwMDAvYXBpL3RyaWJlWC9hdXRoL3YxXCI7XHJcbiJdLCJuYW1lcyI6WyJBUElfQkFTRV9VUkwiLCJwcm9jZXNzIiwiZW52IiwiTkVYVF9QVUJMSUNfQVBJX0JBU0VfVVJMIl0sIm1hcHBpbmdzIjoiQUFDQSw2RUFBNkU7QUFDN0UsaURBQWlEOzs7OzsrQkFDcENBOzs7ZUFBQUE7OztBQUFOLE1BQU1BLGVBQ1hDLFFBQVFDLEdBQUcsQ0FBQ0Msd0JBQXdCLElBQ3BDIn0=
