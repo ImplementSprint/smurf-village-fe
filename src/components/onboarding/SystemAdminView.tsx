@@ -135,7 +135,7 @@ export default function SystemAdminView() {
         name: newTemplateName.trim(),
         department_id: newTemplateDepartment,
         position_id: newTemplatePosition,
-        default_deadline_days: parseInt(newTemplateDeadline),
+        default_deadline_days: Number.parseInt(newTemplateDeadline, 10),
         items: [],
       });
       const updated = await getAllTemplates();
@@ -634,9 +634,9 @@ export default function SystemAdminView() {
                                               return ytId ? (
                                                 <a key={vi} href={url} target="_blank" rel="noopener noreferrer"
                                                   className="flex items-center gap-0 rounded-lg border overflow-hidden hover:border-red-300 hover:shadow-sm transition-all max-w-[220px]">
-                                                  <img
+                                                    <img
                                                     src={`https://img.youtube.com/vi/${ytId}/mqdefault.jpg`}
-                                                    alt="YouTube thumbnail"
+                                                    alt=""
                                                     className="w-[72px] h-12 object-cover shrink-0"
                                                     onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
                                                   />
@@ -670,7 +670,7 @@ export default function SystemAdminView() {
                                                 className="block size-16 rounded-lg overflow-hidden border hover:border-primary/40 hover:shadow-sm transition-all bg-muted">
                                                 <img
                                                   src={url}
-                                                  alt={`Image ${ii + 1}`}
+                                                  alt=""
                                                   className="w-full h-full object-cover"
                                                   onError={(e) => {
                                                     const el = e.currentTarget as HTMLImageElement;

@@ -1549,44 +1549,50 @@ export default function EmployeeTimekeepingPage() {
               ))}
             </div>
             <div className="grid grid-cols-7 gap-1">
-              {schedMonthGrid.map((day, idx) => {
-                if (!day) return <div key={`b-${idx}`} className="min-h-[4.5rem]" />;
-                const cellDate = new Date(schedRefDate.getFullYear(), schedRefDate.getMonth(), day);
-                const code     = SCHED_DAY_CODE[cellDate.getDay()];
-                const isWork   = workdaySet.has(code);
-                const dateStr  = toDateStr(schedRefDate.getFullYear(), schedRefDate.getMonth(), day);
-                const isToday  = dateStr === today;
-                return (
-                  <div
-                    key={dateStr}
-                    className={[
-                      "relative rounded-xl border p-1.5 min-h-[4.5rem] flex flex-col transition-all",
-                      isWork
-                        ? "bg-blue-50 border-blue-200 text-blue-900"
-                        : "bg-slate-50 border-slate-200 text-slate-400",
-                      isToday ? "ring-2 ring-primary ring-offset-1" : "",
-                    ].join(" ")}
-                  >
-                    <span className={`text-xs font-bold leading-none ${isToday ? "text-primary" : ""}`}>{day}</span>
-                    {isWork ? (
-                      <>
-                        <span className="mt-1 inline-flex items-center gap-0.5 text-[9px] font-bold text-blue-600">
-                          <span className="h-1.5 w-1.5 rounded-full bg-blue-500 shrink-0" />
-                          On Duty
-                        </span>
-                        <span className="mt-0.5 text-[9px] font-medium text-blue-700 leading-tight">
-                          {formatSchedTime(mySchedule.start_time)}
-                        </span>
-                        <span className="text-[9px] font-medium text-blue-700 leading-tight">
-                          {formatSchedTime(mySchedule.end_time)}
-                        </span>
-                      </>
-                    ) : (
-                      <span className="mt-1 text-[9px] font-semibold text-slate-400">Day Off</span>
-                    )}
-                  </div>
-                );
-              })}
+              {(() => {
+                let blankCellIndex = 0;
+                return schedMonthGrid.map((day) => {
+                  if (!day) {
+                    const blankKey = `blank-${schedRefDate.getFullYear()}-${schedRefDate.getMonth()}-${blankCellIndex++}`;
+                    return <div key={blankKey} className="min-h-[4.5rem]" />;
+                  }
+                  const cellDate = new Date(schedRefDate.getFullYear(), schedRefDate.getMonth(), day);
+                  const code     = SCHED_DAY_CODE[cellDate.getDay()];
+                  const isWork   = workdaySet.has(code);
+                  const dateStr  = toDateStr(schedRefDate.getFullYear(), schedRefDate.getMonth(), day);
+                  const isToday  = dateStr === today;
+                  return (
+                    <div
+                      key={dateStr}
+                      className={[
+                        "relative rounded-xl border p-1.5 min-h-[4.5rem] flex flex-col transition-all",
+                        isWork
+                          ? "bg-blue-50 border-blue-200 text-blue-900"
+                          : "bg-slate-50 border-slate-200 text-slate-400",
+                        isToday ? "ring-2 ring-primary ring-offset-1" : "",
+                      ].join(" ")}
+                    >
+                      <span className={`text-xs font-bold leading-none ${isToday ? "text-primary" : ""}`}>{day}</span>
+                      {isWork ? (
+                        <>
+                          <span className="mt-1 inline-flex items-center gap-0.5 text-[9px] font-bold text-blue-600">
+                            <span className="h-1.5 w-1.5 rounded-full bg-blue-500 shrink-0" />
+                            On Duty
+                          </span>
+                          <span className="mt-0.5 text-[9px] font-medium text-blue-700 leading-tight">
+                            {formatSchedTime(mySchedule.start_time)}
+                          </span>
+                          <span className="text-[9px] font-medium text-blue-700 leading-tight">
+                            {formatSchedTime(mySchedule.end_time)}
+                          </span>
+                        </>
+                      ) : (
+                        <span className="mt-1 text-[9px] font-semibold text-slate-400">Day Off</span>
+                      )}
+                    </div>
+                  );
+                });
+              })()}
             </div>
 
             {/* Legend */}

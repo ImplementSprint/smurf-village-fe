@@ -82,7 +82,16 @@ function ReplaceApprovedModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in fade-in duration-150" onClick={onClose}>
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in fade-in duration-150"
+      role="button"
+      tabIndex={0}
+      aria-label="Close replace document dialog"
+      onClick={onClose}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") onClose();
+      }}
+    >
       <div className="bg-white rounded-2xl shadow-2xl border border-gray-200 w-full max-w-md mx-4 animate-in zoom-in-95 duration-200 overflow-hidden" onClick={e => e.stopPropagation()}>
         {/* Header */}
         <div className="px-6 pt-5 pb-4 border-b border-gray-100">

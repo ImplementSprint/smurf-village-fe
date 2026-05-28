@@ -24,7 +24,6 @@ import { EditJobModal } from "./_components/EditJobModal";
 import { JobStatusBadge } from "@/components/jobs/JobStatusBadge";
 import {
   getApplicationDetail, getMyCompany, sendInterviewSchedule, resendInterviewEmail,
-  cancelInterviewSchedule,
   listSfiaSkills, getJobSfiaSkills, updateJobSfiaSkills, suggestJobSfiaSkills,
   type ApplicationDetail, type SfiaSkill, type JobSfiaSkill,
 } from "@/lib/authApi";
@@ -197,6 +196,39 @@ function formatDuration(minutes: number): string {
   const h = Math.floor(minutes / 60);
   const m = minutes % 60;
   return m ? `${h}h ${m}m` : `${h}h`;
+}
+
+function getSfiaScoreLabel(score: number | null) {
+  if (score == null) return "Not assessed";
+  if (score >= 80) return "Excellent match";
+  if (score >= 60) return "Strong match";
+  if (score >= 40) return "Partial match";
+  return "Needs review";
+}
+
+function getSfiaLevelLabel(level: number | null) {
+  if (level == null) return "Level pending";
+  if (level >= 6) return "Leadership capability";
+  if (level >= 4) return "Practitioner capability";
+  return "Developing capability";
+}
+
+function getSupplyLevelColor(supplyLevel: number, demandLevel: number) {
+  if (supplyLevel === 0) return "text-muted-foreground/40";
+  if (supplyLevel >= demandLevel) return "text-emerald-600 dark:text-emerald-400";
+  return "text-amber-600 dark:text-amber-400";
+}
+
+function getPointsColor(points: number) {
+  if (points === 3) return "text-emerald-600 dark:text-emerald-400";
+  if (points === 1.5) return "text-blue-600 dark:text-blue-400";
+  return "text-muted-foreground/40";
+}
+
+function getOfferExpiryTextClass(daysLeft: number) {
+  if (daysLeft <= 1) return "text-red-600";
+  if (daysLeft <= 3) return "text-amber-600";
+  return "text-muted-foreground";
 }
 
 const MIN_INTERVIEW_LEAD_MINUTES = 120;
@@ -1503,8 +1535,8 @@ function TimePickerDrum({ value, onChange, onClose }: {
   const parse = (v: string) => {
     if (!v) return { h: "12", m: "00", ap: "AM" as "AM" | "PM" };
     const [h24Str, minStr] = v.split(":");
-    const h24 = parseInt(h24Str);
-    const min = parseInt(minStr);
+    const h24 = Number.parseInt(h24Str, 10);
+    const min = Number.parseInt(minStr, 10);
     const ap: "AM" | "PM" = h24 >= 12 ? "PM" : "AM";
     const h = String(h24 % 12 || 12);
     const m = String(Math.round(min / 5) * 5 % 60).padStart(2, "0");
@@ -1517,7 +1549,7 @@ function TimePickerDrum({ value, onChange, onClose }: {
   const [ap, setAp] = useState<"AM" | "PM">(init.ap);
 
   const to24 = (hh: string, mm: string, aap: string) => {
-    let h24 = parseInt(hh) % 12;
+    let h24 = Number.parseInt(hh, 10) % 12;
     if (aap === "PM") h24 += 12;
     return `${String(h24).padStart(2, "0")}:${mm}`;
   };
@@ -2469,22 +2501,8 @@ function ApplicationDetailModal({
                   ? SFIA_LEVELS.find((level) => level.level === sfiaLevel) ?? null
                   : null;
                 const accent = levelCfg ? SFIA_BAR_HEX[levelCfg.barColor] ?? "#2563eb" : "#94a3b8";
-                const scoreLabel = score == null
-                  ? "Not assessed"
-                  : score >= 80
-                    ? "Excellent match"
-                    : score >= 60
-                      ? "Strong match"
-                      : score >= 40
-                        ? "Partial match"
-                        : "Needs review";
-                const levelLabel = sfiaLevel == null
-                  ? "Level pending"
-                  : sfiaLevel >= 6
-                    ? "Leadership capability"
-                    : sfiaLevel >= 4
-                      ? "Practitioner capability"
-                      : "Developing capability";
+                const scoreLabel = getSfiaScoreLabel(score);
+                const levelLabel = getSfiaLevelLabel(sfiaLevel);
 
                 if (score == null) {
                   return (
@@ -2764,7 +2782,7 @@ function ApplicantsModal({
                 const daysLeft = Math.ceil((new Date(app.offer_deadline).getTime() - Date.now()) / 86400000);
                 if (daysLeft < 0) return null;
                 return (
-                  <span className={`text-[10px] font-semibold ${daysLeft <= 1 ? 'text-red-600' : daysLeft <= 3 ? 'text-amber-600' : 'text-muted-foreground'}`}>
+                  <span className={`text-[10px] font-semibold ${getOfferExpiryTextClass(daysLeft)}`}>
                     Offer expires {daysLeft === 0 ? 'today' : `in ${daysLeft}d`}
                   </span>
                 );

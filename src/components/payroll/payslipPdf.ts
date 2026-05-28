@@ -6,6 +6,16 @@ const toCurrencyNumber = (value: number | string) =>
     maximumFractionDigits: 2,
   }).format(Number(value));
 
+function formatBasicPayUnits(
+  payableUnits: number | null,
+  scheduledUnits: number | null,
+  unitLabel: string,
+) {
+  if (payableUnits == null) return "-";
+  if (scheduledUnits != null) return `${payableUnits} / ${scheduledUnits} ${unitLabel}`;
+  return `${payableUnits} ${unitLabel}`;
+}
+
 function escapePdfText(value: string) {
   return value
     .replaceAll("\\", "\\\\")
@@ -53,14 +63,12 @@ export function downloadPayslipPdf(
   const scheduledUnits = basicPay?.scheduledUnits ?? attendance?.scheduledDays ?? null;
   const unitLabel = basicPay?.unitLabel ?? "day(s)";
   const unitRate = basicPay?.rate ?? null;
+  const hasBenefits = (breakdown?.benefits?.length ?? 0) > 0;
 
   const earningRows = [
     {
       item: "Basic Pay",
-      units:
-        payableUnits != null
-          ? `${payableUnits}${scheduledUnits != null ? ` / ${scheduledUnits} ${unitLabel}` : ` ${unitLabel}`}`
-          : "-",
+      units: formatBasicPayUnits(payableUnits, scheduledUnits, unitLabel),
       rate: unitRate != null ? toCurrencyNumber(unitRate) : "-",
       amount: toCurrencyNumber(payslip.basic_pay_earned),
     },
@@ -70,9 +78,9 @@ export function downloadPayslipPdf(
       rate: "-",
       amount: toCurrencyNumber(benefit.amount),
     }))),
-    ...(!breakdown?.benefits?.length && Number(payslip.total_allowances) > 0
-      ? [{ item: "Allowances", units: "-", rate: "-", amount: toCurrencyNumber(payslip.total_allowances) }]
-      : []),
+    ...(hasBenefits || Number(payslip.total_allowances) <= 0
+      ? []
+      : [{ item: "Allowances", units: "-", rate: "-", amount: toCurrencyNumber(payslip.total_allowances) }]),
     ...(breakdown?.overtime?.hours
       ? [{
           item: "Overtime Pay",
@@ -122,12 +130,13 @@ export function downloadPayslipPdf(
     : "-";
 
   const payFrequencyLabel = context.payFrequency ? context.payFrequency.replace("-", " ") : "-";
-  const attendanceNote =
-    attendance && (attendance.paidLeaveDays > 0 || attendance.unpaidLeaveDays > 0)
-      ? `${attendance.paidLeaveDays > 0 ? `${attendance.paidLeaveDays} paid leave day(s)` : ""}${
-          attendance.paidLeaveDays > 0 && attendance.unpaidLeaveDays > 0 ? " | " : ""
-        }${attendance.unpaidLeaveDays > 0 ? `${attendance.unpaidLeaveDays} unpaid leave day(s)` : ""}`
-      : "";
+  const attendanceParts = attendance
+    ? [
+        attendance.paidLeaveDays > 0 ? `${attendance.paidLeaveDays} paid leave day(s)` : "",
+        attendance.unpaidLeaveDays > 0 ? `${attendance.unpaidLeaveDays} unpaid leave day(s)` : "",
+      ].filter(Boolean)
+    : [];
+  const attendanceNote = attendanceParts.join(" | ");
 
   const pageWidth = 595;
   const pageHeight = 842;

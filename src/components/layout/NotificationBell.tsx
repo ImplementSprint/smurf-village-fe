@@ -40,6 +40,16 @@ function timeAgo(iso: string) {
   return `${Math.floor(d / 30)}mo ago`;
 }
 
+function getHeaderSummary(loading: boolean, unreadCount: number) {
+  if (loading) return "Loading…";
+  if (unreadCount > 0) return `${unreadCount} pending response${unreadCount > 1 ? "s" : ""}`;
+  return "All caught up";
+}
+
+function getBellAriaLabel(unreadCount: number) {
+  return unreadCount > 0 ? `Notifications (${unreadCount} pending)` : "Notifications";
+}
+
 // ─── NotificationBell ─────────────────────────────────────────────────────────
 
 export function NotificationBell() {
@@ -88,7 +98,7 @@ export function NotificationBell() {
       {/* Bell button */}
       <button
         ref={btnRef}
-        aria-label={`Notifications${unreadCount > 0 ? ` (${unreadCount} pending)` : ""}`}
+        aria-label={getBellAriaLabel(unreadCount)}
         onClick={() => setOpen((v) => !v)}
         className="relative h-9 w-9 rounded-lg flex items-center justify-center text-muted-foreground hover:text-primary hover:bg-primary/5 transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
@@ -113,11 +123,7 @@ export function NotificationBell() {
                 Notifications
               </p>
               <p className="text-sm font-bold text-foreground mt-0.5">
-                {loading
-                  ? "Loading…"
-                  : unreadCount > 0
-                  ? `${unreadCount} pending response${unreadCount > 1 ? "s" : ""}`
-                  : "All caught up"}
+                {getHeaderSummary(loading, unreadCount)}
               </p>
             </div>
             <button

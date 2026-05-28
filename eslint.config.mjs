@@ -33,14 +33,13 @@ const eslintConfig = defineConfig([
       // Convert all other potential errors to warnings
       "prefer-const": "warn",
       "no-var": "warn",
+      "no-console": "warn",
+      "no-debugger": "warn",
+      "no-constant-condition": "warn",
     },
   },
-  // Additional config to handle react-compiler
-  {
-    rules: {
-      "react-compiler/react-compiler": "off",
-    },
-  },
+  // Disable react-compiler rule
+  { rules: { "react-compiler/react-compiler": "off" } },
 ]);
 
 export default eslintConfig;

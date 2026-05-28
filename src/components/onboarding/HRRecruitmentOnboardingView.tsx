@@ -76,7 +76,7 @@ const STATUS_BADGE: Record<
 };
 
 function StatusBadge({ status }: { readonly status: string }) {
-  const cfg = STATUS_BADGE[status] ?? { label: status, variant: "outline" as const };
+  const cfg = STATUS_BADGE[status] ?? { label: status, variant: "outline" };
   const colorClass =
     status === "approved"
       ? "bg-emerald-100 text-emerald-800 border-emerald-200"

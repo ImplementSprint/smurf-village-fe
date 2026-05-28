@@ -278,9 +278,41 @@ function computeCompleteness(profile: ApplicantProfile | null) {
   return { pct, filled, total: PROFILE_FIELDS.length, missing, hasResume: !!profile.resume_url };
 }
 
+function getCompletenessTheme(pct: number, isComplete: boolean) {
+  if (isComplete) {
+    return {
+      card: "bg-emerald-50 border-emerald-200",
+      ring: "stroke-emerald-500",
+      ringTrack: "stroke-emerald-200",
+      pill: "border-emerald-300 text-emerald-700 hover:bg-emerald-100",
+      progress: "bg-emerald-500",
+      text: "text-emerald-700",
+    };
+  }
+  if (pct >= 60) {
+    return {
+      card: "bg-amber-50 border-amber-200",
+      ring: "stroke-amber-500",
+      ringTrack: "stroke-amber-200",
+      pill: "border-amber-300 text-amber-700 hover:bg-amber-100",
+      progress: "bg-amber-400",
+      text: "text-amber-700",
+    };
+  }
+  return {
+    card: "bg-red-50 border-red-200",
+    ring: "stroke-red-500",
+    ringTrack: "stroke-red-200",
+    pill: "border-red-300 text-red-700 hover:bg-red-100",
+    progress: "bg-red-400",
+    text: "text-red-600",
+  };
+}
+
 function ProfileCompletenessBanner({ profile }: { readonly profile: ApplicantProfile | null }) {
   const { pct, filled, total, missing, hasResume } = computeCompleteness(profile);
   const isComplete = pct === 100;
+  const theme = getCompletenessTheme(pct, isComplete);
 
   if (isComplete && hasResume) return null; // fully done — hide banner
 
@@ -288,29 +320,21 @@ function ProfileCompletenessBanner({ profile }: { readonly profile: ApplicantPro
   const dashOffset    = circumference - (pct / 100) * circumference;
 
   return (
-    <div className={`rounded-2xl border p-5 ${
-      isComplete
-        ? "bg-emerald-50 border-emerald-200"
-        : pct >= 60
-        ? "bg-amber-50 border-amber-200"
-        : "bg-red-50 border-red-200"
-    }`}>
+    <div className={`rounded-2xl border p-5 ${theme.card}`}>
       <div className="flex items-start gap-4">
 
         {/* Progress ring */}
         <div className="shrink-0 relative">
           <svg width="52" height="52" viewBox="0 0 52 52" className="-rotate-90">
             <circle cx="26" cy="26" r="20" fill="none" strokeWidth="4"
-              className={isComplete ? "stroke-emerald-200" : pct >= 60 ? "stroke-amber-200" : "stroke-red-200"} />
+              className={theme.ringTrack} />
             <circle cx="26" cy="26" r="20" fill="none" strokeWidth="4"
               strokeDasharray={circumference}
               strokeDashoffset={dashOffset}
               strokeLinecap="round"
-              className={`transition-all duration-700 ${isComplete ? "stroke-emerald-500" : pct >= 60 ? "stroke-amber-500" : "stroke-red-500"}`} />
+              className={`transition-all duration-700 ${theme.ring}`} />
           </svg>
-          <span className={`absolute inset-0 flex items-center justify-center text-[11px] font-bold ${
-            isComplete ? "text-emerald-700" : pct >= 60 ? "text-amber-700" : "text-red-600"
-          }`}>{pct}%</span>
+          <span className={`absolute inset-0 flex items-center justify-center text-[11px] font-bold ${theme.text}`}>{pct}%</span>
         </div>
 
         {/* Content */}
@@ -341,13 +365,7 @@ function ProfileCompletenessBanner({ profile }: { readonly profile: ApplicantPro
             </div>
             <Link href="/applicant/profile">
               <Button size="sm" variant="outline"
-                className={`h-7 text-xs shrink-0 ${
-                  isComplete
-                    ? "border-emerald-300 text-emerald-700 hover:bg-emerald-100"
-                    : pct >= 60
-                    ? "border-amber-300 text-amber-700 hover:bg-amber-100"
-                    : "border-red-300 text-red-700 hover:bg-red-100"
-                }`}>
+                className={`h-7 text-xs shrink-0 ${theme.pill}`}>
                 <User className="h-3 w-3 mr-1" />
                 {isComplete ? "View Profile" : "Complete Profile"}
               </Button>
@@ -373,8 +391,8 @@ function ProfileCompletenessBanner({ profile }: { readonly profile: ApplicantPro
 
           {/* Resume nudge */}
           {!hasResume && (
-            <div className={`mt-2.5 flex items-center gap-1.5 text-[11px] ${
-              isComplete ? "text-emerald-700" : pct >= 60 ? "text-amber-700" : "text-red-600"
+          <div className={`mt-2.5 flex items-center gap-1.5 text-[11px] ${
+              theme.text
             }`}>
               <Upload className="h-3 w-3 shrink-0" />
               <span>Resume not uploaded — add it in your profile for a stronger application.</span>
@@ -387,7 +405,7 @@ function ProfileCompletenessBanner({ profile }: { readonly profile: ApplicantPro
       {!isComplete && (
         <div className="mt-4 h-1.5 rounded-full bg-white/60 overflow-hidden">
           <div
-            className={`h-full rounded-full transition-all duration-700 ${pct >= 60 ? "bg-amber-400" : "bg-red-400"}`}
+            className={`h-full rounded-full transition-all duration-700 ${theme.progress}`}
             style={{ width: `${pct}%` }}
           />
         </div>
@@ -456,6 +474,10 @@ function getGreeting(): string {
 
 function isNewJob(postedAt: string): boolean {
   return (Date.now() - new Date(postedAt).getTime()) < 7 * 24 * 60 * 60 * 1000;
+}
+
+function getOpenPositionsLabel(count: number) {
+  return `${count} open position${count === 1 ? "" : "s"}`;
 }
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
@@ -692,7 +714,7 @@ export default function ApplicantDashboardPage() {
           <div>
             <h2 className="text-xl font-bold tracking-tight">Available Positions</h2>
             <p className="text-xs text-muted-foreground mt-1">
-              {loading ? "Loading…" : `${jobs.length} open position${jobs.length !== 1 ? "s" : ""}`}
+              {loading ? "Loading…" : getOpenPositionsLabel(jobs.length)}
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -853,7 +875,7 @@ export default function ApplicantDashboardPage() {
               <div className="absolute left-2.75 top-3 bottom-3 w-px bg-border" />
 
               <div className="space-y-1">
-                {recentApplications.map((app, idx) => (
+                {recentApplications.map((app) => (
                   <div key={app.application_id} className="relative flex items-center gap-4 pl-7 py-2.5 rounded-xl hover:bg-muted/30 transition-colors group">
                     {/* Timeline dot */}
                     <div className={`absolute left-0 h-5.5 w-5.5 rounded-full border-2 border-background flex items-center justify-center z-10 ${statusDotClass(app.status)}`}>

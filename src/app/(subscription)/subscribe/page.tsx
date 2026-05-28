@@ -1005,7 +1005,8 @@ function StepPayment({
           </Card>
 
           <Card title="Payment Method" icon={CreditCard}>
-            <div className="flex flex-col gap-2.5 mb-5" role="group" aria-label="Select payment method">
+            <fieldset className="flex flex-col gap-2.5 mb-5">
+              <legend className="sr-only">Select payment method</legend>
               {methods.map(({ key, label, sublabel, icon: Icon }) => {
                 const active = payData.payment_method === key;
                 return (
@@ -1043,7 +1044,7 @@ function StepPayment({
                   </button>
                 );
               })}
-            </div>
+            </fieldset>
 
             {payData.payment_method === "card" && (
               <div className="space-y-4 animate-in fade-in-0 slide-in-from-bottom-2 duration-300">

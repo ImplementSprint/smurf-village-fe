@@ -63,6 +63,35 @@ function timeAgo(iso: string) {
   return `${Math.floor(d / 30)}mo ago`;
 }
 
+function getTerminalBannerClass(status: string) {
+  if (status === "offer_accepted") {
+    return "bg-emerald-50 border-emerald-200 text-emerald-700 dark:bg-emerald-900/20 dark:border-emerald-700/40 dark:text-emerald-300";
+  }
+  if (status === "hired") {
+    return "bg-green-50 border-green-200 text-green-700 dark:bg-green-900/20 dark:border-green-700/40 dark:text-green-300";
+  }
+  return "bg-red-50/60 border-red-200/70 text-red-600 dark:bg-red-900/10 dark:border-red-700/30 dark:text-red-400";
+}
+
+function getTerminalBannerText(status: string) {
+  if (status === "offer_accepted") return "Offer Accepted — Onboarding in Progress";
+  if (status === "offer_expired") return "Offer Expired";
+  if (status === "hired") return "Congratulations! You've been hired.";
+  return "This application was not selected.";
+}
+
+function getSfiaSupplyLevelClass(supplyLevel: number, demandLevel: number) {
+  if (supplyLevel === 0) return "text-muted-foreground/40";
+  if (supplyLevel >= demandLevel) return "text-emerald-600 dark:text-emerald-400";
+  return "text-amber-600 dark:text-amber-400";
+}
+
+function getSfiaPointsClass(points: number) {
+  if (points === 3) return "text-emerald-600 dark:text-emerald-400";
+  if (points === 1.5) return "text-blue-600 dark:text-blue-400";
+  return "text-muted-foreground/40";
+}
+
 // ─── Stage Progress ───────────────────────────────────────────────────────────
 
 function StageProgress({ status }: { readonly status: string }) {
@@ -143,12 +172,11 @@ function ApplicationCard({ app, onView }: { readonly app: MyApplication; readonl
   else if (app.status === "rejected") iconContainerClass = "bg-red-500/10 text-red-500 border border-red-200/60 dark:border-red-700/40";
 
   return (
-    <div
-      role="button"
-      tabIndex={0}
+    <button
+      type="button"
+      aria-label={`Open application for ${app.job_postings?.title ?? "this role"}`}
       onClick={() => onView(app.application_id)}
-      onKeyDown={(e) => e.key === "Enter" && onView(app.application_id)}
-      className={`bg-card border rounded-2xl shadow-sm overflow-hidden hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-pointer ${cardBorderClass}`}
+      className={`bg-card border rounded-2xl shadow-sm overflow-hidden hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-pointer text-left ${cardBorderClass}`}
     >
       {/* Status color bar — thicker + gradient for hired/rejected */}
       <div className={`h-1.5 w-full ${statusBarClass}`} />
@@ -193,21 +221,9 @@ function ApplicationCard({ app, onView }: { readonly app: MyApplication; readonl
         {/* Progress or terminal banner */}
         {terminal ? (
           <div>
-            <div className={`flex items-center gap-2 px-3.5 py-2.5 rounded-xl border text-sm font-semibold ${
-              app.status === "offer_accepted"
-                ? "bg-emerald-50 border-emerald-200 text-emerald-700 dark:bg-emerald-900/20 dark:border-emerald-700/40 dark:text-emerald-300"
-                : app.status === "hired"
-                ? "bg-green-50 border-green-200 text-green-700 dark:bg-green-900/20 dark:border-green-700/40 dark:text-green-300"
-                : "bg-red-50/60 border-red-200/70 text-red-600 dark:bg-red-900/10 dark:border-red-700/30 dark:text-red-400"
-            }`}>
+            <div className={`flex items-center gap-2 px-3.5 py-2.5 rounded-xl border text-sm font-semibold ${getTerminalBannerClass(app.status)}`}>
               <CheckCircle2 className="h-4 w-4 shrink-0" />
-              {app.status === "offer_accepted"
-                ? "Offer Accepted — Onboarding in Progress"
-                : app.status === "offer_expired"
-                ? "Offer Expired"
-                : app.status === "hired"
-                ? "Congratulations! You've been hired."
-                : "This application was not selected."}
+              {getTerminalBannerText(app.status)}
             </div>
             {app.status === "offer_expired" && (
               <p className="text-xs text-red-600 mt-1">This offer has expired. Please contact HR if you have questions.</p>
@@ -223,16 +239,14 @@ function ApplicationCard({ app, onView }: { readonly app: MyApplication; readonl
             <div className={`h-1.5 w-1.5 rounded-full ${cfg.dot}`} />
             <span className="text-xs text-muted-foreground font-medium">{cfg.label}</span>
           </div>
-          <Button
-            size="sm" variant="ghost"
-            className="h-8 px-3 gap-1.5 text-xs font-semibold text-muted-foreground border border-transparent hover:bg-primary/5 hover:border-primary/30 hover:text-primary transition-all cursor-pointer"
-            onClick={(e) => { e.stopPropagation(); onView(app.application_id); }}
+          <span
+            className="inline-flex h-8 px-3 gap-1.5 items-center text-xs font-semibold text-muted-foreground border border-transparent hover:bg-primary/5 hover:border-primary/30 hover:text-primary transition-all cursor-pointer rounded-md"
           >
             View Details <ChevronRight className="h-3.5 w-3.5" />
-          </Button>
+          </span>
         </div>
       </div>
-    </div>
+    </button>
   );
 }
 
@@ -976,10 +990,10 @@ function DetailModal({ detail, onClose, initialTab, onOfferAccepted, allApplicat
                         <div key={row.sfia_skill_id} className="grid grid-cols-[1fr_auto_auto_auto] items-center px-3 py-2 gap-2 border-b border-border last:border-0 text-xs">
                           <span className="font-medium truncate">{row.skill_name}</span>
                           <span className="w-12 text-center text-[10px] font-semibold text-muted-foreground">L{row.demand_level}</span>
-                          <span className={`w-10 text-center text-[10px] font-bold ${row.supply_level === 0 ? "text-muted-foreground/40" : row.supply_level >= row.demand_level ? "text-emerald-600 dark:text-emerald-400" : "text-amber-600 dark:text-amber-400"}`}>
+                          <span className={`w-10 text-center text-[10px] font-bold ${getSfiaSupplyLevelClass(row.supply_level, row.demand_level)}`}>
                             {row.supply_level === 0 ? "—" : `L${row.supply_level}`}
                           </span>
-                          <span className={`w-10 text-center text-[10px] font-bold tabular-nums ${row.points === 3 ? "text-emerald-600 dark:text-emerald-400" : row.points === 1.5 ? "text-blue-600 dark:text-blue-400" : "text-muted-foreground/40"}`}>
+                          <span className={`w-10 text-center text-[10px] font-bold tabular-nums ${getSfiaPointsClass(row.points)}`}>
                             {row.points === 0 ? "0" : row.points}
                           </span>
                         </div>

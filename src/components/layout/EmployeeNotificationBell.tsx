@@ -54,6 +54,10 @@ function timeAgo(iso: string) {
   return `${Math.floor(d / 30)}mo ago`;
 }
 
+function getBellAriaLabel(unreadCount: number) {
+  return unreadCount > 0 ? `Notifications (${unreadCount} unread)` : "Notifications";
+}
+
 // ─── EmployeeNotificationBell ─────────────────────────────────────────────────
 
 export function EmployeeNotificationBell() {
@@ -113,7 +117,7 @@ export function EmployeeNotificationBell() {
       {/* Bell button */}
       <button
         ref={btnRef}
-        aria-label={`Notifications${unreadCount > 0 ? ` (${unreadCount} unread)` : ""}`}
+        aria-label={getBellAriaLabel(unreadCount)}
         onClick={() => setOpen((v) => !v)}
         className="relative h-9 w-9 rounded-lg flex items-center justify-center text-muted-foreground hover:text-primary hover:bg-primary/5 transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >

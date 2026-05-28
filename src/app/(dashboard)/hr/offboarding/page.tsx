@@ -78,7 +78,7 @@ function matchesTemplateScope(
   const normalizedRole = normalizeTemplateValue(roleName);
   const applicableTypes = (template.applicable_offboarding_types ?? []).map(normalizeTemplateValue).filter(Boolean);
   const scopeTokens = String(template.employee_type ?? "")
-    .split(/[\/,|]/)
+    .split(/[,|/]/)
     .map(token => normalizeTemplateValue(token))
     .filter(Boolean);
 
@@ -87,11 +87,13 @@ function matchesTemplateScope(
       ? applicableTypes.includes(normalizedType)
       : scopeTokens.length === 0 || scopeTokens.includes(normalizedType);
 
-  if (!typeMatches) return false;
-  if (!normalizedRole) return true;
+  if (typeMatches) {
+    if (!normalizedRole) return true;
+    const roleTokens = scopeTokens.filter(token => token !== normalizedType);
+    return roleTokens.length === 0 || roleTokens.includes(normalizedRole);
+  }
 
-  const roleTokens = scopeTokens.filter(token => token !== normalizedType);
-  return roleTokens.length === 0 || roleTokens.includes(normalizedRole);
+  return false;
 }
 
 function sortTemplatesForRole(
@@ -100,8 +102,8 @@ function sortTemplatesForRole(
 ): SystemAdminOffboardingTemplate[] {
   const normalizedRole = normalizeTemplateValue(roleName);
   return [...templates].sort((left, right) => {
-    const leftTokens = String(left.employee_type ?? "").split(/[\/,|]/).map(token => normalizeTemplateValue(token)).filter(Boolean);
-    const rightTokens = String(right.employee_type ?? "").split(/[\/,|]/).map(token => normalizeTemplateValue(token)).filter(Boolean);
+    const leftTokens = String(left.employee_type ?? "").split(/[,|/]/).map(token => normalizeTemplateValue(token)).filter(Boolean);
+    const rightTokens = String(right.employee_type ?? "").split(/[,|/]/).map(token => normalizeTemplateValue(token)).filter(Boolean);
     const leftRoleSpecific = normalizedRole ? leftTokens.includes(normalizedRole) : false;
     const rightRoleSpecific = normalizedRole ? rightTokens.includes(normalizedRole) : false;
     if (leftRoleSpecific !== rightRoleSpecific) return leftRoleSpecific ? -1 : 1;
