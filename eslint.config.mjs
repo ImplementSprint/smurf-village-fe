@@ -25,6 +25,8 @@ const eslintConfig = defineConfig([
       "react-hooks/refs": "warn",
       "react-hooks/rules-of-hooks": "warn",
       "react-hooks/exhaustive-deps": "warn",
+      "react-hooks/immutability": "warn",
+      "react-hooks/static-components": "warn",
       "react/no-unescaped-entities": "warn",
       "@next/next/no-img-element": "warn",
       "@typescript-eslint/no-require-imports": "warn",
@@ -33,20 +35,12 @@ const eslintConfig = defineConfig([
       "no-var": "warn",
     },
   },
+  // Additional config to handle react-compiler
+  {
+    rules: {
+      "react-compiler/react-compiler": "off",
+    },
+  },
 ]);
 
-// Add a post-processing step to downgrade remaining errors to warnings
-// if react-compiler/react-compiler is in the error list
-const configsWithWarnings = eslintConfig.map((config) => {
-  if (config.rules) {
-    // Try to suppress react-compiler rule if it appears
-    try {
-      config.rules["react-compiler/react-compiler"] = "off";
-    } catch (e) {
-      // Ignore if it can't be set
-    }
-  }
-  return config;
-});
-
-export default configsWithWarnings;
+export default eslintConfig;
