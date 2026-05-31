@@ -43,9 +43,7 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-node_modules
-.next
-.env
-.env.local
-.env.development
+# Testing artifacts
+test-results/
+playwright-report/
 .env.production
