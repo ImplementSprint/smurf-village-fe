@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { useWelcomeToast } from "@/lib/useWelcomeToast";
 import { getUserInfo, getAccessToken, parseJwt } from "@/lib/authStorage";
 import { authFetch, getHRInterviewNotifications, HRInterviewNotification } from "@/lib/authApi";
+import { isValidEmailAddress, normalizeEmail } from "@/lib/emailValidation";
 import { EmployeeProfileSheet, type EmployeeRecord } from "@/components/employees/EmployeeProfileSheet";
 import { API_BASE_URL } from "@/lib/api";
 import { toast } from "sonner";
@@ -268,7 +269,7 @@ function EditEmployeeModal({
   const validate = () => {
     const e: Record<string, string> = {};
     if (!form.role_id) e.role_id = "Role is required";
-    if (companyEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(companyEmail))
+    if (companyEmail.trim() && !isValidEmailAddress(companyEmail))
       e.companyEmail = "Enter a valid email address";
     return e;
   };
@@ -289,11 +290,12 @@ function EditEmployeeModal({
 
       let updatedEmail = employee.email;
       if (companyEmail.trim()) {
+        const assignedEmail = normalizeEmail(companyEmail);
         await apiFetch(`/users/${employee.user_id}/assign-email`, {
           method: "PATCH",
-          body: JSON.stringify({ email: companyEmail.trim().toLowerCase() }),
+          body: JSON.stringify({ email: assignedEmail }),
         });
-        updatedEmail = companyEmail.trim().toLowerCase();
+        updatedEmail = assignedEmail;
         persisted = await apiFetch<Employee>(`/users/${employee.user_id}`);
         toast.success(`Company email assigned — ${employee.first_name} must sign in with their new email.`);
       } else {

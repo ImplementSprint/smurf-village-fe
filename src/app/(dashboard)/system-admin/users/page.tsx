@@ -6,6 +6,7 @@ import { useWelcomeToast } from "@/lib/useWelcomeToast";
 import { getUserInfo, getAccessToken, parseJwt } from "@/lib/authStorage";
 import { EmployeeProfileSheet, type EmployeeRecord } from "@/components/employees/EmployeeProfileSheet";
 import { authFetch } from "@/lib/authApi";
+import { isValidEmailAddress } from "@/lib/emailValidation";
 import { API_BASE_URL } from "@/lib/api";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -233,7 +234,7 @@ function AddUserPanel({ roles, departments, onClose, onCreated }: Readonly<{
     if (!form.username.trim()) e.username = "Required";
     else if (/\s/.test(form.username)) e.username = "Username must not contain spaces";
     if (!form.email.trim()) e.email = "Required";
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) e.email = "Invalid email";
+    else if (!isValidEmailAddress(form.email)) e.email = "Invalid email";
     if (!form.role_id) e.role_id = "Required";
     return e;
   };

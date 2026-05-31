@@ -30,6 +30,7 @@ import {
   X,
   Zap,
 } from "lucide-react";
+import { isValidEmailAddress } from "@/lib/emailValidation";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -1671,14 +1672,13 @@ export default function SubscribePage() {
 
   function validateCompany(data: CompanyFormData): CompanyFieldErrors {
     const errors: CompanyFieldErrors = {};
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
     if (!data.company_name.trim()) errors.company_name = "Company name is required.";
     if (!data.address.trim()) errors.address = "Company address is required.";
     if (!data.contact.trim()) errors.contact = "Contact person is required.";
     if (!data.email.trim()) {
       errors.email = "Company email is required.";
-    } else if (!emailRegex.test(data.email.trim())) {
+    } else if (!isValidEmailAddress(data.email)) {
       errors.email = "Enter a valid email address (example: admin@company.com).";
     }
     if (!data.industry.trim()) errors.industry = "Please select an industry.";
