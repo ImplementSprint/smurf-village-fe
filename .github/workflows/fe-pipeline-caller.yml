@@ -82,7 +82,7 @@ permissions:
 jobs:
   call-orchestrator:
     # Track latest central workflow updates from central-workflow main
-    uses: ImplementSprint/central-workflow/.github/workflows/master-pipeline-fe.yml@main
+    uses: ImplementSprint/central-workflow/.github/workflows/master-pipeline-fe.yml@7d121c154c8bdd56f997ad3ef9ec1b9b1337c143
     with:
       pipeline_mode: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.pipeline_mode || 'auto' }}
       enable_playwright: ${{ github.event_name == 'workflow_dispatch' && fromJSON(github.event.inputs.enable_playwright || 'true') || true }}
@@ -96,4 +96,5 @@ jobs:
       run_deploy: ${{ github.event_name == 'workflow_dispatch' && fromJSON(github.event.inputs.run_deploy || 'true') || github.event_name == 'push' }}
       run_promotion: ${{ github.event_name == 'workflow_dispatch' && fromJSON(github.event.inputs.run_promotion || 'true') || github.event_name == 'push' }}
       dry_run: ${{ github.event_name == 'workflow_dispatch' && fromJSON(github.event.inputs.dry_run || 'false') || false }}
-    secrets: inherit
+    secrets:
+      GH_PR_TOKEN: ${{ secrets.GH_PR_TOKEN }}

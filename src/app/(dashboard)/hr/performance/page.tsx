@@ -84,10 +84,18 @@ function ApprovalIcon({ type, className }: { type: ApprovalItem["type"]; classNa
   return <Icon className={className} />;
 }
 
+function createStableId(prefix: string, parts: Array<string | number | null | undefined>): string {
+  const normalizedParts = parts
+    .filter((part): part is string | number => part !== null && part !== undefined && part !== "")
+    .map((part) => String(part).trim().replace(/\s+/g, "-").toLowerCase());
+
+  return normalizedParts.length > 0 ? `${prefix}-${normalizedParts.join("-")}` : `${prefix}-unknown`;
+}
+
 function mapViolation(v: any): Violation {
   const name = v.employee ?? v.employee_name ?? "Unknown";
   return {
-    id: v.id ?? v.perf_viol_id ?? Math.random().toString(),
+    id: v.id ?? v.perf_viol_id ?? createStableId("violation", [name, v.type ?? v.violation_type, v.occured_at ?? v.date]),
     employee: name,
     type: v.type ?? v.violation_type ?? "Unknown",
     severity: (v.severity ?? "MEDIUM").toUpperCase() as Violation["severity"],
@@ -99,7 +107,7 @@ function mapViolation(v: any): Violation {
 function mapReward(r: any): CBOutcome {
   const name = r.employee ?? r.employee_name ?? "Unknown";
   return {
-    id: r.id ?? r.perf_rewards_id ?? r.perf_eval_id ?? Math.random().toString(),
+    id: r.id ?? r.perf_rewards_id ?? r.perf_eval_id ?? createStableId("reward", [name, r.type ?? r.reward_type, r.amount_value ?? r.amount, r.current_salary ?? r.current]),
     employee: name,
     type: r.type ?? r.reward_type ?? "Bonus",
     current: r.current ?? (r.current_salary ? `₱${Number(r.current_salary).toLocaleString()}/mo` : "—"),
