@@ -27,13 +27,13 @@ import {
   Video,
   Image as ImageIcon,
   Paperclip,
-  Youtube,
   ExternalLink,
   CheckSquare2,
   FileText,
   FileSpreadsheet,
   Clock,
   Upload,
+  Video as VideoIcon,
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Label } from "@/components/ui/label";
@@ -635,7 +635,7 @@ export default function SystemAdminView() {
                                                   />
                                                   <div className="px-2.5 py-1 flex-1 min-w-0">
                                                     <div className="flex items-center gap-1 text-[10px] font-bold text-red-600">
-                                                      <Youtube className="size-3 shrink-0" />YouTube
+                                                      <VideoIcon className="size-3 shrink-0" />YouTube
                                                     </div>
                                                     <p className="text-[10px] text-muted-foreground truncate">{url.replace(/https?:\/\/(www\.)?/, "")}</p>
                                                   </div>
@@ -788,7 +788,7 @@ export default function SystemAdminView() {
                                 <div className="space-y-2">
                                   <div className="flex items-center justify-between">
                                     <Label className="text-xs font-semibold flex items-center gap-1.5">
-                                      <Youtube className="size-3.5 text-red-500" />Video Links
+                                      <VideoIcon className="size-3.5 text-red-500" />Video Links
                                     </Label>
                                     <Button type="button" variant="ghost" size="sm" onClick={addVideoLink} className="h-6 text-xs gap-1 px-2">
                                       <Plus className="size-3" />Add
