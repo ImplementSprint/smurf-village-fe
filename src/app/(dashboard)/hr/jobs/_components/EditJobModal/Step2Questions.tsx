@@ -1,6 +1,6 @@
 import { Loader2 } from "lucide-react";
 import { Step2Questions as SharedStep2Questions } from "../CreateJobModal/Step2Questions";
-import type { EditQuestion } from "./useEditJobWizard";
+import type { JobQuestion } from "../shared/jobWizardTypes";
 
 export function Step2Questions({
   questions,
@@ -10,8 +10,8 @@ export function Step2Questions({
   onSkip,
   onNext,
 }: Readonly<{
-  questions: EditQuestion[];
-  setQuestions: (questions: EditQuestion[]) => void;
+  questions: JobQuestion[];
+  setQuestions: (questions: JobQuestion[]) => void;
   questionsLoading: boolean;
   savingQuestions: boolean;
   onSkip: () => void;

@@ -1,9 +1,11 @@
 "use client";
 
+import type { SyntheticEvent } from "react";
 import { useEffect, useMemo, useState } from "react";
-import { authFetch, getJobSfiaSkills, listSfiaSkills, suggestJobSfiaSkills, updateJobSfiaSkills, type SfiaSkill } from "@/lib/authApi";
-import { API_BASE_URL } from "@/lib/api";
 import { toast } from "sonner";
+import { getJobSfiaSkills, listSfiaSkills, type SfiaSkill } from "@/lib/authApi";
+import { apiFetch, buildEditJobPayload, filterSfiaSkills, loadDepartments, normalizeQuestions, saveSfiaSkills, setSfiaLevel, suggestSkills, toggleSfiaSkill } from "../shared/jobWizardUtils";
+import type { JobFormState, JobQuestion } from "../shared/jobWizardTypes";
 
 export interface EditJobPosting {
   job_posting_id: string;
@@ -19,30 +21,12 @@ export interface EditJobPosting {
   applicant_count?: number;
 }
 
-export interface EditQuestion {
-  id: string;
-  question_text: string;
-  question_type: "text" | "multiple_choice" | "checkbox";
-  options: string[];
-  is_required: boolean;
-}
-
 interface StoredQuestion {
   question_id: string;
   question_text: string;
   question_type: "text" | "multiple_choice" | "checkbox";
   options: string[] | null;
   is_required: boolean;
-}
-
-async function apiFetch<T>(path: string, init: RequestInit = {}): Promise<T> {
-  const res = await authFetch(`${API_BASE_URL}${path}`, {
-    headers: { "Content-Type": "application/json" },
-    ...init,
-  });
-  const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error((data as { message?: string })?.message || "Request failed");
-  return data as T;
 }
 
 export function useEditJobWizard({
@@ -60,7 +44,7 @@ export function useEditJobWizard({
   const [departments, setDepartments] = useState<{ department_id: string; department_name: string }[]>([]);
 
   const [savedJob, setSavedJob] = useState<EditJobPosting>(job);
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<JobFormState & { status: "open" | "closed" | "draft" }>({
     title: job.title,
     description: job.description,
     location: job.location ?? "",
@@ -71,7 +55,7 @@ export function useEditJobWizard({
     status: job.status,
   });
 
-  const [questions, setQuestions] = useState<EditQuestion[]>([]);
+  const [questions, setQuestions] = useState<JobQuestion[]>([]);
   const [questionsLoaded, setQuestionsLoaded] = useState(false);
   const [questionsLoading, setQuestionsLoading] = useState(false);
 
@@ -82,9 +66,7 @@ export function useEditJobWizard({
   const [sfiaLoaded, setSfiaLoaded] = useState(false);
 
   useEffect(() => {
-    apiFetch<{ department_id: string; department_name: string }[]>("/users/departments")
-      .then(setDepartments)
-      .catch(() => {});
+    void loadDepartments(setDepartments);
   }, []);
 
   useEffect(() => {
@@ -93,12 +75,12 @@ export function useEditJobWizard({
     apiFetch<StoredQuestion[]>(`/jobs/${job.job_posting_id}/questions`)
       .then((existing) =>
         setQuestions(
-          existing.map((q) => ({
-            id: q.question_id,
-            question_text: q.question_text,
-            question_type: q.question_type,
-            options: q.options?.length ? q.options : [""],
-            is_required: q.is_required,
+          existing.map((question) => ({
+            id: question.question_id,
+            question_text: question.question_text,
+            question_type: question.question_type,
+            options: question.options?.length ? question.options : [""],
+            is_required: question.is_required,
           })),
         ),
       )
@@ -116,7 +98,7 @@ export function useEditJobWizard({
       .then(([master, current]) => {
         setMasterSkills(master);
         const map = new Map<string, number>();
-        for (const s of current) map.set(s.skill_id, s.required_level);
+        for (const skill of current) map.set(skill.skill_id, skill.required_level);
         setSfiaSelected(map);
       })
       .catch(() => {})
@@ -126,24 +108,13 @@ export function useEditJobWizard({
       });
   }, [step, sfiaLoaded, job.job_posting_id]);
 
-  const buildPatchPayload = () => ({
-    title: form.title,
-    description: form.description,
-    location: form.location.trim() || null,
-    employment_type: form.employment_type || null,
-    salary_range: form.salary_range.trim() || null,
-    closes_at: form.closes_at ? new Date(form.closes_at).toISOString() : null,
-    department_id: form.department_id || null,
-    status: form.status,
-  });
-
-  const handleSaveDetails = async (e: React.SyntheticEvent, andClose = false) => {
-    e.preventDefault();
+  const handleSaveDetails = async (e?: SyntheticEvent, andClose = false) => {
+    e?.preventDefault();
     setSaving(true);
     try {
       const updated = await apiFetch<EditJobPosting>(`/jobs/${job.job_posting_id}`, {
         method: "PATCH",
-        body: JSON.stringify(buildPatchPayload()),
+        body: JSON.stringify(buildEditJobPayload(form)),
       });
       setSavedJob(updated);
       if (andClose) {
@@ -163,18 +134,9 @@ export function useEditJobWizard({
   const handleSaveQuestions = async () => {
     setSavingQuestions(true);
     try {
-      const payload = questions
-        .filter((q) => q.question_text.trim())
-        .map((q, i) => ({
-          question_text: q.question_text.trim(),
-          question_type: q.question_type,
-          options: q.question_type !== "text" && q.options.length ? q.options.filter(Boolean) : undefined,
-          is_required: q.is_required,
-          sort_order: i,
-        }));
       await apiFetch(`/jobs/${job.job_posting_id}/questions`, {
         method: "PUT",
-        body: JSON.stringify({ questions: payload }),
+        body: JSON.stringify({ questions: normalizeQuestions(questions) }),
       });
       setStep(3);
     } catch (err: unknown) {
@@ -188,19 +150,10 @@ export function useEditJobWizard({
   const handleSuggestSfia = async () => {
     setSuggestingSfia(true);
     try {
-      const suggestions = await suggestJobSfiaSkills(job.job_posting_id);
-      if (suggestions.length === 0) {
-        toast.info("No skill matches found in job description.");
-        return;
+      const count = await suggestSkills(job.job_posting_id, setSfiaSelected);
+      if (count > 0) {
+        toast.success(`${count} skill${count !== 1 ? "s" : ""} suggested from job description.`);
       }
-      setSfiaSelected((prev) => {
-        const next = new Map(prev);
-        for (const s of suggestions) {
-          if (!next.has(s.skill_id)) next.set(s.skill_id, s.suggested_level);
-        }
-        return next;
-      });
-      toast.success(`${suggestions.length} skill${suggestions.length !== 1 ? "s" : ""} suggested from job description.`);
     } catch {
       toast.error("Failed to fetch suggestions.");
     } finally {
@@ -211,8 +164,7 @@ export function useEditJobWizard({
   const handleSaveSfia = async () => {
     setSavingSfia(true);
     try {
-      const skills = Array.from(sfiaSelected.entries()).map(([skill_id, required_level]) => ({ skill_id, required_level }));
-      await updateJobSfiaSkills(job.job_posting_id, skills);
+      await saveSfiaSkills(job.job_posting_id, sfiaSelected);
       toast.success("Job posting updated!");
       onSave(savedJob);
     } catch (err: unknown) {
@@ -228,32 +180,15 @@ export function useEditJobWizard({
     onSave(savedJob);
   };
 
-  const toggleSfiaSkill = (skillId: string) => {
-    setSfiaSelected((prev) => {
-      const next = new Map(prev);
-      if (next.has(skillId)) next.delete(skillId);
-      else next.set(skillId, 3);
-      return next;
-    });
+  const toggleSfiaSkillSelection = (skillId: string) => {
+    setSfiaSelected((prev) => toggleSfiaSkill(prev, skillId));
   };
 
-  const setSfiaLevel = (skillId: string, level: number) => {
-    setSfiaSelected((prev) => {
-      const next = new Map(prev);
-      next.set(skillId, level);
-      return next;
-    });
+  const setSfiaLevelSelection = (skillId: string, level: number) => {
+    setSfiaSelected((prev) => setSfiaLevel(prev, skillId, level));
   };
 
-  const sfiaFiltered = useMemo(
-    () =>
-      masterSkills.filter(
-        (s) =>
-          s.skill.toLowerCase().includes(sfiaSearch.toLowerCase()) ||
-          (s.category ?? "").toLowerCase().includes(sfiaSearch.toLowerCase()),
-      ),
-    [masterSkills, sfiaSearch],
-  );
+  const sfiaFiltered = useMemo(() => filterSfiaSkills(masterSkills, sfiaSearch), [masterSkills, sfiaSearch]);
 
   return {
     step,
@@ -278,7 +213,7 @@ export function useEditJobWizard({
     handleSuggestSfia,
     handleSaveSfia,
     handleSkipSfia,
-    toggleSfiaSkill,
-    setSfiaLevel,
+    toggleSfiaSkill: toggleSfiaSkillSelection,
+    setSfiaLevel: setSfiaLevelSelection,
   };
 }

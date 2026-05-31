@@ -1,9 +1,9 @@
 import { Loader2, MoveRight, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import type { CreateQuestion } from "./useCreateJobWizard";
+import type { JobQuestion } from "../shared/jobWizardTypes";
 
-function newQuestion(): CreateQuestion {
+function newQuestion(): JobQuestion {
   return {
     id: crypto.randomUUID(),
     question_text: "",
@@ -17,10 +17,10 @@ function QuestionBuilder({
   questions,
   onChange,
 }: Readonly<{
-  questions: CreateQuestion[];
-  onChange: (qs: CreateQuestion[]) => void;
+  questions: JobQuestion[];
+  onChange: (qs: JobQuestion[]) => void;
 }>) {
-  const updateQ = (id: string, patch: Partial<CreateQuestion>) =>
+  const updateQ = (id: string, patch: Partial<JobQuestion>) =>
     onChange(questions.map((q) => (q.id === id ? { ...q, ...patch } : q)));
   const removeQ = (id: string) => onChange(questions.filter((q) => q.id !== id));
   const addOption = (id: string) =>
@@ -67,7 +67,7 @@ function QuestionBuilder({
           <div className="grid grid-cols-2 gap-2">
             <select
               value={q.question_type}
-              onChange={(e) => updateQ(q.id, { question_type: e.target.value as CreateQuestion["question_type"] })}
+              onChange={(e) => updateQ(q.id, { question_type: e.target.value as JobQuestion["question_type"] })}
               className="h-9 rounded-md border border-input bg-background px-2 text-xs"
             >
               <option value="text">Text</option>
@@ -110,8 +110,8 @@ export function Step2Questions({
   onSkip,
   onNext,
 }: Readonly<{
-  questions: CreateQuestion[];
-  setQuestions: (questions: CreateQuestion[]) => void;
+  questions: JobQuestion[];
+  setQuestions: (questions: JobQuestion[]) => void;
   savingQuestions: boolean;
   onSkip: () => void;
   onNext: () => Promise<void>;
