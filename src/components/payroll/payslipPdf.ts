@@ -1,38 +1,5 @@
 import type { ComputedPayslip, PayslipBreakdown, PayslipDetail } from "@/lib/payrollApi";
-
-const toCurrencyNumber = (value: number | string) =>
-  new Intl.NumberFormat("en-PH", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(Number(value));
-
-function escapePdfText(value: string) {
-  return value
-    .replaceAll("\\", "\\\\")
-    .replaceAll("(", "\\(")
-    .replaceAll(")", "\\)");
-}
-
-export function formatPayslipPeriod(payslip: PayslipDetail | ComputedPayslip) {
-  if (payslip.period) {
-    const start = new Date(payslip.period.cutoff_start_date).toLocaleDateString("en-PH", {
-      month: "short",
-      day: "numeric",
-    });
-    const end = new Date(payslip.period.cutoff_end_date).toLocaleDateString("en-PH", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    });
-    return `${start} - ${end}`;
-  }
-
-  return new Date(payslip.created_at).toLocaleDateString("en-PH", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
-}
+import { escapePdfText, formatPayslipPeriod, toCurrencyNumber } from "@/components/payroll/payslipFormatting";
 
 export type PayslipExportContext = {
   companyName: string;

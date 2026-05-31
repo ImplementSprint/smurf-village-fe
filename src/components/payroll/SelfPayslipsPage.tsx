@@ -18,6 +18,7 @@ import {
   type PayslipDetail,
 } from "@/lib/payrollApi";
 import { getUserInfo } from "@/lib/authStorage";
+import { escapePdfText, formatPayslipPeriod, maskId, toCurrencyNumber } from "@/components/payroll/payslipFormatting";
 
 const toCurrency = (value: number | string) =>
   new Intl.NumberFormat("en-PH", {
@@ -25,36 +26,6 @@ const toCurrency = (value: number | string) =>
     currency: "PHP",
     maximumFractionDigits: 2,
   }).format(Number(value));
-
-const toCurrencyNumber = (value: number | string) =>
-  new Intl.NumberFormat("en-PH", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(Number(value));
-
-function escapePdfText(value: string) {
-  return value
-    .replaceAll("\\", "\\\\")
-    .replaceAll("(", "\\(")
-    .replaceAll(")", "\\)");
-}
-
-function maskId(value?: string | null) {
-  if (!value) return "Not set";
-  const plain = value.replace(/\s+/g, "");
-  const tail = plain.slice(-4);
-  const hiddenCount = Math.max(0, plain.length - 4);
-  return `${"*".repeat(hiddenCount)}${tail}`;
-}
-
-function formatPeriod(payslip: PayslipDetail) {
-  if (payslip.period) {
-    const start = new Date(payslip.period.cutoff_start_date).toLocaleDateString("en-PH", { month: "short", day: "numeric" });
-    const end = new Date(payslip.period.cutoff_end_date).toLocaleDateString("en-PH", { month: "short", day: "numeric", year: "numeric" });
-    return `${start} - ${end}`;
-  }
-  return new Date(payslip.created_at).toLocaleDateString("en-PH", { month: "short", day: "numeric", year: "numeric" });
-}
 
 type PayslipExportContext = {
   companyName: string;
@@ -192,7 +163,7 @@ function downloadPayslipPdf(payslip: PayslipDetail, context: PayslipExportContex
   let rightInfoY = 800;
   [
     ["Pay Date", payoutDate],
-    ["Pay Period", formatPeriod(payslip)],
+    ["Pay Period", formatPayslipPeriod(payslip)],
     ["Pay Frequency", payFrequencyLabel],
     ["Gross Pay", toCurrencyNumber(payslip.gross_pay)],
     ["Total Deductions", toCurrencyNumber(payslip.total_deductions)],
@@ -325,7 +296,7 @@ function downloadPayslipPdf(payslip: PayslipDetail, context: PayslipExportContex
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.href = url;
-  link.download = `payslip-${formatPeriod(payslip).replace(/\s+/g, "-").toLowerCase()}.pdf`;
+  link.download = `payslip-${formatPayslipPeriod(payslip).replace(/\s+/g, "-").toLowerCase()}.pdf`;
   document.body.appendChild(link);
   link.click();
   link.remove();
@@ -357,7 +328,7 @@ function PayslipReceiptView({ payslip }: Readonly<{ payslip: PayslipDetail }>) {
   return (
     <div className="space-y-4 text-sm">
       <div className="rounded-lg bg-slate-50 border p-3 text-xs text-muted-foreground">
-        Pay Period: <span className="font-semibold text-foreground">{formatPeriod(payslip)}</span>
+        Pay Period: <span className="font-semibold text-foreground">{formatPayslipPeriod(payslip)}</span>
         {payslip.period?.payout_date && (
           <> {" - "}Payout: <span className="font-semibold text-foreground">
             {new Date(payslip.period.payout_date).toLocaleDateString("en-PH", { month: "short", day: "numeric", year: "numeric" })}
@@ -571,7 +542,7 @@ export function SelfPayslipsPage({ personaLabel }: Readonly<{ personaLabel: stri
                     className="rounded-[26px] bg-[linear-gradient(180deg,#ffffff_0%,#f8fafc_100%)] p-5 shadow-[0_16px_34px_rgba(15,23,42,0.06),0_3px_10px_rgba(15,23,42,0.04)] transition-all hover:-translate-y-0.5 hover:shadow-[0_20px_40px_rgba(15,23,42,0.08),0_4px_12px_rgba(15,23,42,0.05)] md:p-6"
                   >
                     <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-                      <p className="text-lg font-semibold tracking-tight text-slate-950">{formatPeriod(payslip)}</p>
+                      <p className="text-lg font-semibold tracking-tight text-slate-950">{formatPayslipPeriod(payslip)}</p>
                       <p className="mt-1 text-sm text-slate-500">
                         Generated: {new Date(payslip.created_at).toLocaleDateString()} · {payslip.status}
                       </p>
